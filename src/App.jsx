@@ -5,13 +5,22 @@ const MEMBERS = ["Kai", "Khari", "Candice", "Kyanna", "Camara", "Miles"];
 const FULL_GROUP = MEMBERS;
 const BOYS = ["Kai", "Khari", "Camara", "Miles"];
 
+const PERSON_COLORS = {
+  Kai: "#3b82f6",      // blue
+  Khari: "#f59e0b",    // amber/gold
+  Candice: "#ec4899",  // pink/rose
+  Kyanna: "#a855f7",   // purple
+  Camara: "#22c55e",   // green
+  Miles: "#06b6d4",    // cyan/teal
+};
+
 const RESORT = {
   name: "Royalton CHIC Punta Cana",
-  address: "Carretera Arena Gorda, Playa de Arena Gorda, Punta Cana 23000",
+  address: "Highway Macao, Uvero Alto Beach, Punta Cana, DO 23000",
   stars: 5,
   checkIn: "3:00 PM",
   checkOut: "12:00 PM",
-  phone: "+1 809-221-2121",
+  phone: "+008299548177",
   allInclusive: true,
   included: [
     { icon: "🍽️", label: "All Meals" },
@@ -108,7 +117,10 @@ const EMERGENCY_INFO = {
   plugType: "US Type A/B - UK adapter needed!",
   emergencyNumber: "911",
   ukEmbassy: "+1 809-472-7111",
-  resortPhone: "+1 809-221-2121",
+  resortPhone: "+008299548177",
+  loveholidaysAway: "+44 1233 800490",
+  loveholidaysBefore: "01234 975 975",
+  bookingRef: "LOV13307110U",
 };
 
 const OFF_SITE = {
@@ -198,6 +210,7 @@ const DAYS = [
   {
     date: "18 May", dow: "Mon", title: "Arrival Day",
     emoji: "✈️",
+    vibe: "Touchdown in paradise 🌴",
     type: "full",
     resortEvent: "Welcome Party",
     who: ["Kai", "Khari", "Candice", "Kyanna"],
@@ -213,6 +226,7 @@ const DAYS = [
   {
     date: "19 May", dow: "Tue", title: "Chill Day",
     emoji: "🏖️",
+    vibe: "Pool vibes & resort exploring 🏖️",
     type: "full",
     resortEvent: "CHIC Angels Show",
     who: ["Kai", "Khari", "Candice", "Kyanna"],
@@ -227,6 +241,7 @@ const DAYS = [
   {
     date: "20 May", dow: "Wed", title: "Full Group + Cabanna",
     emoji: "🎉",
+    vibe: "The squad is complete 🎉",
     type: "full",
     resortEvent: "Foam Party",
     who: FULL_GROUP,
@@ -241,6 +256,7 @@ const DAYS = [
   {
     date: "21 May", dow: "Thu", title: "Saona Island",
     emoji: "🏝️",
+    vibe: "Island hopping & starfish 🌊",
     type: "full",
     resortEvent: "Caribbean Night",
     who: FULL_GROUP,
@@ -255,6 +271,7 @@ const DAYS = [
   {
     date: "22 May", dow: "Fri", title: "Party Boat + Game Night",
     emoji: "🎊",
+    vibe: "Open bar on the ocean + game night 🎲",
     type: "full",
     resortEvent: "White Party",
     who: FULL_GROUP,
@@ -269,6 +286,7 @@ const DAYS = [
   {
     date: "23 May", dow: "Sat", title: "Coco Bongo Night",
     emoji: "🎭",
+    vibe: "The wildest night in Punta Cana 🪩",
     type: "full",
     resortEvent: "Glow Party",
     who: FULL_GROUP,
@@ -283,6 +301,7 @@ const DAYS = [
   {
     date: "24 May", dow: "Sun", title: "Scape Park + Dinner in the Sky",
     emoji: "🎢",
+    vibe: "Adventure by day, sky-high dining by night ✨",
     type: "full",
     resortEvent: "Pool Party",
     who: FULL_GROUP,
@@ -297,11 +316,12 @@ const DAYS = [
   {
     date: "25 May", dow: "Mon", title: "Departures + Boys Night",
     emoji: "👋",
+    vibe: "Bittersweet goodbyes, boys night begins 👋",
     type: "mixed",
-    who: FULL_GROUP,
+    who: ["Kai", "Khari", "Candice", "Kyanna", "Camara", "Miles"],
     events: [
       { time: "AM", label: "Breakfast / send-off", icon: "🌅" },
-      { time: "16:50", label: "Candice & Kyanna depart (TOM567)", icon: "✈️", type: "departure" },
+      { time: "16:50", label: "Candice, Kyanna & Miles depart (TOM567)", icon: "✈️", type: "departure" },
       { time: "Eve", label: "Rest", icon: "😴" },
       { time: "22:30", label: "Boys night begins", icon: "🔥" },
     ]
@@ -309,19 +329,22 @@ const DAYS = [
   {
     date: "26 May", dow: "Tue", title: "Recovery Day",
     emoji: "😎",
+    vibe: "Absolutely nothing. As planned. 😴",
     type: "boys",
-    who: BOYS,
+    who: ["Kai", "Khari", "Camara"],
     events: [
       { time: "Late AM", label: "Wake up slowly", icon: "☕" },
       { time: "Day", label: "Pool / beach / spa", icon: "💆" },
+      { time: "16:00", label: "Camara departs", icon: "✈️", type: "departure" },
       { time: "Eve", label: "Chill evening", icon: "🌅" },
     ]
   },
   {
     date: "27 May", dow: "Wed", title: "Filming Day",
     emoji: "🎬",
+    vibe: "Golden hour content creation 🎬",
     type: "boys",
-    who: BOYS,
+    who: ["Kai", "Khari"],
     events: [
       { time: "06:00", label: "Sunrise filming at Macao", icon: "🌅" },
       { time: "10:00", label: "Explore / B-roll", icon: "📹" },
@@ -331,8 +354,9 @@ const DAYS = [
   {
     date: "28 May", dow: "Thu", title: "Altos de Chavon",
     emoji: "🏛️",
+    vibe: "Last sunset, make it count 🌇",
     type: "boys",
-    who: BOYS,
+    who: ["Kai", "Khari"],
     events: [
       { time: "14:30", label: "Depart for Altos de Chavon", icon: "🚐" },
       { time: "16:00", label: "Explore + golden hour", icon: "🌇" },
@@ -342,8 +366,9 @@ const DAYS = [
   {
     date: "29 May", dow: "Fri", title: "Departure",
     emoji: "🏠",
+    vibe: "Until next time, paradise 🏠",
     type: "boys",
-    who: BOYS,
+    who: ["Kai", "Khari"],
     events: [
       { time: "AM", label: "Pack / chill", icon: "🧳" },
       { time: "13:30", label: "Leave for airport", icon: "🚐" },
@@ -383,11 +408,13 @@ const storage = {
 
 // ============ COLORS ============
 const C = {
-  bg: "#0a0e14",
-  bgGradient: "linear-gradient(135deg, #0a0e14 0%, #0d1520 50%, #0f1a26 100%)",
-  card: "#141c28",
-  cardBorder: "#1e2d40",
+  bg: "#0a0f1a",
+  bgGradient: "linear-gradient(180deg, #0a0f1a 0%, #111827 100%)",
+  card: "rgba(255, 255, 255, 0.04)",
+  cardSolid: "#141c28",
+  cardBorder: "rgba(255, 255, 255, 0.08)",
   cardGlow: "rgba(245, 158, 11, 0.1)",
+  premiumGlow: "0 0 20px rgba(245, 158, 11, 0.15)",
   accent: "#f59e0b",
   accentLight: "#fbbf24",
   accentSoft: "rgba(245, 158, 11, 0.15)",
@@ -399,12 +426,16 @@ const C = {
   redSoft: "rgba(239, 68, 68, 0.15)",
   blue: "#3b82f6",
   blueSoft: "rgba(59, 130, 246, 0.15)",
-  purple: "#8b5cf6",
-  purpleSoft: "rgba(139, 92, 246, 0.15)",
+  purple: "#a855f7",
+  purpleSoft: "rgba(168, 85, 247, 0.15)",
+  pink: "#ec4899",
+  pinkSoft: "rgba(236, 72, 153, 0.15)",
+  cyan: "#06b6d4",
+  cyanSoft: "rgba(6, 182, 212, 0.15)",
   text: "#f0f2f5",
   textDim: "#94a3b8",
   textFaint: "#475569",
-  glass: "rgba(20, 28, 40, 0.8)",
+  glass: "rgba(255, 255, 255, 0.04)",
   glassBorder: "rgba(255, 255, 255, 0.08)",
 };
 
@@ -574,7 +605,7 @@ function LoadingScreen() {
 
 // ============ HERO HEADER ============
 function HeroHeader() {
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, started: false });
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, started: false });
 
   useEffect(() => {
     const target = new Date("2026-05-18T11:00:00+01:00");
@@ -584,62 +615,43 @@ function HeroHeader() {
       const diff = target - now;
 
       if (diff <= 0) {
-        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, started: true });
+        setCountdown({ days: 0, hours: 0, started: true });
         return;
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      setCountdown({ days, hours, minutes, seconds, started: false });
+      setCountdown({ days, hours, started: false });
     };
 
     update();
-    const interval = setInterval(update, 1000);
+    const interval = setInterval(update, 60000); // Update every minute
     return () => clearInterval(interval);
   }, []);
 
   return (
     <header style={styles.header}>
-      <div style={styles.headerBg} />
       <div style={styles.headerContent}>
-        <div style={styles.headerTop}>
+        <div style={styles.headerRow}>
           <span style={styles.headerFlag}>🇩🇴</span>
-          <div style={styles.headerResort}>{RESORT.name}</div>
+          <h1 style={styles.headerTitle}>PUNTA CANA '26</h1>
         </div>
-
-        <h1 style={styles.headerTitle}>PUNTA CANA '26</h1>
-        <p style={styles.headerSubtitle}>18 – 29 May · {MEMBERS.length} deep · All-Inclusive Paradise</p>
-
         {countdown.started ? (
-          <div style={styles.countdownLive}>
-            <span style={styles.countdownLiveText}>WE OUT HERE</span>
+          <div style={styles.countdownInline}>
             <span style={styles.countdownLiveEmoji}>🔥</span>
+            <span style={styles.countdownInlineText}>WE OUT HERE</span>
           </div>
         ) : (
-          <div style={styles.countdown}>
-            <CountdownUnit value={countdown.days} label="DAYS" />
-            <span style={styles.countdownSep}>:</span>
-            <CountdownUnit value={countdown.hours} label="HRS" />
-            <span style={styles.countdownSep}>:</span>
-            <CountdownUnit value={countdown.minutes} label="MIN" />
-            <span style={styles.countdownSep}>:</span>
-            <CountdownUnit value={countdown.seconds} label="SEC" />
+          <div style={styles.countdownInline}>
+            <span style={styles.countdownInlineEmoji}>🌴</span>
+            <span style={styles.countdownInlineText}>
+              {countdown.days} days, {countdown.hours} hrs to go
+            </span>
           </div>
         )}
       </div>
     </header>
-  );
-}
-
-function CountdownUnit({ value, label }) {
-  return (
-    <div style={styles.countdownUnit}>
-      <div style={styles.countdownValue}>{String(value).padStart(2, '0')}</div>
-      <div style={styles.countdownLabel}>{label}</div>
-    </div>
   );
 }
 
@@ -695,14 +707,24 @@ function ItineraryTab({ selectedDay, setSelectedDay }) {
         {/* Who's Here */}
         <div style={styles.whoSection}>
           <div style={styles.whoLabel}>Who's here</div>
-          <div style={styles.whoAvatars}>
+          <div style={styles.whoChips}>
             {day.who.map(m => (
-              <div key={m} style={styles.whoAvatar} title={m}>
-                <span style={styles.whoAvatarInitial}>{m[0]}</span>
+              <div key={m} style={{
+                ...styles.whoChip,
+                background: `${PERSON_COLORS[m]}20`,
+                borderColor: `${PERSON_COLORS[m]}40`,
+                color: PERSON_COLORS[m],
+              }}>
+                {m}
               </div>
             ))}
           </div>
         </div>
+
+        {/* Day Vibe */}
+        {day.vibe && (
+          <div style={styles.dayVibe}>{day.vibe}</div>
+        )}
 
         {/* Resort Event */}
         {day.resortEvent && (
@@ -772,33 +794,30 @@ function CostsTab({
 
   return (
     <div style={styles.costsTab}>
-      {/* Summary Cards */}
-      <div style={styles.costSummary}>
+      {/* Summary Cards - Side by Side */}
+      <div style={styles.costSummaryRow}>
         <div style={styles.costSummaryCard}>
-          <div style={styles.costSummaryLabel}>Estimated pp</div>
+          <div style={styles.costSummaryLabel}>BUDGET</div>
           <div style={styles.costSummaryValue}>£{totalEstimate}</div>
+          <div style={styles.costSummarySubtext}>per person</div>
         </div>
-        <div style={styles.costProgressRing}>
-          <svg width="100" height="100" style={styles.progressSvg}>
-            <circle cx="50" cy="50" r="42" fill="none" stroke={C.cardBorder} strokeWidth="8" />
-            <circle
-              cx="50" cy="50" r="42" fill="none" stroke={C.accent} strokeWidth="8"
-              strokeDasharray={`${progress * 2.64} 264`}
-              strokeLinecap="round"
-              transform="rotate(-90 50 50)"
-              style={{ transition: "stroke-dasharray 0.5s ease" }}
-            />
-          </svg>
-          <div style={styles.progressCenter}>
-            <div style={styles.progressPercent}>{Math.round(progress)}%</div>
-            <div style={styles.progressLabel}>spent</div>
+        <div style={{ ...styles.costSummaryCard, borderColor: progress > 0 ? C.accent : C.cardBorder }}>
+          <div style={styles.costSummaryLabel}>SPENT</div>
+          <div style={{ ...styles.costSummaryValue, color: progress > 0 ? C.accent : C.textDim }}>
+            {totalActual > 0 ? `£${totalActual}` : "—"}
           </div>
-        </div>
-        <div style={{ ...styles.costSummaryCard, borderColor: C.accent }}>
-          <div style={styles.costSummaryLabel}>Actual pp</div>
-          <div style={{ ...styles.costSummaryValue, color: C.accent }}>£{totalActual || "—"}</div>
+          <div style={styles.costSummarySubtext}>{progress > 0 ? `${Math.round(progress)}% of budget` : "per person"}</div>
         </div>
       </div>
+
+      {/* Progress Bar - only show when there's spending */}
+      {progress > 0 && (
+        <div style={styles.costProgressBarContainer}>
+          <div style={styles.costProgressBar}>
+            <div style={{ ...styles.costProgressFill, width: `${Math.min(progress, 100)}%` }} />
+          </div>
+        </div>
+      )}
 
       {/* Category Groups */}
       {categories.map(cat => {
@@ -818,27 +837,32 @@ function CostsTab({
             </button>
             {expandedCategories[cat] && (
               <div style={styles.costCategoryItems}>
-                {items.map(c => (
-                  <div key={c.id} style={styles.costItem}>
-                    <div style={styles.costItemInfo}>
-                      <span style={styles.costItemEmoji}>{c.emoji}</span>
-                      <div>
-                        <div style={styles.costItemName}>{c.name}</div>
-                        <div style={styles.costItemEst}>Est: £{c.estimate} pp</div>
+                {items.map(c => {
+                  // Show range based on estimate (±20%)
+                  const low = Math.round(c.estimate * 0.8);
+                  const high = Math.round(c.estimate * 1.2);
+                  return (
+                    <div key={c.id} style={styles.costItem}>
+                      <div style={styles.costItemInfo}>
+                        <span style={styles.costItemEmoji}>{c.emoji}</span>
+                        <div>
+                          <div style={styles.costItemName}>{c.name}</div>
+                          <div style={styles.costItemEst}>Est: £{low}–{high} pp</div>
+                        </div>
+                      </div>
+                      <div style={styles.costItemInput}>
+                        <span style={styles.costPound}>£</span>
+                        <input
+                          type="number"
+                          placeholder="actual"
+                          value={costs[c.id]?.actual || ""}
+                          onChange={e => updateCost(c.id, "actual", e.target.value)}
+                          style={styles.costInput}
+                        />
                       </div>
                     </div>
-                    <div style={styles.costItemInput}>
-                      <span style={styles.costPound}>£</span>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={costs[c.id]?.actual || ""}
-                        onChange={e => updateCost(c.id, "actual", e.target.value)}
-                        style={styles.costInput}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -866,7 +890,7 @@ function CostsTab({
                   <span style={styles.costPound}>£</span>
                   <input
                     type="number"
-                    placeholder="0"
+                    placeholder="actual"
                     value={v.actual || ""}
                     onChange={e => updateCost(k, "actual", e.target.value)}
                     style={styles.costInput}
@@ -935,47 +959,87 @@ function ChallengesTab({
     legendary: "🔴",
   };
 
+  const totalPoints = MEMBERS.reduce((sum, m) => sum + getTotal(m), 0);
+  const hasScores = totalPoints > 0;
+
+  // Count completed challenges per person
+  const getCompletedCount = (member) => {
+    return Object.keys(scores).filter(k => k.startsWith(`${member}-`) && !k.includes("-pen-")).length;
+  };
+
   return (
     <div style={styles.challengesTab}>
-      {/* Podium */}
+      {/* Leaderboard Section */}
       <div style={styles.podiumSection}>
         <h3 style={styles.sectionTitle}>🏆 Leaderboard</h3>
-        <div style={styles.podium}>
-          {leaderboard.slice(0, 3).map((m, i) => {
-            const total = getTotal(m);
-            const heights = [100, 70, 50];
-            const medals = ["🥇", "🥈", "🥉"];
-            return (
-              <div key={m} style={{ ...styles.podiumPlace, order: i === 0 ? 1 : i === 1 ? 0 : 2 }}>
-                <div style={styles.podiumAvatar}>
-                  <span style={styles.podiumMedal}>{medals[i]}</span>
-                  <span style={styles.podiumInitial}>{m[0]}</span>
-                </div>
-                <div style={styles.podiumName}>{m}</div>
-                <div style={styles.podiumPts}>{total} pts</div>
-                <div style={{ ...styles.podiumBar, height: heights[i] }} />
-              </div>
-            );
-          })}
-        </div>
+
+        {!hasScores ? (
+          <div style={styles.emptyState}>
+            <div style={styles.emptyStateEmoji}>🏆</div>
+            <div style={styles.emptyStateText}>No points scored yet</div>
+            <div style={styles.emptyStateSubtext}>The game begins on arrival!</div>
+            <div style={styles.emptyStateCount}>{CHALLENGES.length} challenges to complete</div>
+          </div>
+        ) : (
+          <>
+            {/* Podium for top 3 */}
+            <div style={styles.podium}>
+              {leaderboard.slice(0, 3).map((m, i) => {
+                const total = getTotal(m);
+                const heights = [100, 70, 50];
+                const medals = ["🥇", "🥈", "🥉"];
+                return (
+                  <div key={m} style={{ ...styles.podiumPlace, order: i === 0 ? 1 : i === 1 ? 0 : 2 }}>
+                    <div style={{
+                      ...styles.podiumAvatar,
+                      background: PERSON_COLORS[m],
+                    }}>
+                      <span style={styles.podiumMedal}>{medals[i]}</span>
+                      <span style={styles.podiumInitial}>{m[0]}</span>
+                    </div>
+                    <div style={styles.podiumName}>{m}</div>
+                    <div style={styles.podiumPts}>{total} pts</div>
+                    <div style={{
+                      ...styles.podiumBar,
+                      height: heights[i],
+                      background: `linear-gradient(to top, ${PERSON_COLORS[m]}, ${PERSON_COLORS[m]}80)`,
+                    }} />
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Full Leaderboard */}
       <div style={styles.leaderboardList}>
         {leaderboard.map((m, i) => {
           const total = getTotal(m);
+          const completed = getCompletedCount(m);
           const maxPts = Math.max(...MEMBERS.map(m2 => getTotal(m2)), 1);
           return (
             <div key={m} style={styles.lbRow}>
               <div style={styles.lbRank}>{i === 0 && total > 0 ? "👑" : `#${i + 1}`}</div>
-              <div style={styles.lbAvatar}>{m[0]}</div>
+              <div style={{
+                ...styles.lbAvatar,
+                background: `${PERSON_COLORS[m]}20`,
+                color: PERSON_COLORS[m],
+              }}>{m[0]}</div>
               <div style={styles.lbInfo}>
                 <div style={styles.lbName}>{m}</div>
                 <div style={styles.lbBar}>
-                  <div style={{ ...styles.lbFill, width: `${total > 0 ? (total / maxPts) * 100 : 0}%` }} />
+                  <div style={{
+                    ...styles.lbFill,
+                    width: `${total > 0 ? (total / maxPts) * 100 : 0}%`,
+                    background: PERSON_COLORS[m],
+                  }} />
                 </div>
               </div>
-              <div style={styles.lbPts}>{total}</div>
+              <div style={styles.lbPtsContainer}>
+                <div style={{ ...styles.lbPts, color: PERSON_COLORS[m] }}>{total}</div>
+                {hasScores && <div style={styles.lbCompleted}>({completed}/{CHALLENGES.length})</div>}
+              </div>
             </div>
           );
         })}
@@ -990,10 +1054,18 @@ function ChallengesTab({
             onClick={() => setShowAddChallenge(showAddChallenge === m ? null : m)}
             style={{
               ...styles.memberBtn,
-              ...(showAddChallenge === m ? styles.memberBtnActive : {})
+              ...(showAddChallenge === m ? {
+                background: `${PERSON_COLORS[m]}20`,
+                borderColor: PERSON_COLORS[m],
+                color: PERSON_COLORS[m],
+              } : {}),
             }}
           >
-            <span style={styles.memberBtnInitial}>{m[0]}</span>
+            <span style={{
+              ...styles.memberBtnInitial,
+              background: `${PERSON_COLORS[m]}20`,
+              color: PERSON_COLORS[m],
+            }}>{m[0]}</span>
             <span style={styles.memberBtnName}>{m}</span>
           </button>
         ))}
@@ -1220,7 +1292,12 @@ function InfoTab({ infoSection, setInfoSection }) {
               </div>
               <div style={styles.flightWho}>
                 {f.who.map(w => (
-                  <span key={w} style={styles.flightWhoChip}>{w}</span>
+                  <span key={w} style={{
+                    ...styles.flightWhoChip,
+                    background: `${PERSON_COLORS[w]}20`,
+                    color: PERSON_COLORS[w],
+                    borderColor: `${PERSON_COLORS[w]}40`,
+                  }}>{w}</span>
                 ))}
               </div>
             </div>
@@ -1351,6 +1428,18 @@ function InfoTab({ infoSection, setInfoSection }) {
               <span style={styles.contactLabel}>Resort</span>
               <span style={styles.contactValue}>{EMERGENCY_INFO.resortPhone}</span>
             </div>
+            <div style={styles.contactRow}>
+              <span style={styles.contactLabel}>loveholidays (away)</span>
+              <span style={styles.contactValue}>{EMERGENCY_INFO.loveholidaysAway}</span>
+            </div>
+            <div style={styles.contactRow}>
+              <span style={styles.contactLabel}>loveholidays (before)</span>
+              <span style={styles.contactValue}>{EMERGENCY_INFO.loveholidaysBefore}</span>
+            </div>
+            <div style={styles.contactRow}>
+              <span style={styles.contactLabel}>Booking Ref</span>
+              <span style={styles.contactValue}>{EMERGENCY_INFO.bookingRef}</span>
+            </div>
           </div>
         </div>
       )}
@@ -1361,14 +1450,23 @@ function InfoTab({ infoSection, setInfoSection }) {
           <h4 style={styles.infoSubtitle}>👥 The Crew</h4>
           <div style={styles.groupGrid}>
             {MEMBERS.map(m => {
-              const dates = ["Candice", "Kyanna"].includes(m) ? "18–25 May" : ["Camara", "Miles"].includes(m) ? "20–29 May" : "18–29 May";
-              const days = ["Candice", "Kyanna"].includes(m) ? 7 : ["Camara", "Miles"].includes(m) ? 9 : 11;
+              // Corrected dates: Camara 20-26, Miles 20-25, Candice/Kyanna 18-25, Kai/Khari 18-29
+              const getDates = (name) => {
+                if (name === "Camara") return { dates: "20–26 May", days: 6 };
+                if (name === "Miles") return { dates: "20–25 May", days: 5 };
+                if (["Candice", "Kyanna"].includes(name)) return { dates: "18–25 May", days: 7 };
+                return { dates: "18–29 May", days: 11 };
+              };
+              const { dates, days } = getDates(m);
               return (
                 <div key={m} style={styles.groupCard}>
-                  <div style={styles.groupAvatar}>
+                  <div style={{
+                    ...styles.groupAvatar,
+                    background: PERSON_COLORS[m],
+                  }}>
                     <span style={styles.groupAvatarInitial}>{m[0]}</span>
                   </div>
-                  <div style={styles.groupName}>{m}</div>
+                  <div style={{ ...styles.groupName, color: PERSON_COLORS[m] }}>{m}</div>
                   <div style={styles.groupDates}>{dates}</div>
                   <div style={styles.groupDays}>{days} days</div>
                 </div>
@@ -1387,7 +1485,10 @@ function InfoTab({ infoSection, setInfoSection }) {
                       key={m}
                       style={{
                         ...styles.presenceDot,
-                        ...(d.who.includes(m) ? styles.presenceDotActive : {}),
+                        ...(d.who.includes(m) ? {
+                          background: PERSON_COLORS[m],
+                          color: "#0a0f1a",
+                        } : {}),
                       }}
                       title={m}
                     >
@@ -1441,110 +1542,48 @@ const styles = {
 
   // Header
   header: {
-    position: "relative",
-    padding: "32px 20px 24px",
-    overflow: "hidden",
-  },
-  headerBg: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, ${C.bg} 100%), url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 80 Q25 60 30 80 Q35 60 40 80' stroke='%23f59e0b' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3Cpath d='M60 85 Q70 50 80 85' stroke='%23f59e0b' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3C/svg%3E")`,
-    backgroundSize: "cover",
-    zIndex: 0,
+    padding: "12px 16px",
+    background: `linear-gradient(180deg, rgba(10, 15, 26, 0.95) 0%, rgba(10, 15, 26, 0.8) 100%)`,
+    backdropFilter: "blur(10px)",
   },
   headerContent: {
-    position: "relative",
-    zIndex: 1,
     maxWidth: 560,
     margin: "0 auto",
-    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
   },
-  headerTop: {
+  headerRow: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    marginBottom: 12,
+    gap: 10,
   },
-  headerFlag: { fontSize: 32 },
-  headerResort: {
-    fontSize: 12,
-    color: C.textDim,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
+  headerFlag: { fontSize: 22 },
   headerTitle: {
     margin: 0,
-    fontSize: 42,
-    fontWeight: 900,
-    fontFamily: "'Space Grotesk', sans-serif",
-    letterSpacing: 4,
+    fontSize: 24,
+    fontWeight: 800,
+    fontFamily: "'Outfit', sans-serif",
+    letterSpacing: 2,
     background: C.gold,
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    textShadow: `0 0 60px ${C.accentGlow}`,
-    animation: "glow 3s ease-in-out infinite",
   },
-  headerSubtitle: {
-    margin: "8px 0 20px",
-    fontSize: 14,
-    color: C.textDim,
-    letterSpacing: 0.5,
-  },
-  countdown: {
+  countdownInline: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
     gap: 8,
-    animation: "countPulse 2s ease-in-out infinite",
   },
-  countdownUnit: {
-    background: C.glass,
-    backdropFilter: "blur(10px)",
-    border: `1px solid ${C.glassBorder}`,
-    borderRadius: 12,
-    padding: "12px 16px",
-    minWidth: 60,
-    textAlign: "center",
-  },
-  countdownValue: {
-    fontSize: 28,
-    fontWeight: 800,
-    fontFamily: "'Space Grotesk', sans-serif",
-    color: C.accent,
-  },
-  countdownLabel: {
-    fontSize: 10,
+  countdownInlineEmoji: { fontSize: 16 },
+  countdownInlineText: {
+    fontSize: 13,
+    fontWeight: 600,
     color: C.textDim,
-    letterSpacing: 1,
-    marginTop: 2,
+    fontFamily: "'Outfit', sans-serif",
+    fontVariantNumeric: "tabular-nums",
   },
-  countdownSep: {
-    fontSize: 24,
-    color: C.accent,
-    fontWeight: 700,
-  },
-  countdownLive: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 12,
-    background: `linear-gradient(135deg, ${C.accentSoft} 0%, rgba(239, 68, 68, 0.15) 100%)`,
-    border: `2px solid ${C.accent}`,
-    borderRadius: 16,
-    padding: "16px 32px",
-    animation: "pulse 1s ease-in-out infinite",
-  },
-  countdownLiveText: {
-    fontSize: 24,
-    fontWeight: 900,
-    fontFamily: "'Space Grotesk', sans-serif",
-    color: C.accent,
-    letterSpacing: 3,
-  },
-  countdownLiveEmoji: { fontSize: 28 },
+  countdownLiveEmoji: { fontSize: 16 },
 
   // Navigation
   nav: {
@@ -1585,6 +1624,7 @@ const styles = {
     maxWidth: 560,
     margin: "0 auto",
     padding: "20px 16px 100px",
+    animation: "fadeIn 0.2s ease",
   },
 
   // Itinerary
@@ -1633,8 +1673,9 @@ const styles = {
   dayChipDow: { fontSize: 10, color: C.textDim, textTransform: "uppercase", letterSpacing: 0.5 },
 
   dayCard: {
-    background: C.card,
-    border: `1px solid ${C.cardBorder}`,
+    background: C.glass,
+    backdropFilter: "blur(10px)",
+    border: `1px solid ${C.glassBorder}`,
     borderRadius: 20,
     padding: 20,
     animation: "slideUp 0.3s ease",
@@ -1656,6 +1697,7 @@ const styles = {
     margin: 0,
     fontSize: 22,
     fontWeight: 800,
+    fontFamily: "'Outfit', sans-serif",
     color: C.text,
   },
   dayCardDate: {
@@ -1673,7 +1715,7 @@ const styles = {
     borderRadius: 8,
   },
 
-  whoSection: { marginBottom: 16 },
+  whoSection: { marginBottom: 12 },
   whoLabel: {
     fontSize: 11,
     color: C.textDim,
@@ -1681,24 +1723,24 @@ const styles = {
     textTransform: "uppercase",
     letterSpacing: 1,
   },
-  whoAvatars: {
+  whoChips: {
     display: "flex",
-    gap: 8,
+    gap: 6,
+    flexWrap: "wrap",
   },
-  whoAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: "50%",
-    background: `linear-gradient(135deg, ${C.accent} 0%, ${C.accentLight} 100%)`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: `0 2px 8px ${C.accentGlow}`,
+  whoChip: {
+    fontSize: 12,
+    fontWeight: 600,
+    padding: "5px 10px",
+    borderRadius: 16,
+    border: "1px solid",
   },
-  whoAvatarInitial: {
-    fontSize: 14,
-    fontWeight: 700,
-    color: C.bg,
+  dayVibe: {
+    fontSize: 13,
+    color: C.textDim,
+    fontStyle: "italic",
+    marginBottom: 16,
+    paddingLeft: 4,
   },
 
   resortEventBanner: {
@@ -1782,7 +1824,7 @@ const styles = {
     border: `1px solid ${C.accent}40`,
     borderRadius: 14,
     padding: 14,
-    boxShadow: `0 4px 20px ${C.accentGlow}`,
+    boxShadow: C.premiumGlow,
   },
   premiumEventHeader: {
     display: "flex",
@@ -1842,58 +1884,54 @@ const styles = {
 
   // Costs
   costsTab: {},
-  costSummary: {
+  costSummaryRow: {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   costSummaryCard: {
-    background: C.card,
-    border: `1px solid ${C.cardBorder}`,
+    flex: 1,
+    background: C.glass,
+    backdropFilter: "blur(10px)",
+    border: `1px solid ${C.glassBorder}`,
     borderRadius: 16,
     padding: 16,
     textAlign: "center",
-    flex: 1,
   },
   costSummaryLabel: {
-    fontSize: 11,
-    color: C.textDim,
-    marginBottom: 4,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  costSummaryValue: {
-    fontSize: 26,
-    fontWeight: 800,
-    fontFamily: "'Space Grotesk', sans-serif",
-  },
-  costProgressRing: {
-    position: "relative",
-    width: 100,
-    height: 100,
-    flexShrink: 0,
-  },
-  progressSvg: {
-    transform: "rotate(-90deg)",
-  },
-  progressCenter: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    textAlign: "center",
-  },
-  progressPercent: {
-    fontSize: 18,
-    fontWeight: 800,
-    color: C.accent,
-    fontFamily: "'Space Grotesk', sans-serif",
-  },
-  progressLabel: {
     fontSize: 10,
     color: C.textDim,
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    fontWeight: 600,
+  },
+  costSummaryValue: {
+    fontSize: 28,
+    fontWeight: 800,
+    fontFamily: "'Outfit', sans-serif",
+    fontVariantNumeric: "tabular-nums",
+    color: C.text,
+  },
+  costSummarySubtext: {
+    fontSize: 10,
+    color: C.textFaint,
+    marginTop: 4,
+  },
+  costProgressBarContainer: {
+    marginBottom: 20,
+  },
+  costProgressBar: {
+    height: 6,
+    background: C.cardSolid,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  costProgressFill: {
+    height: "100%",
+    background: `linear-gradient(90deg, ${C.accent}, ${C.accentLight})`,
+    borderRadius: 3,
+    transition: "width 0.5s ease",
   },
 
   costCategory: {
@@ -2049,8 +2087,41 @@ const styles = {
   sectionTitle: {
     fontSize: 18,
     fontWeight: 800,
+    fontFamily: "'Outfit', sans-serif",
     margin: "24px 0 14px",
     color: C.text,
+  },
+
+  emptyState: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "32px 20px",
+    background: C.glass,
+    backdropFilter: "blur(10px)",
+    border: `1px solid ${C.glassBorder}`,
+    borderRadius: 16,
+    textAlign: "center",
+  },
+  emptyStateEmoji: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: C.text,
+    marginBottom: 4,
+  },
+  emptyStateSubtext: {
+    fontSize: 13,
+    color: C.textDim,
+    marginBottom: 12,
+  },
+  emptyStateCount: {
+    fontSize: 12,
+    color: C.accent,
+    fontWeight: 600,
   },
 
   podiumSection: { marginBottom: 24 },
@@ -2072,11 +2143,9 @@ const styles = {
     width: 48,
     height: 48,
     borderRadius: "50%",
-    background: `linear-gradient(135deg, ${C.accent} 0%, ${C.accentLight} 100%)`,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: `0 4px 16px ${C.accentGlow}`,
   },
   podiumMedal: {
     position: "absolute",
@@ -2098,13 +2167,12 @@ const styles = {
     fontSize: 14,
     fontWeight: 800,
     color: C.accent,
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "'Outfit', sans-serif",
+    fontVariantNumeric: "tabular-nums",
   },
   podiumBar: {
     width: 60,
-    background: `linear-gradient(to top, ${C.accent}, ${C.accentLight})`,
     borderRadius: "8px 8px 0 0",
-    boxShadow: `0 -4px 16px ${C.accentGlow}`,
   },
 
   leaderboardList: {
@@ -2117,8 +2185,9 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: 12,
-    background: C.card,
-    border: `1px solid ${C.cardBorder}`,
+    background: C.glass,
+    backdropFilter: "blur(10px)",
+    border: `1px solid ${C.glassBorder}`,
     borderRadius: 12,
     padding: "12px 14px",
   },
@@ -2133,8 +2202,6 @@ const styles = {
     width: 36,
     height: 36,
     borderRadius: "50%",
-    background: C.accentSoft,
-    color: C.accent,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -2155,17 +2222,25 @@ const styles = {
   },
   lbFill: {
     height: "100%",
-    background: `linear-gradient(90deg, ${C.accent}, ${C.green})`,
     borderRadius: 3,
     transition: "width 0.5s ease",
+  },
+  lbPtsContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    minWidth: 60,
   },
   lbPts: {
     fontSize: 20,
     fontWeight: 800,
-    color: C.accent,
-    fontFamily: "'Space Grotesk', sans-serif",
-    minWidth: 50,
-    textAlign: "right",
+    fontFamily: "'Outfit', sans-serif",
+    fontVariantNumeric: "tabular-nums",
+  },
+  lbCompleted: {
+    fontSize: 10,
+    color: C.textDim,
+    marginTop: 2,
   },
 
   memberPicker: {
@@ -2334,6 +2409,7 @@ const styles = {
     margin: 0,
     fontSize: 18,
     fontWeight: 800,
+    fontFamily: "'Outfit', sans-serif",
     color: C.text,
   },
   resortStars: { fontSize: 14 },
@@ -2468,7 +2544,7 @@ const styles = {
   flightCode: {
     fontSize: 28,
     fontWeight: 900,
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "'Outfit', sans-serif",
     color: C.text,
     letterSpacing: 2,
   },
@@ -2530,11 +2606,10 @@ const styles = {
   },
   flightWhoChip: {
     fontSize: 11,
-    background: C.blueSoft,
-    color: C.blue,
     padding: "4px 10px",
     borderRadius: 20,
     fontWeight: 600,
+    border: "1px solid",
   },
 
   offsiteGrid: {
@@ -2660,12 +2735,10 @@ const styles = {
     width: 48,
     height: 48,
     borderRadius: "50%",
-    background: `linear-gradient(135deg, ${C.accent} 0%, ${C.accentLight} 100%)`,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     margin: "0 auto 10px",
-    boxShadow: `0 4px 12px ${C.accentGlow}`,
   },
   groupAvatarInitial: {
     fontSize: 20,
@@ -2727,7 +2800,6 @@ const styles = {
     transition: "all 0.2s",
   },
   presenceDotActive: {
-    background: `linear-gradient(135deg, ${C.accent} 0%, ${C.accentLight} 100%)`,
-    color: C.bg,
+    // Colors applied inline per person
   },
 };
