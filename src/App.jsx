@@ -1,44 +1,182 @@
 import { useState, useEffect, useCallback } from "react";
 
+// ============ DATA ============
 const MEMBERS = ["Kai", "Khari", "Candice", "Kyanna", "Camara", "Miles"];
 const FULL_GROUP = MEMBERS;
 const BOYS = ["Kai", "Khari", "Camara", "Miles"];
 
+const RESORT = {
+  name: "Royalton CHIC Punta Cana",
+  address: "Carretera Arena Gorda, Playa de Arena Gorda, Punta Cana 23000",
+  stars: 5,
+  checkIn: "3:00 PM",
+  checkOut: "12:00 PM",
+  phone: "+1 809-221-2121",
+  allInclusive: true,
+  included: [
+    { icon: "🍽️", label: "All Meals" },
+    { icon: "🍹", label: "Premium Drinks" },
+    { icon: "🎉", label: "Entertainment" },
+    { icon: "🏊", label: "Pools & Beach" },
+    { icon: "💪", label: "Gym & Spa" },
+    { icon: "📶", label: "WiFi" },
+  ],
+  restaurants: [
+    { name: "Grazie Italian", cuisine: "Italian", emoji: "🍝", type: "A-la-carte" },
+    { name: "Hunter Steakhouse", cuisine: "Steakhouse", emoji: "🥩", type: "A-la-carte" },
+    { name: "Tex-Mex El Agave", cuisine: "Mexican", emoji: "🌮", type: "A-la-carte" },
+    { name: "Pescari", cuisine: "Seafood", emoji: "🦞", type: "A-la-carte" },
+    { name: "C/X Gourmet Marché", cuisine: "International", emoji: "🍱", type: "Buffet" },
+    { name: "Score Sports Bar", cuisine: "American", emoji: "🍔", type: "Casual" },
+    { name: "The Promenade Café", cuisine: "Coffee & Snacks", emoji: "☕", type: "Café" },
+  ],
+  entertainment: [
+    { day: "Mon", event: "Welcome Party", emoji: "🎊" },
+    { day: "Tue", event: "CHIC Angels Show", emoji: "👯" },
+    { day: "Wed", event: "Foam Party", emoji: "🫧" },
+    { day: "Thu", event: "Caribbean Night", emoji: "🌴" },
+    { day: "Fri", event: "White Party", emoji: "⚪" },
+    { day: "Sat", event: "Glow Party", emoji: "✨" },
+    { day: "Sun", event: "Pool Party", emoji: "🏖️" },
+  ],
+};
+
+const FLIGHTS = [
+  {
+    id: "out-main",
+    type: "Outbound",
+    date: "18 May 2026",
+    flight: "TOM566",
+    aircraft: "Boeing 787 Dreamliner",
+    from: { code: "BHX", city: "Birmingham", terminal: "1" },
+    to: { code: "PUJ", city: "Punta Cana" },
+    depart: "11:00",
+    arrive: "14:50",
+    duration: "9h 50m",
+    baggage: "20kg hold + 10kg cabin",
+    who: ["Kai", "Khari", "Candice", "Kyanna"],
+    pnr: "MEKPQX",
+  },
+  {
+    id: "out-cm",
+    type: "Outbound",
+    date: "20 May 2026",
+    flight: "TBC",
+    from: { code: "TBC", city: "TBC" },
+    to: { code: "PUJ", city: "Punta Cana" },
+    who: ["Camara", "Miles"],
+    pnr: "TBC",
+  },
+  {
+    id: "return-girls",
+    type: "Return",
+    date: "25 May 2026",
+    flight: "TOM567",
+    aircraft: "Boeing 787 Dreamliner",
+    from: { code: "PUJ", city: "Punta Cana" },
+    to: { code: "BHX", city: "Birmingham", terminal: "1" },
+    depart: "16:50",
+    arrive: "06:00+1",
+    duration: "8h 10m",
+    baggage: "20kg hold + 10kg cabin",
+    who: ["Candice", "Kyanna"],
+    pnr: "MEKPQX",
+  },
+  {
+    id: "return-boys",
+    type: "Return",
+    date: "29 May 2026",
+    flight: "TOM569",
+    aircraft: "Boeing 787 Dreamliner",
+    from: { code: "PUJ", city: "Punta Cana" },
+    to: { code: "BHX", city: "Birmingham", terminal: "1" },
+    depart: "17:10",
+    arrive: "06:15+1",
+    duration: "8h 05m",
+    baggage: "20kg hold + 10kg cabin",
+    who: ["Kai", "Khari", "Camara", "Miles"],
+    pnr: "TBC",
+  },
+];
+
+const EMERGENCY_INFO = {
+  timezone: "AST (UTC-4)",
+  ukDiff: "5 hours behind UK",
+  currency: "Dominican Peso (DOP) / USD widely accepted",
+  language: "Spanish (English at resort)",
+  tipping: "10-15% at restaurants, $1-2 for bellhops",
+  plugType: "US Type A/B - UK adapter needed!",
+  emergencyNumber: "911",
+  ukEmbassy: "+1 809-472-7111",
+  resortPhone: "+1 809-221-2121",
+};
+
+const OFF_SITE = {
+  dining: [
+    { name: "Cabanna", price: "£40-80pp", cuisine: "Fine Dining", emoji: "✨" },
+    { name: "Dinner in the Sky", price: "£120-180pp", cuisine: "Experience", emoji: "🎈" },
+    { name: "Citrus", price: "£30-60pp", cuisine: "Modern", emoji: "🍋" },
+    { name: "La Yola", price: "£30-60pp", cuisine: "Seafood", emoji: "⛵" },
+    { name: "Jellyfish", price: "£10-25pp", cuisine: "Beach Bar", emoji: "🪼" },
+    { name: "Onno's", price: "£10-25pp", cuisine: "Caribbean", emoji: "🌺" },
+  ],
+  beaches: [
+    { name: "Playa Macao", distance: "35 min", vibe: "Wild & scenic", emoji: "🌊" },
+    { name: "Bavaro Beach", distance: "5 min", vibe: "Resort stretch", emoji: "🏖️" },
+    { name: "Juanillo Beach", distance: "25 min", vibe: "Exclusive & calm", emoji: "🌴" },
+    { name: "Playa Escondida", distance: "40 min", vibe: "Hidden gem", emoji: "💎" },
+  ],
+  activities: [
+    { name: "Scape Park", price: "£90-130", desc: "Cenotes, ziplines, caves", emoji: "🎢" },
+    { name: "Saona Island", price: "£70-120", desc: "Island paradise day trip", emoji: "🏝️" },
+    { name: "Jet Skis", price: "£40-60", desc: "30-60 min rental", emoji: "🚤" },
+    { name: "Parasailing", price: "£50-70", desc: "Beach views", emoji: "🪂" },
+    { name: "ATV Tours", price: "£60-100", desc: "Off-road adventure", emoji: "🏎️" },
+    { name: "Spa Day", price: "£80-150", desc: "Full treatment", emoji: "💆" },
+  ],
+  nightlife: [
+    { name: "Coco Bongo", price: "£60-100", desc: "Iconic show & club", emoji: "🎭" },
+    { name: "Drink Point", price: "Free entry", desc: "Late night vibes", emoji: "🍾" },
+    { name: "Infinity Lounge", price: "Free entry", desc: "Rooftop lounge", emoji: "🌙" },
+    { name: "Oro Nightclub", price: "£20-40", desc: "Hard Rock club", emoji: "🪩" },
+  ],
+};
+
 const CHALLENGES = [
-  { id: 1, name: "Kiss someone", pts: 100 },
-  { id: 2, name: "Sing in public", pts: 15, bonus: "+50 crowd, +50 money" },
-  { id: 3, name: "Run 1km", pts: 20 },
-  { id: 4, name: "5 shots at once", pts: 20 },
-  { id: 5, name: "Get someone to buy you drinks", pts: 5 },
-  { id: 6, name: "Selfie with stranger", pts: 3 },
-  { id: 7, name: "Selfie with someone sleeping", pts: 3, bonus: "+30 bonus" },
-  { id: 8, name: "Wear someone's clothes unnoticed (10 min)", pts: 15 },
-  { id: 9, name: "30 min gym workout", pts: 15 },
-  { id: 10, name: "Get number / insta / snap", pts: 5 },
-  { id: 11, name: "Build sand sculpture", pts: 30 },
-  { id: 12, name: "Stranger gives you money", pts: 75 },
-  { id: 13, name: "Make a TikTok", pts: 2 },
-  { id: 14, name: "Stranger joins TikTok", pts: 10 },
-  { id: 15, name: "Cliff jump", pts: 100 },
-  { id: 16, name: "Find group lookalike", pts: 70 },
-  { id: 17, name: "Sleep somewhere else", pts: 100 },
-  { id: 18, name: "Receive compliments", pts: 7 },
-  { id: 19, name: "Get a tan", pts: 1 },
-  { id: 20, name: "Hold hands with stranger", pts: 15 },
-  { id: 21, name: "Down a drink", pts: 2 },
-  { id: 22, name: "Shot", pts: 2 },
-  { id: 23, name: "Play game with stranger", pts: 25 },
-  { id: 24, name: "Buy souvenir", pts: 4 },
-  { id: 25, name: "Matching outfit with stranger", pts: 15 },
-  { id: 26, name: "Pic with 5 people 50+", pts: 50 },
-  { id: 27, name: "Ask something embarrassing", pts: 35 },
-  { id: 28, name: "Scare someone in group", pts: 10 },
-  { id: 29, name: "Try something new", pts: 10 },
-  { id: 30, name: "Ride Gianni's bike", pts: 85 },
-  { id: 31, name: "Give massage", pts: 1, bonus: "per min" },
-  { id: 32, name: "Shower with someone", pts: 100 },
-  { id: 33, name: "Get a tattoo", pts: 250 },
-  { id: 34, name: "All nighter", pts: 20 },
+  { id: 1, name: "Kiss someone", pts: 100, difficulty: "legendary" },
+  { id: 2, name: "Sing in public", pts: 15, bonus: "+50 crowd, +50 money", difficulty: "medium" },
+  { id: 3, name: "Run 1km", pts: 20, difficulty: "medium" },
+  { id: 4, name: "5 shots at once", pts: 20, difficulty: "medium" },
+  { id: 5, name: "Get someone to buy you drinks", pts: 5, difficulty: "easy" },
+  { id: 6, name: "Selfie with stranger", pts: 3, difficulty: "easy" },
+  { id: 7, name: "Selfie with someone sleeping", pts: 3, bonus: "+30 bonus", difficulty: "easy" },
+  { id: 8, name: "Wear someone's clothes unnoticed (10 min)", pts: 15, difficulty: "medium" },
+  { id: 9, name: "30 min gym workout", pts: 15, difficulty: "medium" },
+  { id: 10, name: "Get number / insta / snap", pts: 5, difficulty: "easy" },
+  { id: 11, name: "Build sand sculpture", pts: 30, difficulty: "hard" },
+  { id: 12, name: "Stranger gives you money", pts: 75, difficulty: "hard" },
+  { id: 13, name: "Make a TikTok", pts: 2, difficulty: "easy" },
+  { id: 14, name: "Stranger joins TikTok", pts: 10, difficulty: "medium" },
+  { id: 15, name: "Cliff jump", pts: 100, difficulty: "legendary" },
+  { id: 16, name: "Find group lookalike", pts: 70, difficulty: "hard" },
+  { id: 17, name: "Sleep somewhere else", pts: 100, difficulty: "legendary" },
+  { id: 18, name: "Receive compliments", pts: 7, difficulty: "easy" },
+  { id: 19, name: "Get a tan", pts: 1, difficulty: "easy" },
+  { id: 20, name: "Hold hands with stranger", pts: 15, difficulty: "medium" },
+  { id: 21, name: "Down a drink", pts: 2, difficulty: "easy" },
+  { id: 22, name: "Shot", pts: 2, difficulty: "easy" },
+  { id: 23, name: "Play game with stranger", pts: 25, difficulty: "hard" },
+  { id: 24, name: "Buy souvenir", pts: 4, difficulty: "easy" },
+  { id: 25, name: "Matching outfit with stranger", pts: 15, difficulty: "medium" },
+  { id: 26, name: "Pic with 5 people 50+", pts: 50, difficulty: "hard" },
+  { id: 27, name: "Ask something embarrassing", pts: 35, difficulty: "hard" },
+  { id: 28, name: "Scare someone in group", pts: 10, difficulty: "medium" },
+  { id: 29, name: "Try something new", pts: 10, difficulty: "easy" },
+  { id: 30, name: "Ride Gianni's bike", pts: 85, difficulty: "hard" },
+  { id: 31, name: "Give massage", pts: 1, bonus: "per min", difficulty: "easy" },
+  { id: 32, name: "Shower with someone", pts: 100, difficulty: "legendary" },
+  { id: 33, name: "Get a tattoo", pts: 250, difficulty: "legendary" },
+  { id: 34, name: "All nighter", pts: 20, difficulty: "medium" },
 ];
 
 const PENALTIES = [
@@ -59,139 +197,180 @@ const FORFEITS = [
 const DAYS = [
   {
     date: "18 May", dow: "Mon", title: "Arrival Day",
+    emoji: "✈️",
+    type: "full",
+    resortEvent: "Welcome Party",
     who: ["Kai", "Khari", "Candice", "Kyanna"],
     events: [
-      { time: "11:00", label: "Depart Birmingham (TOM566)" },
-      { time: "14:50", label: "Arrive Punta Cana" },
-      { time: "15:30", label: "Transfer & check-in" },
-      { time: "17:30", label: "Pool & drinks" },
-      { time: "20:00", label: "Dinner at resort" },
+      { time: "11:00", label: "Depart Birmingham (TOM566)", icon: "✈️", type: "departure" },
+      { time: "14:50", label: "Arrive Punta Cana", icon: "🛬" },
+      { time: "15:30", label: "Transfer & check-in", icon: "🚐" },
+      { time: "17:30", label: "Pool & drinks", icon: "🏊" },
+      { time: "20:00", label: "Dinner at resort", icon: "🍽️" },
+      { time: "22:00", label: "Welcome Party", icon: "🎊", resortEvent: true },
     ]
   },
   {
     date: "19 May", dow: "Tue", title: "Chill Day",
+    emoji: "🏖️",
+    type: "full",
+    resortEvent: "CHIC Angels Show",
     who: ["Kai", "Khari", "Candice", "Kyanna"],
     events: [
-      { time: "09:00", label: "Wake up / breakfast" },
-      { time: "11:30", label: "Beach & pool" },
-      { time: "15:00", label: "Explore resort" },
-      { time: "20:00", label: "Dinner" },
+      { time: "09:00", label: "Wake up / breakfast", icon: "🌅" },
+      { time: "11:30", label: "Beach & pool", icon: "🏖️" },
+      { time: "15:00", label: "Explore resort", icon: "🚶" },
+      { time: "20:00", label: "Dinner", icon: "🍽️" },
+      { time: "22:00", label: "CHIC Angels Show", icon: "👯", resortEvent: true },
     ]
   },
   {
     date: "20 May", dow: "Wed", title: "Full Group + Cabanna",
+    emoji: "🎉",
+    type: "full",
+    resortEvent: "Foam Party",
     who: FULL_GROUP,
     events: [
-      { time: "Day", label: "Relax / Camara & Miles arrive" },
-      { time: "18:30", label: "Get ready" },
-      { time: "19:30", label: "Cabanna dinner", premium: true },
-      { time: "22:00", label: "Drinks / light night" },
+      { time: "Day", label: "Relax / Camara & Miles arrive", icon: "🛬" },
+      { time: "15:00", label: "Foam Party at pool", icon: "🫧", resortEvent: true },
+      { time: "18:30", label: "Get ready", icon: "👔" },
+      { time: "19:30", label: "Cabanna dinner", icon: "✨", premium: true, cost: "£40-80pp" },
+      { time: "22:00", label: "Drinks / light night", icon: "🍹" },
     ]
   },
   {
     date: "21 May", dow: "Thu", title: "Saona Island",
+    emoji: "🏝️",
+    type: "full",
+    resortEvent: "Caribbean Night",
     who: FULL_GROUP,
     events: [
-      { time: "06:30", label: "Pickup from resort" },
-      { time: "09:30", label: "Boat departure" },
-      { time: "11:30", label: "Island time + lunch" },
-      { time: "16:00", label: "Return journey" },
-      { time: "Eve", label: "Chill at resort" },
+      { time: "06:30", label: "Pickup from resort", icon: "🚐" },
+      { time: "09:30", label: "Boat departure", icon: "⛵" },
+      { time: "11:30", label: "Island time + lunch", icon: "🏝️", premium: true, cost: "£70-120pp" },
+      { time: "16:00", label: "Return journey", icon: "🚤" },
+      { time: "Eve", label: "Caribbean Night at resort", icon: "🌴", resortEvent: true },
     ]
   },
   {
     date: "22 May", dow: "Fri", title: "Party Boat + Game Night",
+    emoji: "🎊",
+    type: "full",
+    resortEvent: "White Party",
     who: FULL_GROUP,
     events: [
-      { time: "AM", label: "Free time" },
-      { time: "14:30", label: "Jamaican Party Boat", premium: true },
-      { time: "19:30", label: "Dinner" },
-      { time: "21:00", label: "Game Night" },
+      { time: "AM", label: "Free time / pool", icon: "🏊" },
+      { time: "14:30", label: "Jamaican Party Boat", icon: "🚤", premium: true, cost: "£50pp" },
+      { time: "19:30", label: "Dinner", icon: "🍽️" },
+      { time: "21:00", label: "Game Night", icon: "🎲" },
+      { time: "23:00", label: "White Party", icon: "⚪", resortEvent: true },
     ]
   },
   {
     date: "23 May", dow: "Sat", title: "Coco Bongo Night",
+    emoji: "🎭",
+    type: "full",
+    resortEvent: "Glow Party",
     who: FULL_GROUP,
     events: [
-      { time: "Day", label: "Chill / pool" },
-      { time: "20:30", label: "Leave for Coco Bongo" },
-      { time: "21:00", label: "Show + club", premium: true },
-      { time: "Late", label: "Optional Drink Point" },
+      { time: "Day", label: "Chill / pool", icon: "🏖️" },
+      { time: "16:00", label: "Glow Party at pool", icon: "✨", resortEvent: true },
+      { time: "20:30", label: "Leave for Coco Bongo", icon: "🚕" },
+      { time: "21:00", label: "Coco Bongo Show + Club", icon: "🎭", premium: true, cost: "£60-100pp" },
+      { time: "Late", label: "Optional Drink Point", icon: "🍾" },
     ]
   },
   {
     date: "24 May", dow: "Sun", title: "Scape Park + Dinner in the Sky",
+    emoji: "🎢",
+    type: "full",
+    resortEvent: "Pool Party",
     who: FULL_GROUP,
     events: [
-      { time: "08:30", label: "Leave for Scape Park" },
-      { time: "09:30", label: "Scape Park activities", premium: true },
-      { time: "17:30", label: "Return / rest" },
-      { time: "19:30", label: "Dinner in the Sky", premium: true },
-      { time: "22:30", label: "Optional nightlife" },
+      { time: "08:30", label: "Leave for Scape Park", icon: "🚐" },
+      { time: "09:30", label: "Scape Park activities", icon: "🎢", premium: true, cost: "£90-130pp" },
+      { time: "17:30", label: "Return / rest", icon: "😴" },
+      { time: "19:30", label: "Dinner in the Sky", icon: "🎈", premium: true, cost: "£120-180pp" },
+      { time: "22:30", label: "Optional nightlife", icon: "🌙" },
     ]
   },
   {
     date: "25 May", dow: "Mon", title: "Departures + Boys Night",
+    emoji: "👋",
+    type: "mixed",
     who: FULL_GROUP,
     events: [
-      { time: "AM", label: "Breakfast / send-off" },
-      { time: "16:50", label: "Candice & Kyanna depart (TOM567)", departure: true },
-      { time: "Eve", label: "Rest" },
-      { time: "22:30", label: "Boys night" },
+      { time: "AM", label: "Breakfast / send-off", icon: "🌅" },
+      { time: "16:50", label: "Candice & Kyanna depart (TOM567)", icon: "✈️", type: "departure" },
+      { time: "Eve", label: "Rest", icon: "😴" },
+      { time: "22:30", label: "Boys night begins", icon: "🔥" },
     ]
   },
   {
     date: "26 May", dow: "Tue", title: "Recovery Day",
+    emoji: "😎",
+    type: "boys",
     who: BOYS,
     events: [
-      { time: "Late AM", label: "Wake up slowly" },
-      { time: "Day", label: "Pool / beach / spa" },
-      { time: "Eve", label: "Chill evening" },
+      { time: "Late AM", label: "Wake up slowly", icon: "☕" },
+      { time: "Day", label: "Pool / beach / spa", icon: "💆" },
+      { time: "Eve", label: "Chill evening", icon: "🌅" },
     ]
   },
   {
     date: "27 May", dow: "Wed", title: "Filming Day",
+    emoji: "🎬",
+    type: "boys",
     who: BOYS,
     events: [
-      { time: "06:00", label: "Sunrise filming at Macao" },
-      { time: "10:00", label: "Explore / B-roll" },
-      { time: "PM", label: "Rest" },
+      { time: "06:00", label: "Sunrise filming at Macao", icon: "🌅" },
+      { time: "10:00", label: "Explore / B-roll", icon: "📹" },
+      { time: "PM", label: "Rest", icon: "😴" },
     ]
   },
   {
     date: "28 May", dow: "Thu", title: "Altos de Chavon",
+    emoji: "🏛️",
+    type: "boys",
     who: BOYS,
     events: [
-      { time: "14:30", label: "Depart for Altos de Chavon" },
-      { time: "16:00", label: "Explore + golden hour" },
-      { time: "Eve", label: "Final dinner" },
+      { time: "14:30", label: "Depart for Altos de Chavon", icon: "🚐" },
+      { time: "16:00", label: "Explore + golden hour", icon: "🌇" },
+      { time: "Eve", label: "Final dinner", icon: "🍽️" },
     ]
   },
   {
     date: "29 May", dow: "Fri", title: "Departure",
+    emoji: "🏠",
+    type: "boys",
     who: BOYS,
     events: [
-      { time: "AM", label: "Pack / chill" },
-      { time: "13:30", label: "Leave for airport" },
-      { time: "17:10", label: "Flight home (TOM569)" },
+      { time: "AM", label: "Pack / chill", icon: "🧳" },
+      { time: "13:30", label: "Leave for airport", icon: "🚐" },
+      { time: "17:10", label: "Flight home (TOM569)", icon: "✈️", type: "departure" },
     ]
   },
 ];
 
 const COSTS_TEMPLATE = [
-  { id: "saona", name: "Saona Island", estimate: 100, category: "excursion", who: "full" },
-  { id: "boat", name: "Jamaican Party Boat", estimate: 50, category: "excursion", who: "full" },
-  { id: "scape", name: "Scape Park", estimate: 110, category: "excursion", who: "full" },
-  { id: "sky", name: "Dinner in the Sky", estimate: 150, category: "dining", who: "full" },
-  { id: "cabanna", name: "Cabanna Dinner", estimate: 60, category: "dining", who: "full" },
-  { id: "coco", name: "Coco Bongo", estimate: 70, category: "nightlife", who: "full" },
-  { id: "transport", name: "Transport (taxis/drivers)", estimate: 75, category: "transport", who: "full" },
-  { id: "restaurants", name: "Other restaurants", estimate: 100, category: "dining", who: "full" },
+  { id: "saona", name: "Saona Island", estimate: 100, category: "excursion", who: "full", emoji: "🏝️" },
+  { id: "boat", name: "Jamaican Party Boat", estimate: 50, category: "excursion", who: "full", emoji: "🚤" },
+  { id: "scape", name: "Scape Park", estimate: 110, category: "excursion", who: "full", emoji: "🎢" },
+  { id: "sky", name: "Dinner in the Sky", estimate: 150, category: "dining", who: "full", emoji: "🎈" },
+  { id: "cabanna", name: "Cabanna Dinner", estimate: 60, category: "dining", who: "full", emoji: "✨" },
+  { id: "coco", name: "Coco Bongo", estimate: 70, category: "nightlife", who: "full", emoji: "🎭" },
+  { id: "transport", name: "Transport (taxis/drivers)", estimate: 75, category: "transport", who: "full", emoji: "🚕" },
+  { id: "restaurants", name: "Other restaurants", estimate: 100, category: "dining", who: "full", emoji: "🍽️" },
 ];
 
-const TABS = ["Itinerary", "Costs", "Challenges", "Info"];
+const TABS = [
+  { name: "Itinerary", emoji: "📅" },
+  { name: "Costs", emoji: "💰" },
+  { name: "Challenges", emoji: "🏆" },
+  { name: "Info", emoji: "✈️" },
+];
 
-// localStorage wrapper to replace window.storage
+// ============ STORAGE ============
 const storage = {
   get: async (key) => {
     const value = localStorage.getItem(key);
@@ -202,6 +381,34 @@ const storage = {
   }
 };
 
+// ============ COLORS ============
+const C = {
+  bg: "#0a0e14",
+  bgGradient: "linear-gradient(135deg, #0a0e14 0%, #0d1520 50%, #0f1a26 100%)",
+  card: "#141c28",
+  cardBorder: "#1e2d40",
+  cardGlow: "rgba(245, 158, 11, 0.1)",
+  accent: "#f59e0b",
+  accentLight: "#fbbf24",
+  accentSoft: "rgba(245, 158, 11, 0.15)",
+  accentGlow: "rgba(245, 158, 11, 0.4)",
+  gold: "linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%)",
+  green: "#22c55e",
+  greenSoft: "rgba(34, 197, 94, 0.15)",
+  red: "#ef4444",
+  redSoft: "rgba(239, 68, 68, 0.15)",
+  blue: "#3b82f6",
+  blueSoft: "rgba(59, 130, 246, 0.15)",
+  purple: "#8b5cf6",
+  purpleSoft: "rgba(139, 92, 246, 0.15)",
+  text: "#f0f2f5",
+  textDim: "#94a3b8",
+  textFaint: "#475569",
+  glass: "rgba(20, 28, 40, 0.8)",
+  glassBorder: "rgba(255, 255, 255, 0.08)",
+};
+
+// ============ MAIN APP ============
 export default function App() {
   const [tab, setTab] = useState(0);
   const [scores, setScores] = useState({});
@@ -212,6 +419,8 @@ export default function App() {
   const [showAddCost, setShowAddCost] = useState(false);
   const [newCostName, setNewCostName] = useState("");
   const [newCostAmount, setNewCostAmount] = useState("");
+  const [infoSection, setInfoSection] = useState("resort");
+  const [expandedCategories, setExpandedCategories] = useState({ excursion: true, dining: true, nightlife: true, transport: true });
 
   useEffect(() => {
     (async () => {
@@ -272,9 +481,7 @@ export default function App() {
     saveCosts(next);
   };
 
-  const getActualCost = (id) => {
-    return parseFloat(costs[id]?.actual) || 0;
-  };
+  const getActualCost = (id) => parseFloat(costs[id]?.actual) || 0;
 
   const totalEstimate = COSTS_TEMPLATE.reduce((s, c) => s + c.estimate, 0) +
     Object.entries(costs).filter(([k]) => k.startsWith("custom-")).reduce((s, [, v]) => s + (parseFloat(v.estimate) || 0), 0);
@@ -282,441 +489,2245 @@ export default function App() {
   const totalActual = COSTS_TEMPLATE.reduce((s, c) => s + getActualCost(c.id), 0) +
     Object.entries(costs).filter(([k]) => k.startsWith("custom-")).reduce((s, [, v]) => s + (parseFloat(v.actual) || 0), 0);
 
-  if (!loaded) return (
-    <div style={styles.loading}>
-      <div style={styles.loadingEmoji}>🌴</div>
-      <div style={styles.loadingText}>Loading paradise...</div>
-    </div>
-  );
+  const toggleCategory = (cat) => {
+    setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
+  };
+
+  if (!loaded) return <LoadingScreen />;
 
   return (
     <div style={styles.app}>
-      <header style={styles.header}>
-        <div style={styles.headerInner}>
-          <div style={styles.flag}>🇩🇴</div>
-          <div>
-            <h1 style={styles.title}>PUNTA CANA '26</h1>
-            <p style={styles.subtitle}>18 – 29 May · {MEMBERS.length} deep</p>
-          </div>
-        </div>
-        <div style={styles.countdown}>
-          <CountdownChip />
-        </div>
-      </header>
+      <HeroHeader />
 
       <nav style={styles.nav}>
         {TABS.map((t, i) => (
-          <button key={t} onClick={() => setTab(i)}
+          <button key={t.name} onClick={() => setTab(i)}
             style={{ ...styles.navBtn, ...(tab === i ? styles.navActive : {}) }}>
-            {["📅", "💰", "🏆", "✈️"][i]} {t}
+            <span style={styles.navEmoji}>{t.emoji}</span>
+            <span style={styles.navText}>{t.name}</span>
           </button>
         ))}
       </nav>
 
       <main style={styles.main}>
         {tab === 0 && (
-          <div>
-            <div style={styles.dayPicker}>
-              {DAYS.map((d, i) => (
-                <button key={i} onClick={() => setSelectedDay(i)}
-                  style={{ ...styles.dayChip, ...(selectedDay === i ? styles.dayChipActive : {}) }}>
-                  <span style={styles.dayChipDate}>{d.date.split(" ")[0]}</span>
-                  <span style={styles.dayChipDow}>{d.dow}</span>
-                </button>
-              ))}
-            </div>
-
-            <div style={styles.dayCard}>
-              <div style={styles.dayHeader}>
-                <h2 style={styles.dayTitle}>{DAYS[selectedDay].title}</h2>
-                <span style={styles.dayDate}>{DAYS[selectedDay].date} · {DAYS[selectedDay].dow}</span>
-              </div>
-              <div style={styles.whoRow}>
-                {DAYS[selectedDay].who.map(m => (
-                  <span key={m} style={styles.whoChip}>{m}</span>
-                ))}
-              </div>
-              <div style={styles.timeline}>
-                {DAYS[selectedDay].events.map((e, i) => (
-                  <div key={i} style={styles.event}>
-                    <div style={styles.eventTime}>{e.time}</div>
-                    <div style={styles.eventLine}>
-                      <div style={{ ...styles.eventDot, ...(e.premium ? styles.eventDotPremium : {}), ...(e.departure ? styles.eventDotDeparture : {}) }} />
-                      {i < DAYS[selectedDay].events.length - 1 && <div style={styles.eventConnector} />}
-                    </div>
-                    <div style={{ ...styles.eventLabel, ...(e.premium ? styles.eventLabelPremium : {}) }}>
-                      {e.label}
-                      {e.premium && <span style={styles.premiumBadge}>BOOKED</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <ItineraryTab
+            selectedDay={selectedDay}
+            setSelectedDay={setSelectedDay}
+          />
         )}
 
         {tab === 1 && (
-          <div>
-            <div style={styles.costSummary}>
-              <div style={styles.costBox}>
-                <div style={styles.costBoxLabel}>Estimated pp</div>
-                <div style={styles.costBoxVal}>£{totalEstimate}</div>
-              </div>
-              <div style={{ ...styles.costBox, ...styles.costBoxActual }}>
-                <div style={styles.costBoxLabel}>Actual pp</div>
-                <div style={styles.costBoxVal}>£{totalActual || "—"}</div>
-              </div>
-            </div>
-
-            <div style={styles.costList}>
-              {COSTS_TEMPLATE.map(c => (
-                <div key={c.id} style={styles.costItem}>
-                  <div style={styles.costInfo}>
-                    <span style={styles.costCat}>
-                      {c.category === "excursion" ? "🏝️" : c.category === "dining" ? "🍽️" : c.category === "nightlife" ? "🪩" : "🚕"}
-                    </span>
-                    <div>
-                      <div style={styles.costName}>{c.name}</div>
-                      <div style={styles.costEst}>Est: £{c.estimate} pp</div>
-                    </div>
-                  </div>
-                  <div style={styles.costInput}>
-                    <span style={styles.pound}>£</span>
-                    <input
-                      type="number"
-                      placeholder="Actual"
-                      value={costs[c.id]?.actual || ""}
-                      onChange={e => updateCost(c.id, "actual", e.target.value)}
-                      style={styles.input}
-                    />
-                  </div>
-                </div>
-              ))}
-
-              {Object.entries(costs).filter(([k]) => k.startsWith("custom-")).map(([k, v]) => (
-                <div key={k} style={styles.costItem}>
-                  <div style={styles.costInfo}>
-                    <span style={styles.costCat}>➕</span>
-                    <div>
-                      <div style={styles.costName}>{v.name}</div>
-                      <div style={styles.costEst}>Est: £{v.estimate || 0} pp</div>
-                    </div>
-                  </div>
-                  <div style={styles.costInput}>
-                    <span style={styles.pound}>£</span>
-                    <input
-                      type="number"
-                      placeholder="Actual"
-                      value={v.actual || ""}
-                      onChange={e => updateCost(k, "actual", e.target.value)}
-                      style={styles.input}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {showAddCost ? (
-              <div style={styles.addCostForm}>
-                <input placeholder="Expense name" value={newCostName} onChange={e => setNewCostName(e.target.value)} style={styles.addInput} />
-                <input placeholder="Est. £ pp" type="number" value={newCostAmount} onChange={e => setNewCostAmount(e.target.value)} style={{ ...styles.addInput, width: 100 }} />
-                <button style={styles.addBtn} onClick={() => {
-                  if (newCostName) {
-                    const id = `custom-${Date.now()}`;
-                    saveCosts({ ...costs, [id]: { name: newCostName, estimate: newCostAmount, actual: "" } });
-                    setNewCostName(""); setNewCostAmount(""); setShowAddCost(false);
-                  }
-                }}>Add</button>
-              </div>
-            ) : (
-              <button style={styles.addExpenseBtn} onClick={() => setShowAddCost(true)}>+ Add expense</button>
-            )}
-
-            <button style={styles.resetBtn} onClick={() => { saveCosts({}); }}>Reset all costs</button>
-          </div>
+          <CostsTab
+            costs={costs}
+            updateCost={updateCost}
+            saveCosts={saveCosts}
+            totalEstimate={totalEstimate}
+            totalActual={totalActual}
+            expandedCategories={expandedCategories}
+            toggleCategory={toggleCategory}
+            showAddCost={showAddCost}
+            setShowAddCost={setShowAddCost}
+            newCostName={newCostName}
+            setNewCostName={setNewCostName}
+            newCostAmount={newCostAmount}
+            setNewCostAmount={setNewCostAmount}
+          />
         )}
 
         {tab === 2 && (
-          <div>
-            <h3 style={styles.sectionTitle}>Leaderboard</h3>
-            <div style={styles.leaderboard}>
-              {leaderboard.map((m, i) => {
-                const total = getTotal(m);
-                const maxPts = Math.max(...MEMBERS.map(m2 => getTotal(m2)), 1);
-                return (
-                  <div key={m} style={styles.lbRow}>
-                    <div style={styles.lbRank}>
-                      {i === 0 && total > 0 ? "👑" : `#${i + 1}`}
-                    </div>
-                    <div style={styles.lbInfo}>
-                      <div style={styles.lbName}>{m}</div>
-                      <div style={styles.lbBar}>
-                        <div style={{ ...styles.lbFill, width: `${total > 0 ? (total / maxPts) * 100 : 0}%` }} />
-                      </div>
-                    </div>
-                    <div style={styles.lbPts}>{total}</div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <h3 style={styles.sectionTitle}>Award Points</h3>
-            <div style={styles.memberPicker}>
-              {MEMBERS.map(m => (
-                <button key={m} onClick={() => setShowAddChallenge(showAddChallenge === m ? null : m)}
-                  style={{ ...styles.memberBtn, ...(showAddChallenge === m ? styles.memberBtnActive : {}) }}>
-                  {m}
-                </button>
-              ))}
-            </div>
-
-            {showAddChallenge && (
-              <div style={styles.challengeList}>
-                <div style={styles.challengeSectionHead}>Challenges</div>
-                {CHALLENGES.map(c => {
-                  const key = `${showAddChallenge}-${c.id}`;
-                  const done = !!scores[key];
-                  return (
-                    <button key={c.id} onClick={() => addPoint(showAddChallenge, c.id, c.pts)}
-                      style={{ ...styles.challengeRow, ...(done ? styles.challengeDone : {}) }}>
-                      <span style={styles.challengeCheck}>{done ? "✅" : "⬜"}</span>
-                      <span style={styles.challengeName}>{c.name}</span>
-                      <span style={styles.challengePts}>+{c.pts}</span>
-                    </button>
-                  );
-                })}
-                <div style={{ ...styles.challengeSectionHead, marginTop: 16 }}>Penalties</div>
-                {PENALTIES.map(p => {
-                  const key = `${showAddChallenge}-pen-${p.name}`;
-                  const done = !!scores[key];
-                  return (
-                    <button key={p.name} onClick={() => addPenalty(showAddChallenge, p.name, p.pts)}
-                      style={{ ...styles.challengeRow, ...(done ? styles.penaltyDone : {}) }}>
-                      <span style={styles.challengeCheck}>{done ? "❌" : "⬜"}</span>
-                      <span style={styles.challengeName}>{p.name}</span>
-                      <span style={{ ...styles.challengePts, color: "#ef4444" }}>{p.pts}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            <h3 style={{ ...styles.sectionTitle, marginTop: 24 }}>Daily Forfeits</h3>
-            <div style={styles.forfeitGrid}>
-              {FORFEITS.map((f, i) => (
-                <div key={i} style={styles.forfeitChip}>{f}</div>
-              ))}
-            </div>
-
-            <button style={styles.resetBtn} onClick={() => { saveScores({}); }}>Reset all scores</button>
-          </div>
+          <ChallengesTab
+            scores={scores}
+            saveScores={saveScores}
+            addPoint={addPoint}
+            addPenalty={addPenalty}
+            getTotal={getTotal}
+            leaderboard={leaderboard}
+            showAddChallenge={showAddChallenge}
+            setShowAddChallenge={setShowAddChallenge}
+          />
         )}
 
         {tab === 3 && (
-          <div>
-            <h3 style={styles.sectionTitle}>Flights</h3>
-            <div style={styles.infoCard}>
-              <div style={styles.flightHead}>Outbound · 18 May</div>
-              <div style={styles.flightRoute}>BHX → PUJ</div>
-              <div style={styles.flightDetail}>TOM566 · Departs 11:00 · Arrives 14:50</div>
-              <div style={styles.flightWho}>Kai, Khari, Candice, Kyanna</div>
-            </div>
-            <div style={styles.infoCard}>
-              <div style={styles.flightHead}>Camara & Miles · 20 May</div>
-              <div style={styles.flightRoute}>TBC → PUJ</div>
-              <div style={styles.flightDetail}>Details to be confirmed</div>
-            </div>
-            <div style={styles.infoCard}>
-              <div style={styles.flightHead}>Candice & Kyanna Return · 25 May</div>
-              <div style={styles.flightRoute}>PUJ → BHX</div>
-              <div style={styles.flightDetail}>TOM567 · Departs 16:50 · Arrives 06:00+1</div>
-              <div style={styles.flightDetail}>PNR: MEKPQX</div>
-            </div>
-            <div style={styles.infoCard}>
-              <div style={styles.flightHead}>Return · 29 May</div>
-              <div style={styles.flightRoute}>PUJ → BHX</div>
-              <div style={styles.flightDetail}>TOM569 · Departs 17:10 · Arrives 06:15+1</div>
-              <div style={styles.flightWho}>Kai, Khari, Camara, Miles</div>
-            </div>
-
-            <h3 style={styles.sectionTitle}>Key Spots</h3>
-            <div style={styles.spotGrid}>
-              {[
-                { cat: "Dining", items: ["Cabanna (£40–80pp)", "Dinner in the Sky (£120–180pp)", "Citrus / La Yola (£30–60pp)", "Jellyfish / Onno's (£10–25pp)"] },
-                { cat: "Beaches", items: ["Playa Macao", "Bavaro Beach", "Juanillo Beach", "Playa Escondida"] },
-                { cat: "Activities", items: ["Scape Park (£90–130)", "Saona Island (£70–120)", "Jet skis", "Parasailing", "ATV / buggy tours", "Spa day"] },
-                { cat: "Nightlife", items: ["Coco Bongo", "Drink Point", "Infinity Lounge"] },
-              ].map(s => (
-                <div key={s.cat} style={styles.spotCard}>
-                  <div style={styles.spotCat}>{s.cat}</div>
-                  {s.items.map(it => <div key={it} style={styles.spotItem}>{it}</div>)}
-                </div>
-              ))}
-            </div>
-
-            <h3 style={styles.sectionTitle}>Transport Guide</h3>
-            <div style={styles.infoCard}>
-              <div style={styles.transportRow}><span>Resort ↔ Nightlife</span><span>£25–40 total</span></div>
-              <div style={styles.transportRow}><span>Resort ↔ Cap Cana</span><span>£35–60 total</span></div>
-              <div style={styles.transportRow}><span>Resort ↔ Bayahibe</span><span>£80–120 total</span></div>
-              <div style={styles.transportRow}><span>Resort ↔ Altos de Chavón</span><span>£90–140 total</span></div>
-            </div>
-
-            <h3 style={styles.sectionTitle}>Group</h3>
-            <div style={styles.groupGrid}>
-              {MEMBERS.map(m => (
-                <div key={m} style={styles.groupChip}>
-                  <div style={styles.groupAvatar}>{m[0]}</div>
-                  <div style={styles.groupName}>{m}</div>
-                  <div style={styles.groupDates}>
-                    {["Candice", "Kyanna"].includes(m) ? "18–25 May" : ["Camara", "Miles"].includes(m) ? "20–29 May" : "18–29 May"}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <InfoTab
+            infoSection={infoSection}
+            setInfoSection={setInfoSection}
+          />
         )}
       </main>
     </div>
   );
 }
 
-function CountdownChip() {
-  const target = new Date("2026-05-18T11:00:00+01:00");
-  const now = new Date();
-  const diff = target - now;
-  const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  return <span style={styles.countdownText}>{days > 0 ? `${days}d to go` : "WE OUT HERE"}</span>;
+// ============ LOADING SCREEN ============
+function LoadingScreen() {
+  return (
+    <div style={styles.loading}>
+      <div style={styles.loadingEmoji}>🌴</div>
+      <div style={styles.loadingText}>Loading paradise...</div>
+      <div style={styles.loadingBar}>
+        <div style={styles.loadingFill} />
+      </div>
+    </div>
+  );
 }
 
-const C = {
-  bg: "#0c1117",
-  card: "#151c25",
-  cardBorder: "#1e2a36",
-  accent: "#f59e0b",
-  accentSoft: "rgba(245,158,11,0.12)",
-  green: "#22c55e",
-  greenSoft: "rgba(34,197,94,0.12)",
-  red: "#ef4444",
-  redSoft: "rgba(239,68,68,0.12)",
-  blue: "#3b82f6",
-  blueSoft: "rgba(59,130,246,0.12)",
-  text: "#e8eaed",
-  textDim: "#8899a6",
-  textFaint: "#4a5568",
-};
+// ============ HERO HEADER ============
+function HeroHeader() {
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, started: false });
 
+  useEffect(() => {
+    const target = new Date("2026-05-18T11:00:00+01:00");
+
+    const update = () => {
+      const now = new Date();
+      const diff = target - now;
+
+      if (diff <= 0) {
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, started: true });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setCountdown({ days, hours, minutes, seconds, started: false });
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <header style={styles.header}>
+      <div style={styles.headerBg} />
+      <div style={styles.headerContent}>
+        <div style={styles.headerTop}>
+          <span style={styles.headerFlag}>🇩🇴</span>
+          <div style={styles.headerResort}>{RESORT.name}</div>
+        </div>
+
+        <h1 style={styles.headerTitle}>PUNTA CANA '26</h1>
+        <p style={styles.headerSubtitle}>18 – 29 May · {MEMBERS.length} deep · All-Inclusive Paradise</p>
+
+        {countdown.started ? (
+          <div style={styles.countdownLive}>
+            <span style={styles.countdownLiveText}>WE OUT HERE</span>
+            <span style={styles.countdownLiveEmoji}>🔥</span>
+          </div>
+        ) : (
+          <div style={styles.countdown}>
+            <CountdownUnit value={countdown.days} label="DAYS" />
+            <span style={styles.countdownSep}>:</span>
+            <CountdownUnit value={countdown.hours} label="HRS" />
+            <span style={styles.countdownSep}>:</span>
+            <CountdownUnit value={countdown.minutes} label="MIN" />
+            <span style={styles.countdownSep}>:</span>
+            <CountdownUnit value={countdown.seconds} label="SEC" />
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
+
+function CountdownUnit({ value, label }) {
+  return (
+    <div style={styles.countdownUnit}>
+      <div style={styles.countdownValue}>{String(value).padStart(2, '0')}</div>
+      <div style={styles.countdownLabel}>{label}</div>
+    </div>
+  );
+}
+
+// ============ ITINERARY TAB ============
+function ItineraryTab({ selectedDay, setSelectedDay }) {
+  const day = DAYS[selectedDay];
+  const isBoysDay = day.type === "boys";
+  const isMixedDay = day.type === "mixed";
+
+  return (
+    <div style={styles.itineraryTab}>
+      {/* Day Picker */}
+      <div style={styles.dayPickerContainer}>
+        <div style={styles.dayPicker}>
+          {DAYS.map((d, i) => {
+            const isSelected = selectedDay === i;
+            const isBoys = d.type === "boys";
+            return (
+              <button
+                key={i}
+                onClick={() => setSelectedDay(i)}
+                style={{
+                  ...styles.dayChip,
+                  ...(isSelected ? styles.dayChipActive : {}),
+                  ...(isBoys ? styles.dayChipBoys : {}),
+                  ...(isSelected && isBoys ? styles.dayChipBoysActive : {}),
+                }}
+              >
+                <span style={styles.dayChipEmoji}>{d.emoji}</span>
+                <span style={styles.dayChipDate}>{d.date.split(" ")[0]}</span>
+                <span style={styles.dayChipDow}>{d.dow}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Day Card */}
+      <div style={{
+        ...styles.dayCard,
+        borderTop: isBoysDay ? `3px solid ${C.blue}` : isMixedDay ? `3px solid ${C.purple}` : `3px solid ${C.accent}`,
+      }}>
+        <div style={styles.dayCardHeader}>
+          <div style={styles.dayCardEmoji}>{day.emoji}</div>
+          <div style={styles.dayCardInfo}>
+            <h2 style={styles.dayCardTitle}>{day.title}</h2>
+            <span style={styles.dayCardDate}>{day.date} · {day.dow}</span>
+          </div>
+          {isBoysDay && <span style={styles.dayTypeBadge}>BOYS ONLY</span>}
+          {isMixedDay && <span style={{ ...styles.dayTypeBadge, background: C.purpleSoft, color: C.purple }}>MIXED</span>}
+        </div>
+
+        {/* Who's Here */}
+        <div style={styles.whoSection}>
+          <div style={styles.whoLabel}>Who's here</div>
+          <div style={styles.whoAvatars}>
+            {day.who.map(m => (
+              <div key={m} style={styles.whoAvatar} title={m}>
+                <span style={styles.whoAvatarInitial}>{m[0]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Resort Event */}
+        {day.resortEvent && (
+          <div style={styles.resortEventBanner}>
+            <span style={styles.resortEventIcon}>🎉</span>
+            <span style={styles.resortEventText}>Tonight: {day.resortEvent}</span>
+          </div>
+        )}
+
+        {/* Timeline */}
+        <div style={styles.timeline}>
+          {day.events.map((e, i) => (
+            <div key={i} style={styles.timelineEvent}>
+              <div style={styles.timelineTime}>
+                <span style={styles.timelineTimeText}>{e.time}</span>
+              </div>
+              <div style={styles.timelineLine}>
+                <div style={{
+                  ...styles.timelineDot,
+                  ...(e.premium ? styles.timelineDotPremium : {}),
+                  ...(e.type === "departure" ? styles.timelineDotDeparture : {}),
+                  ...(e.resortEvent ? styles.timelineDotResort : {}),
+                }} />
+                {i < day.events.length - 1 && <div style={styles.timelineConnector} />}
+              </div>
+              <div style={styles.timelineContent}>
+                {e.premium ? (
+                  <div style={styles.premiumEventCard}>
+                    <div style={styles.premiumEventHeader}>
+                      <span style={styles.premiumEventIcon}>{e.icon}</span>
+                      <span style={styles.premiumEventLabel}>{e.label}</span>
+                    </div>
+                    <div style={styles.premiumEventFooter}>
+                      {e.cost && <span style={styles.premiumEventCost}>{e.cost}</span>}
+                      <span style={styles.premiumEventBadge}>BOOKED</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    ...styles.eventRow,
+                    ...(e.type === "departure" ? styles.eventRowDeparture : {}),
+                  }}>
+                    <span style={styles.eventIcon}>{e.icon}</span>
+                    <span style={styles.eventLabel}>{e.label}</span>
+                    {e.resortEvent && <span style={styles.resortBadge}>RESORT</span>}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ COSTS TAB ============
+function CostsTab({
+  costs, updateCost, saveCosts, totalEstimate, totalActual,
+  expandedCategories, toggleCategory, showAddCost, setShowAddCost,
+  newCostName, setNewCostName, newCostAmount, setNewCostAmount
+}) {
+  const progress = totalActual > 0 ? Math.min((totalActual / totalEstimate) * 100, 100) : 0;
+  const categories = ["excursion", "dining", "nightlife", "transport"];
+  const categoryNames = { excursion: "Excursions", dining: "Dining", nightlife: "Nightlife", transport: "Transport" };
+  const categoryEmojis = { excursion: "🏝️", dining: "🍽️", nightlife: "🪩", transport: "🚕" };
+
+  return (
+    <div style={styles.costsTab}>
+      {/* Summary Cards */}
+      <div style={styles.costSummary}>
+        <div style={styles.costSummaryCard}>
+          <div style={styles.costSummaryLabel}>Estimated pp</div>
+          <div style={styles.costSummaryValue}>£{totalEstimate}</div>
+        </div>
+        <div style={styles.costProgressRing}>
+          <svg width="100" height="100" style={styles.progressSvg}>
+            <circle cx="50" cy="50" r="42" fill="none" stroke={C.cardBorder} strokeWidth="8" />
+            <circle
+              cx="50" cy="50" r="42" fill="none" stroke={C.accent} strokeWidth="8"
+              strokeDasharray={`${progress * 2.64} 264`}
+              strokeLinecap="round"
+              transform="rotate(-90 50 50)"
+              style={{ transition: "stroke-dasharray 0.5s ease" }}
+            />
+          </svg>
+          <div style={styles.progressCenter}>
+            <div style={styles.progressPercent}>{Math.round(progress)}%</div>
+            <div style={styles.progressLabel}>spent</div>
+          </div>
+        </div>
+        <div style={{ ...styles.costSummaryCard, borderColor: C.accent }}>
+          <div style={styles.costSummaryLabel}>Actual pp</div>
+          <div style={{ ...styles.costSummaryValue, color: C.accent }}>£{totalActual || "—"}</div>
+        </div>
+      </div>
+
+      {/* Category Groups */}
+      {categories.map(cat => {
+        const items = COSTS_TEMPLATE.filter(c => c.category === cat);
+        const customItems = Object.entries(costs).filter(([k, v]) => k.startsWith("custom-") && v.category === cat);
+        if (items.length === 0 && customItems.length === 0) return null;
+
+        const catTotal = items.reduce((s, c) => s + (parseFloat(costs[c.id]?.actual) || 0), 0);
+
+        return (
+          <div key={cat} style={styles.costCategory}>
+            <button onClick={() => toggleCategory(cat)} style={styles.costCategoryHeader}>
+              <span style={styles.costCategoryEmoji}>{categoryEmojis[cat]}</span>
+              <span style={styles.costCategoryName}>{categoryNames[cat]}</span>
+              <span style={styles.costCategoryTotal}>{catTotal > 0 ? `£${catTotal}` : ""}</span>
+              <span style={styles.costCategoryChevron}>{expandedCategories[cat] ? "▼" : "▶"}</span>
+            </button>
+            {expandedCategories[cat] && (
+              <div style={styles.costCategoryItems}>
+                {items.map(c => (
+                  <div key={c.id} style={styles.costItem}>
+                    <div style={styles.costItemInfo}>
+                      <span style={styles.costItemEmoji}>{c.emoji}</span>
+                      <div>
+                        <div style={styles.costItemName}>{c.name}</div>
+                        <div style={styles.costItemEst}>Est: £{c.estimate} pp</div>
+                      </div>
+                    </div>
+                    <div style={styles.costItemInput}>
+                      <span style={styles.costPound}>£</span>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={costs[c.id]?.actual || ""}
+                        onChange={e => updateCost(c.id, "actual", e.target.value)}
+                        style={styles.costInput}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Custom Costs */}
+      {Object.entries(costs).filter(([k]) => k.startsWith("custom-")).length > 0 && (
+        <div style={styles.costCategory}>
+          <div style={styles.costCategoryHeader}>
+            <span style={styles.costCategoryEmoji}>➕</span>
+            <span style={styles.costCategoryName}>Custom</span>
+          </div>
+          <div style={styles.costCategoryItems}>
+            {Object.entries(costs).filter(([k]) => k.startsWith("custom-")).map(([k, v]) => (
+              <div key={k} style={styles.costItem}>
+                <div style={styles.costItemInfo}>
+                  <span style={styles.costItemEmoji}>💵</span>
+                  <div>
+                    <div style={styles.costItemName}>{v.name}</div>
+                    <div style={styles.costItemEst}>Est: £{v.estimate || 0} pp</div>
+                  </div>
+                </div>
+                <div style={styles.costItemInput}>
+                  <span style={styles.costPound}>£</span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={v.actual || ""}
+                    onChange={e => updateCost(k, "actual", e.target.value)}
+                    style={styles.costInput}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Add Expense */}
+      {showAddCost ? (
+        <div style={styles.addCostForm}>
+          <input
+            placeholder="Expense name"
+            value={newCostName}
+            onChange={e => setNewCostName(e.target.value)}
+            style={styles.addCostInput}
+          />
+          <input
+            placeholder="Est £"
+            type="number"
+            value={newCostAmount}
+            onChange={e => setNewCostAmount(e.target.value)}
+            style={{ ...styles.addCostInput, width: 80 }}
+          />
+          <button style={styles.addCostBtn} onClick={() => {
+            if (newCostName) {
+              const id = `custom-${Date.now()}`;
+              saveCosts({ ...costs, [id]: { name: newCostName, estimate: newCostAmount, actual: "", category: "excursion" } });
+              setNewCostName(""); setNewCostAmount(""); setShowAddCost(false);
+            }
+          }}>Add</button>
+          <button style={styles.addCostCancel} onClick={() => setShowAddCost(false)}>×</button>
+        </div>
+      ) : (
+        <button style={styles.addExpenseBtn} onClick={() => setShowAddCost(true)}>
+          <span>+</span> Add expense
+        </button>
+      )}
+
+      <button style={styles.resetBtn} onClick={() => saveCosts({})}>
+        Reset all costs
+      </button>
+    </div>
+  );
+}
+
+// ============ CHALLENGES TAB ============
+function ChallengesTab({
+  scores, saveScores, addPoint, addPenalty, getTotal, leaderboard,
+  showAddChallenge, setShowAddChallenge
+}) {
+  const difficulties = ["easy", "medium", "hard", "legendary"];
+  const difficultyColors = {
+    easy: C.green,
+    medium: C.accent,
+    hard: C.purple,
+    legendary: C.red,
+  };
+  const difficultyEmojis = {
+    easy: "🟢",
+    medium: "🟡",
+    hard: "🟣",
+    legendary: "🔴",
+  };
+
+  return (
+    <div style={styles.challengesTab}>
+      {/* Podium */}
+      <div style={styles.podiumSection}>
+        <h3 style={styles.sectionTitle}>🏆 Leaderboard</h3>
+        <div style={styles.podium}>
+          {leaderboard.slice(0, 3).map((m, i) => {
+            const total = getTotal(m);
+            const heights = [100, 70, 50];
+            const medals = ["🥇", "🥈", "🥉"];
+            return (
+              <div key={m} style={{ ...styles.podiumPlace, order: i === 0 ? 1 : i === 1 ? 0 : 2 }}>
+                <div style={styles.podiumAvatar}>
+                  <span style={styles.podiumMedal}>{medals[i]}</span>
+                  <span style={styles.podiumInitial}>{m[0]}</span>
+                </div>
+                <div style={styles.podiumName}>{m}</div>
+                <div style={styles.podiumPts}>{total} pts</div>
+                <div style={{ ...styles.podiumBar, height: heights[i] }} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Full Leaderboard */}
+      <div style={styles.leaderboardList}>
+        {leaderboard.map((m, i) => {
+          const total = getTotal(m);
+          const maxPts = Math.max(...MEMBERS.map(m2 => getTotal(m2)), 1);
+          return (
+            <div key={m} style={styles.lbRow}>
+              <div style={styles.lbRank}>{i === 0 && total > 0 ? "👑" : `#${i + 1}`}</div>
+              <div style={styles.lbAvatar}>{m[0]}</div>
+              <div style={styles.lbInfo}>
+                <div style={styles.lbName}>{m}</div>
+                <div style={styles.lbBar}>
+                  <div style={{ ...styles.lbFill, width: `${total > 0 ? (total / maxPts) * 100 : 0}%` }} />
+                </div>
+              </div>
+              <div style={styles.lbPts}>{total}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Award Points */}
+      <h3 style={styles.sectionTitle}>⚡ Award Points</h3>
+      <div style={styles.memberPicker}>
+        {MEMBERS.map(m => (
+          <button
+            key={m}
+            onClick={() => setShowAddChallenge(showAddChallenge === m ? null : m)}
+            style={{
+              ...styles.memberBtn,
+              ...(showAddChallenge === m ? styles.memberBtnActive : {})
+            }}
+          >
+            <span style={styles.memberBtnInitial}>{m[0]}</span>
+            <span style={styles.memberBtnName}>{m}</span>
+          </button>
+        ))}
+      </div>
+
+      {showAddChallenge && (
+        <div style={styles.challengeList}>
+          {difficulties.map(diff => {
+            const filtered = CHALLENGES.filter(c => c.difficulty === diff);
+            if (filtered.length === 0) return null;
+            return (
+              <div key={diff} style={styles.challengeSection}>
+                <div style={styles.challengeSectionHeader}>
+                  <span style={styles.challengeDiffEmoji}>{difficultyEmojis[diff]}</span>
+                  <span style={{ ...styles.challengeDiffName, color: difficultyColors[diff] }}>
+                    {diff.charAt(0).toUpperCase() + diff.slice(1)}
+                  </span>
+                </div>
+                {filtered.map(c => {
+                  const key = `${showAddChallenge}-${c.id}`;
+                  const done = !!scores[key];
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => addPoint(showAddChallenge, c.id, c.pts)}
+                      style={{
+                        ...styles.challengeRow,
+                        ...(done ? styles.challengeDone : {}),
+                      }}
+                    >
+                      <span style={styles.challengeCheck}>{done ? "✅" : "⬜"}</span>
+                      <span style={styles.challengeName}>{c.name}</span>
+                      <span style={{ ...styles.challengePts, color: difficultyColors[diff] }}>+{c.pts}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+
+          <div style={styles.challengeSection}>
+            <div style={styles.challengeSectionHeader}>
+              <span style={styles.challengeDiffEmoji}>❌</span>
+              <span style={{ ...styles.challengeDiffName, color: C.red }}>Penalties</span>
+            </div>
+            {PENALTIES.map(p => {
+              const key = `${showAddChallenge}-pen-${p.name}`;
+              const done = !!scores[key];
+              return (
+                <button
+                  key={p.name}
+                  onClick={() => addPenalty(showAddChallenge, p.name, p.pts)}
+                  style={{
+                    ...styles.challengeRow,
+                    ...(done ? styles.penaltyDone : {}),
+                  }}
+                >
+                  <span style={styles.challengeCheck}>{done ? "❌" : "⬜"}</span>
+                  <span style={styles.challengeName}>{p.name}</span>
+                  <span style={{ ...styles.challengePts, color: C.red }}>{p.pts}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Forfeits */}
+      <h3 style={styles.sectionTitle}>🎲 Daily Forfeits</h3>
+      <div style={styles.forfeitGrid}>
+        {FORFEITS.map((f, i) => (
+          <div key={i} style={styles.forfeitChip}>{f}</div>
+        ))}
+      </div>
+
+      <button style={styles.resetBtn} onClick={() => saveScores({})}>
+        Reset all scores
+      </button>
+    </div>
+  );
+}
+
+// ============ INFO TAB ============
+function InfoTab({ infoSection, setInfoSection }) {
+  const sections = [
+    { id: "resort", label: "Resort", emoji: "🏨" },
+    { id: "flights", label: "Flights", emoji: "✈️" },
+    { id: "offsite", label: "Off-Site", emoji: "🗺️" },
+    { id: "emergency", label: "Info", emoji: "ℹ️" },
+    { id: "group", label: "Group", emoji: "👥" },
+  ];
+
+  return (
+    <div style={styles.infoTab}>
+      {/* Section Picker */}
+      <div style={styles.infoSectionPicker}>
+        {sections.map(s => (
+          <button
+            key={s.id}
+            onClick={() => setInfoSection(s.id)}
+            style={{
+              ...styles.infoSectionBtn,
+              ...(infoSection === s.id ? styles.infoSectionBtnActive : {}),
+            }}
+          >
+            <span>{s.emoji}</span>
+            <span>{s.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Resort Section */}
+      {infoSection === "resort" && (
+        <div style={styles.infoContent}>
+          <div style={styles.resortCard}>
+            <div style={styles.resortHeader}>
+              <h3 style={styles.resortName}>{RESORT.name}</h3>
+              <div style={styles.resortStars}>{"⭐".repeat(RESORT.stars)}</div>
+            </div>
+            <div style={styles.resortAddress}>{RESORT.address}</div>
+            <div style={styles.resortDetails}>
+              <div style={styles.resortDetail}>
+                <span style={styles.resortDetailIcon}>🕐</span>
+                <span>Check-in: {RESORT.checkIn}</span>
+              </div>
+              <div style={styles.resortDetail}>
+                <span style={styles.resortDetailIcon}>🕛</span>
+                <span>Check-out: {RESORT.checkOut}</span>
+              </div>
+              <div style={styles.resortDetail}>
+                <span style={styles.resortDetailIcon}>📞</span>
+                <span>{RESORT.phone}</span>
+              </div>
+            </div>
+          </div>
+
+          <h4 style={styles.infoSubtitle}>🎁 What's Included</h4>
+          <div style={styles.includedGrid}>
+            {RESORT.included.map((item, i) => (
+              <div key={i} style={styles.includedItem}>
+                <span style={styles.includedIcon}>{item.icon}</span>
+                <span style={styles.includedLabel}>{item.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <h4 style={styles.infoSubtitle}>🍽️ On-Site Restaurants</h4>
+          <div style={styles.restaurantList}>
+            {RESORT.restaurants.map((r, i) => (
+              <div key={i} style={styles.restaurantCard}>
+                <span style={styles.restaurantEmoji}>{r.emoji}</span>
+                <div style={styles.restaurantInfo}>
+                  <div style={styles.restaurantName}>{r.name}</div>
+                  <div style={styles.restaurantType}>{r.cuisine} · {r.type}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <h4 style={styles.infoSubtitle}>🎉 Weekly Entertainment</h4>
+          <div style={styles.entertainmentGrid}>
+            {RESORT.entertainment.map((e, i) => (
+              <div key={i} style={styles.entertainmentCard}>
+                <div style={styles.entertainmentDay}>{e.day}</div>
+                <div style={styles.entertainmentEmoji}>{e.emoji}</div>
+                <div style={styles.entertainmentEvent}>{e.event}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Flights Section */}
+      {infoSection === "flights" && (
+        <div style={styles.infoContent}>
+          {FLIGHTS.map(f => (
+            <div key={f.id} style={styles.flightCard}>
+              <div style={styles.flightHeader}>
+                <span style={styles.flightType}>{f.type}</span>
+                <span style={styles.flightDate}>{f.date}</span>
+              </div>
+              <div style={styles.flightRoute}>
+                <div style={styles.flightAirport}>
+                  <div style={styles.flightCode}>{f.from.code}</div>
+                  <div style={styles.flightCity}>{f.from.city}</div>
+                </div>
+                <div style={styles.flightPlane}>
+                  <div style={styles.flightLine} />
+                  <span style={styles.flightIcon}>✈️</span>
+                  <div style={styles.flightLine} />
+                </div>
+                <div style={styles.flightAirport}>
+                  <div style={styles.flightCode}>{f.to.code}</div>
+                  <div style={styles.flightCity}>{f.to.city}</div>
+                </div>
+              </div>
+              {f.depart && (
+                <div style={styles.flightTimes}>
+                  <div><strong>{f.depart}</strong> → <strong>{f.arrive}</strong></div>
+                  <div style={styles.flightDuration}>{f.duration}</div>
+                </div>
+              )}
+              <div style={styles.flightDetails}>
+                <div style={styles.flightDetailRow}>
+                  <span style={styles.flightDetailLabel}>Flight</span>
+                  <span style={styles.flightDetailValue}>{f.flight}</span>
+                </div>
+                {f.aircraft && (
+                  <div style={styles.flightDetailRow}>
+                    <span style={styles.flightDetailLabel}>Aircraft</span>
+                    <span style={styles.flightDetailValue}>{f.aircraft}</span>
+                  </div>
+                )}
+                {f.baggage && (
+                  <div style={styles.flightDetailRow}>
+                    <span style={styles.flightDetailLabel}>Baggage</span>
+                    <span style={styles.flightDetailValue}>{f.baggage}</span>
+                  </div>
+                )}
+                <div style={styles.flightDetailRow}>
+                  <span style={styles.flightDetailLabel}>PNR</span>
+                  <span style={styles.flightDetailValue}>{f.pnr}</span>
+                </div>
+              </div>
+              <div style={styles.flightWho}>
+                {f.who.map(w => (
+                  <span key={w} style={styles.flightWhoChip}>{w}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Off-Site Section */}
+      {infoSection === "offsite" && (
+        <div style={styles.infoContent}>
+          <h4 style={styles.infoSubtitle}>🍽️ Dining</h4>
+          <div style={styles.offsiteGrid}>
+            {OFF_SITE.dining.map((item, i) => (
+              <div key={i} style={styles.offsiteCard}>
+                <span style={styles.offsiteEmoji}>{item.emoji}</span>
+                <div style={styles.offsiteInfo}>
+                  <div style={styles.offsiteName}>{item.name}</div>
+                  <div style={styles.offsiteDesc}>{item.cuisine}</div>
+                </div>
+                <div style={styles.offsitePrice}>{item.price}</div>
+              </div>
+            ))}
+          </div>
+
+          <h4 style={styles.infoSubtitle}>🏖️ Beaches</h4>
+          <div style={styles.offsiteGrid}>
+            {OFF_SITE.beaches.map((item, i) => (
+              <div key={i} style={styles.offsiteCard}>
+                <span style={styles.offsiteEmoji}>{item.emoji}</span>
+                <div style={styles.offsiteInfo}>
+                  <div style={styles.offsiteName}>{item.name}</div>
+                  <div style={styles.offsiteDesc}>{item.vibe}</div>
+                </div>
+                <div style={styles.offsitePrice}>{item.distance}</div>
+              </div>
+            ))}
+          </div>
+
+          <h4 style={styles.infoSubtitle}>🎢 Activities</h4>
+          <div style={styles.offsiteGrid}>
+            {OFF_SITE.activities.map((item, i) => (
+              <div key={i} style={styles.offsiteCard}>
+                <span style={styles.offsiteEmoji}>{item.emoji}</span>
+                <div style={styles.offsiteInfo}>
+                  <div style={styles.offsiteName}>{item.name}</div>
+                  <div style={styles.offsiteDesc}>{item.desc}</div>
+                </div>
+                <div style={styles.offsitePrice}>{item.price}</div>
+              </div>
+            ))}
+          </div>
+
+          <h4 style={styles.infoSubtitle}>🪩 Nightlife</h4>
+          <div style={styles.offsiteGrid}>
+            {OFF_SITE.nightlife.map((item, i) => (
+              <div key={i} style={styles.offsiteCard}>
+                <span style={styles.offsiteEmoji}>{item.emoji}</span>
+                <div style={styles.offsiteInfo}>
+                  <div style={styles.offsiteName}>{item.name}</div>
+                  <div style={styles.offsiteDesc}>{item.desc}</div>
+                </div>
+                <div style={styles.offsitePrice}>{item.price}</div>
+              </div>
+            ))}
+          </div>
+
+          <h4 style={styles.infoSubtitle}>🚕 Transport Guide</h4>
+          <div style={styles.transportList}>
+            {[
+              { route: "Resort ↔ Nightlife", cost: "£25–40 total" },
+              { route: "Resort ↔ Cap Cana", cost: "£35–60 total" },
+              { route: "Resort ↔ Bayahibe", cost: "£80–120 total" },
+              { route: "Resort ↔ Altos de Chavón", cost: "£90–140 total" },
+            ].map((t, i) => (
+              <div key={i} style={styles.transportRow}>
+                <span>{t.route}</span>
+                <span style={styles.transportCost}>{t.cost}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Emergency/Info Section */}
+      {infoSection === "emergency" && (
+        <div style={styles.infoContent}>
+          <h4 style={styles.infoSubtitle}>🌍 Destination Info</h4>
+          <div style={styles.emergencyGrid}>
+            <div style={styles.emergencyCard}>
+              <span style={styles.emergencyIcon}>🕐</span>
+              <div style={styles.emergencyLabel}>Timezone</div>
+              <div style={styles.emergencyValue}>{EMERGENCY_INFO.timezone}</div>
+              <div style={styles.emergencyNote}>{EMERGENCY_INFO.ukDiff}</div>
+            </div>
+            <div style={styles.emergencyCard}>
+              <span style={styles.emergencyIcon}>💵</span>
+              <div style={styles.emergencyLabel}>Currency</div>
+              <div style={styles.emergencyValue}>{EMERGENCY_INFO.currency}</div>
+            </div>
+            <div style={styles.emergencyCard}>
+              <span style={styles.emergencyIcon}>🗣️</span>
+              <div style={styles.emergencyLabel}>Language</div>
+              <div style={styles.emergencyValue}>{EMERGENCY_INFO.language}</div>
+            </div>
+            <div style={styles.emergencyCard}>
+              <span style={styles.emergencyIcon}>💰</span>
+              <div style={styles.emergencyLabel}>Tipping</div>
+              <div style={styles.emergencyValue}>{EMERGENCY_INFO.tipping}</div>
+            </div>
+            <div style={styles.emergencyCard}>
+              <span style={styles.emergencyIcon}>🔌</span>
+              <div style={styles.emergencyLabel}>Plug Type</div>
+              <div style={styles.emergencyValue}>{EMERGENCY_INFO.plugType}</div>
+            </div>
+          </div>
+
+          <h4 style={styles.infoSubtitle}>📞 Emergency Contacts</h4>
+          <div style={styles.contactList}>
+            <div style={styles.contactRow}>
+              <span style={styles.contactLabel}>Emergency</span>
+              <span style={styles.contactValue}>{EMERGENCY_INFO.emergencyNumber}</span>
+            </div>
+            <div style={styles.contactRow}>
+              <span style={styles.contactLabel}>UK Embassy</span>
+              <span style={styles.contactValue}>{EMERGENCY_INFO.ukEmbassy}</span>
+            </div>
+            <div style={styles.contactRow}>
+              <span style={styles.contactLabel}>Resort</span>
+              <span style={styles.contactValue}>{EMERGENCY_INFO.resortPhone}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Group Section */}
+      {infoSection === "group" && (
+        <div style={styles.infoContent}>
+          <h4 style={styles.infoSubtitle}>👥 The Crew</h4>
+          <div style={styles.groupGrid}>
+            {MEMBERS.map(m => {
+              const dates = ["Candice", "Kyanna"].includes(m) ? "18–25 May" : ["Camara", "Miles"].includes(m) ? "20–29 May" : "18–29 May";
+              const days = ["Candice", "Kyanna"].includes(m) ? 7 : ["Camara", "Miles"].includes(m) ? 9 : 11;
+              return (
+                <div key={m} style={styles.groupCard}>
+                  <div style={styles.groupAvatar}>
+                    <span style={styles.groupAvatarInitial}>{m[0]}</span>
+                  </div>
+                  <div style={styles.groupName}>{m}</div>
+                  <div style={styles.groupDates}>{dates}</div>
+                  <div style={styles.groupDays}>{days} days</div>
+                </div>
+              );
+            })}
+          </div>
+
+          <h4 style={styles.infoSubtitle}>📅 Who's There When</h4>
+          <div style={styles.presenceTimeline}>
+            {DAYS.map((d, i) => (
+              <div key={i} style={styles.presenceRow}>
+                <div style={styles.presenceDate}>{d.date}</div>
+                <div style={styles.presenceDots}>
+                  {MEMBERS.map(m => (
+                    <div
+                      key={m}
+                      style={{
+                        ...styles.presenceDot,
+                        ...(d.who.includes(m) ? styles.presenceDotActive : {}),
+                      }}
+                      title={m}
+                    >
+                      {d.who.includes(m) ? m[0] : ""}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============ STYLES ============
 const styles = {
-  app: { background: C.bg, minHeight: "100vh", color: C.text, fontFamily: "'Segoe UI', -apple-system, sans-serif", maxWidth: 480, margin: "0 auto" },
-  loading: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", background: C.bg },
-  loadingEmoji: { fontSize: 48, marginBottom: 12 },
-  loadingText: { color: C.textDim, fontSize: 14 },
+  app: {
+    background: C.bgGradient,
+    minHeight: "100vh",
+    color: C.text,
+    fontFamily: "'Inter', -apple-system, sans-serif",
+  },
 
-  header: { padding: "20px 16px 12px", borderBottom: `1px solid ${C.cardBorder}` },
-  headerInner: { display: "flex", alignItems: "center", gap: 12 },
-  flag: { fontSize: 36 },
-  title: { margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: 1.5, color: C.accent },
-  subtitle: { margin: 0, fontSize: 13, color: C.textDim, marginTop: 2 },
-  countdown: { marginTop: 8 },
-  countdownText: { fontSize: 12, color: C.accent, fontWeight: 600, background: C.accentSoft, padding: "4px 10px", borderRadius: 20 },
+  // Loading
+  loading: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100vh",
+    background: C.bgGradient,
+  },
+  loadingEmoji: { fontSize: 64, marginBottom: 16, animation: "float 2s ease-in-out infinite" },
+  loadingText: { color: C.textDim, fontSize: 16, marginBottom: 24 },
+  loadingBar: {
+    width: 120,
+    height: 4,
+    background: C.cardBorder,
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  loadingFill: {
+    width: "50%",
+    height: "100%",
+    background: `linear-gradient(90deg, ${C.accent}, ${C.accentLight}, ${C.accent})`,
+    backgroundSize: "200% 100%",
+    animation: "shimmer 1.5s infinite",
+  },
 
-  nav: { display: "flex", gap: 2, padding: "8px 8px 0", borderBottom: `1px solid ${C.cardBorder}` },
-  navBtn: { flex: 1, background: "none", border: "none", color: C.textDim, fontSize: 12, fontWeight: 600, padding: "10px 0", cursor: "pointer", borderBottom: "2px solid transparent", transition: "all .15s" },
-  navActive: { color: C.accent, borderBottomColor: C.accent },
+  // Header
+  header: {
+    position: "relative",
+    padding: "32px 20px 24px",
+    overflow: "hidden",
+  },
+  headerBg: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: `linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, ${C.bg} 100%), url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 80 Q25 60 30 80 Q35 60 40 80' stroke='%23f59e0b' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3Cpath d='M60 85 Q70 50 80 85' stroke='%23f59e0b' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3C/svg%3E")`,
+    backgroundSize: "cover",
+    zIndex: 0,
+  },
+  headerContent: {
+    position: "relative",
+    zIndex: 1,
+    maxWidth: 560,
+    margin: "0 auto",
+    textAlign: "center",
+  },
+  headerTop: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    marginBottom: 12,
+  },
+  headerFlag: { fontSize: 32 },
+  headerResort: {
+    fontSize: 12,
+    color: C.textDim,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  headerTitle: {
+    margin: 0,
+    fontSize: 42,
+    fontWeight: 900,
+    fontFamily: "'Space Grotesk', sans-serif",
+    letterSpacing: 4,
+    background: C.gold,
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    textShadow: `0 0 60px ${C.accentGlow}`,
+    animation: "glow 3s ease-in-out infinite",
+  },
+  headerSubtitle: {
+    margin: "8px 0 20px",
+    fontSize: 14,
+    color: C.textDim,
+    letterSpacing: 0.5,
+  },
+  countdown: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    animation: "countPulse 2s ease-in-out infinite",
+  },
+  countdownUnit: {
+    background: C.glass,
+    backdropFilter: "blur(10px)",
+    border: `1px solid ${C.glassBorder}`,
+    borderRadius: 12,
+    padding: "12px 16px",
+    minWidth: 60,
+    textAlign: "center",
+  },
+  countdownValue: {
+    fontSize: 28,
+    fontWeight: 800,
+    fontFamily: "'Space Grotesk', sans-serif",
+    color: C.accent,
+  },
+  countdownLabel: {
+    fontSize: 10,
+    color: C.textDim,
+    letterSpacing: 1,
+    marginTop: 2,
+  },
+  countdownSep: {
+    fontSize: 24,
+    color: C.accent,
+    fontWeight: 700,
+  },
+  countdownLive: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 12,
+    background: `linear-gradient(135deg, ${C.accentSoft} 0%, rgba(239, 68, 68, 0.15) 100%)`,
+    border: `2px solid ${C.accent}`,
+    borderRadius: 16,
+    padding: "16px 32px",
+    animation: "pulse 1s ease-in-out infinite",
+  },
+  countdownLiveText: {
+    fontSize: 24,
+    fontWeight: 900,
+    fontFamily: "'Space Grotesk', sans-serif",
+    color: C.accent,
+    letterSpacing: 3,
+  },
+  countdownLiveEmoji: { fontSize: 28 },
 
-  main: { padding: "16px 12px 80px" },
+  // Navigation
+  nav: {
+    display: "flex",
+    maxWidth: 560,
+    margin: "0 auto",
+    padding: "0 12px",
+    borderBottom: `1px solid ${C.cardBorder}`,
+    background: C.glass,
+    backdropFilter: "blur(10px)",
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+  },
+  navBtn: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+    background: "none",
+    border: "none",
+    color: C.textDim,
+    padding: "12px 8px",
+    cursor: "pointer",
+    borderBottom: "2px solid transparent",
+    transition: "all 0.2s ease",
+  },
+  navActive: {
+    color: C.accent,
+    borderBottomColor: C.accent,
+  },
+  navEmoji: { fontSize: 18 },
+  navText: { fontSize: 11, fontWeight: 600, letterSpacing: 0.5 },
 
-  dayPicker: { display: "flex", gap: 6, overflowX: "auto", paddingBottom: 12, WebkitOverflowScrolling: "touch" },
-  dayChip: { flexShrink: 0, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 10, padding: "8px 12px", cursor: "pointer", textAlign: "center", minWidth: 44, transition: "all .15s" },
-  dayChipActive: { background: C.accentSoft, borderColor: C.accent },
-  dayChipDate: { display: "block", fontSize: 16, fontWeight: 700, color: C.text },
-  dayChipDow: { display: "block", fontSize: 10, color: C.textDim, marginTop: 2 },
+  // Main
+  main: {
+    maxWidth: 560,
+    margin: "0 auto",
+    padding: "20px 16px 100px",
+  },
 
-  dayCard: { background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 14, padding: 16, marginTop: 4 },
-  dayHeader: { marginBottom: 10 },
-  dayTitle: { margin: 0, fontSize: 18, fontWeight: 700 },
-  dayDate: { fontSize: 12, color: C.textDim },
-  whoRow: { display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 },
-  whoChip: { fontSize: 11, color: C.blue, background: C.blueSoft, padding: "3px 8px", borderRadius: 20, fontWeight: 600 },
+  // Itinerary
+  itineraryTab: {},
+  dayPickerContainer: {
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+  dayPicker: {
+    display: "flex",
+    gap: 8,
+    overflowX: "auto",
+    paddingBottom: 8,
+    WebkitOverflowScrolling: "touch",
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+  },
+  dayChip: {
+    flexShrink: 0,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 14,
+    padding: "10px 14px",
+    cursor: "pointer",
+    minWidth: 56,
+    transition: "all 0.2s ease",
+  },
+  dayChipActive: {
+    background: C.accentSoft,
+    borderColor: C.accent,
+    transform: "scale(1.05)",
+  },
+  dayChipBoys: {
+    borderColor: `${C.blue}40`,
+  },
+  dayChipBoysActive: {
+    background: C.blueSoft,
+    borderColor: C.blue,
+  },
+  dayChipEmoji: { fontSize: 18 },
+  dayChipDate: { fontSize: 16, fontWeight: 700, color: C.text },
+  dayChipDow: { fontSize: 10, color: C.textDim, textTransform: "uppercase", letterSpacing: 0.5 },
 
-  timeline: { display: "flex", flexDirection: "column", gap: 0 },
-  event: { display: "flex", gap: 10, minHeight: 40, alignItems: "flex-start" },
-  eventTime: { width: 54, fontSize: 11, color: C.textDim, fontWeight: 600, paddingTop: 2, flexShrink: 0, textAlign: "right" },
-  eventLine: { display: "flex", flexDirection: "column", alignItems: "center", width: 16, flexShrink: 0 },
-  eventDot: { width: 10, height: 10, borderRadius: "50%", background: C.textFaint, flexShrink: 0 },
-  eventDotPremium: { background: C.accent, boxShadow: `0 0 8px ${C.accent}40` },
-  eventDotDeparture: { background: C.red },
-  eventConnector: { width: 2, flex: 1, minHeight: 20, background: C.cardBorder },
-  eventLabel: { fontSize: 14, paddingTop: 0, lineHeight: 1.4, paddingBottom: 10 },
-  eventLabelPremium: { fontWeight: 600 },
-  premiumBadge: { fontSize: 9, background: C.accentSoft, color: C.accent, padding: "2px 6px", borderRadius: 4, marginLeft: 8, fontWeight: 700, letterSpacing: 0.5 },
+  dayCard: {
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 20,
+    padding: 20,
+    animation: "slideUp 0.3s ease",
+  },
+  dayCardHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 16,
+  },
+  dayCardEmoji: {
+    fontSize: 40,
+    background: C.accentSoft,
+    borderRadius: 14,
+    padding: 10,
+  },
+  dayCardInfo: { flex: 1 },
+  dayCardTitle: {
+    margin: 0,
+    fontSize: 22,
+    fontWeight: 800,
+    color: C.text,
+  },
+  dayCardDate: {
+    fontSize: 13,
+    color: C.textDim,
+    marginTop: 2,
+  },
+  dayTypeBadge: {
+    fontSize: 10,
+    fontWeight: 700,
+    letterSpacing: 1,
+    background: C.blueSoft,
+    color: C.blue,
+    padding: "6px 10px",
+    borderRadius: 8,
+  },
 
-  costSummary: { display: "flex", gap: 10, marginBottom: 16 },
-  costBox: { flex: 1, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 12, padding: 14, textAlign: "center" },
-  costBoxActual: { borderColor: C.accent },
-  costBoxLabel: { fontSize: 11, color: C.textDim, marginBottom: 4, fontWeight: 600 },
-  costBoxVal: { fontSize: 24, fontWeight: 800 },
+  whoSection: { marginBottom: 16 },
+  whoLabel: {
+    fontSize: 11,
+    color: C.textDim,
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  whoAvatars: {
+    display: "flex",
+    gap: 8,
+  },
+  whoAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    background: `linear-gradient(135deg, ${C.accent} 0%, ${C.accentLight} 100%)`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: `0 2px 8px ${C.accentGlow}`,
+  },
+  whoAvatarInitial: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: C.bg,
+  },
 
-  costList: { display: "flex", flexDirection: "column", gap: 8 },
-  costItem: { display: "flex", justifyContent: "space-between", alignItems: "center", background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 10, padding: "10px 12px" },
-  costInfo: { display: "flex", alignItems: "center", gap: 10 },
-  costCat: { fontSize: 20 },
-  costName: { fontSize: 14, fontWeight: 600 },
-  costEst: { fontSize: 11, color: C.textDim },
-  costInput: { display: "flex", alignItems: "center", gap: 2 },
-  pound: { color: C.textDim, fontSize: 14 },
-  input: { width: 70, background: C.bg, border: `1px solid ${C.cardBorder}`, borderRadius: 6, color: C.text, padding: "6px 8px", fontSize: 14, outline: "none" },
+  resortEventBanner: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    background: `linear-gradient(135deg, ${C.purpleSoft} 0%, ${C.accentSoft} 100%)`,
+    border: `1px solid ${C.purple}40`,
+    borderRadius: 12,
+    padding: "10px 14px",
+    marginBottom: 16,
+  },
+  resortEventIcon: { fontSize: 18 },
+  resortEventText: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: C.text,
+  },
 
-  addExpenseBtn: { width: "100%", background: "none", border: `1px dashed ${C.textFaint}`, borderRadius: 10, color: C.textDim, padding: 12, marginTop: 10, cursor: "pointer", fontSize: 13 },
-  addCostForm: { display: "flex", gap: 8, marginTop: 10, alignItems: "center" },
-  addInput: { flex: 1, background: C.bg, border: `1px solid ${C.cardBorder}`, borderRadius: 6, color: C.text, padding: "8px 10px", fontSize: 13, outline: "none" },
-  addBtn: { background: C.accent, color: C.bg, border: "none", borderRadius: 6, padding: "8px 16px", fontWeight: 700, cursor: "pointer", fontSize: 13 },
+  timeline: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  timelineEvent: {
+    display: "flex",
+    gap: 12,
+    minHeight: 50,
+  },
+  timelineTime: {
+    width: 50,
+    flexShrink: 0,
+    textAlign: "right",
+    paddingTop: 2,
+  },
+  timelineTimeText: {
+    fontSize: 12,
+    color: C.textDim,
+    fontWeight: 600,
+  },
+  timelineLine: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: 20,
+    flexShrink: 0,
+  },
+  timelineDot: {
+    width: 12,
+    height: 12,
+    borderRadius: "50%",
+    background: C.textFaint,
+    flexShrink: 0,
+    zIndex: 1,
+  },
+  timelineDotPremium: {
+    background: C.accent,
+    boxShadow: `0 0 12px ${C.accentGlow}`,
+    animation: "pulse 2s ease-in-out infinite",
+  },
+  timelineDotDeparture: {
+    background: C.red,
+    boxShadow: `0 0 12px ${C.red}40`,
+  },
+  timelineDotResort: {
+    background: C.purple,
+    boxShadow: `0 0 12px ${C.purple}40`,
+  },
+  timelineConnector: {
+    width: 2,
+    flex: 1,
+    minHeight: 30,
+    background: `linear-gradient(to bottom, ${C.cardBorder}, transparent)`,
+  },
+  timelineContent: {
+    flex: 1,
+    paddingBottom: 12,
+  },
 
-  resetBtn: { width: "100%", background: "none", border: "none", color: C.textFaint, padding: 14, marginTop: 16, cursor: "pointer", fontSize: 11 },
+  premiumEventCard: {
+    background: `linear-gradient(135deg, ${C.accentSoft} 0%, rgba(245, 158, 11, 0.05) 100%)`,
+    border: `1px solid ${C.accent}40`,
+    borderRadius: 14,
+    padding: 14,
+    boxShadow: `0 4px 20px ${C.accentGlow}`,
+  },
+  premiumEventHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 8,
+  },
+  premiumEventIcon: { fontSize: 22 },
+  premiumEventLabel: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: C.text,
+  },
+  premiumEventFooter: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  },
+  premiumEventCost: {
+    fontSize: 12,
+    color: C.accent,
+    fontWeight: 600,
+  },
+  premiumEventBadge: {
+    fontSize: 9,
+    fontWeight: 700,
+    letterSpacing: 1,
+    background: C.accent,
+    color: C.bg,
+    padding: "4px 8px",
+    borderRadius: 6,
+  },
 
-  sectionTitle: { fontSize: 16, fontWeight: 700, margin: "20px 0 10px", color: C.text },
+  eventRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  },
+  eventRowDeparture: {
+    color: C.red,
+  },
+  eventIcon: { fontSize: 16 },
+  eventLabel: {
+    fontSize: 14,
+    color: C.text,
+  },
+  resortBadge: {
+    fontSize: 8,
+    fontWeight: 700,
+    letterSpacing: 0.5,
+    background: C.purpleSoft,
+    color: C.purple,
+    padding: "3px 6px",
+    borderRadius: 4,
+    marginLeft: 8,
+  },
 
-  leaderboard: { display: "flex", flexDirection: "column", gap: 8 },
-  lbRow: { display: "flex", alignItems: "center", gap: 10, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 10, padding: "10px 12px" },
-  lbRank: { width: 32, fontSize: 14, fontWeight: 700, textAlign: "center", color: C.textDim },
+  // Costs
+  costsTab: {},
+  costSummary: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 24,
+  },
+  costSummaryCard: {
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 16,
+    padding: 16,
+    textAlign: "center",
+    flex: 1,
+  },
+  costSummaryLabel: {
+    fontSize: 11,
+    color: C.textDim,
+    marginBottom: 4,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  costSummaryValue: {
+    fontSize: 26,
+    fontWeight: 800,
+    fontFamily: "'Space Grotesk', sans-serif",
+  },
+  costProgressRing: {
+    position: "relative",
+    width: 100,
+    height: 100,
+    flexShrink: 0,
+  },
+  progressSvg: {
+    transform: "rotate(-90deg)",
+  },
+  progressCenter: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    textAlign: "center",
+  },
+  progressPercent: {
+    fontSize: 18,
+    fontWeight: 800,
+    color: C.accent,
+    fontFamily: "'Space Grotesk', sans-serif",
+  },
+  progressLabel: {
+    fontSize: 10,
+    color: C.textDim,
+  },
+
+  costCategory: {
+    marginBottom: 16,
+  },
+  costCategoryHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    width: "100%",
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: "12px 14px",
+    cursor: "pointer",
+    marginBottom: 8,
+    transition: "all 0.2s ease",
+  },
+  costCategoryEmoji: { fontSize: 18 },
+  costCategoryName: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: 700,
+    color: C.text,
+    textAlign: "left",
+  },
+  costCategoryTotal: {
+    fontSize: 13,
+    color: C.accent,
+    fontWeight: 600,
+  },
+  costCategoryChevron: {
+    fontSize: 10,
+    color: C.textDim,
+  },
+  costCategoryItems: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    paddingLeft: 8,
+  },
+  costItem: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    background: `${C.card}80`,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 10,
+    padding: "10px 12px",
+  },
+  costItemInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  },
+  costItemEmoji: { fontSize: 18 },
+  costItemName: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: C.text,
+  },
+  costItemEst: {
+    fontSize: 11,
+    color: C.textDim,
+  },
+  costItemInput: {
+    display: "flex",
+    alignItems: "center",
+    gap: 2,
+  },
+  costPound: {
+    fontSize: 14,
+    color: C.textDim,
+  },
+  costInput: {
+    width: 70,
+    background: C.bg,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 8,
+    color: C.text,
+    padding: "8px 10px",
+    fontSize: 14,
+    fontWeight: 600,
+    outline: "none",
+    transition: "border-color 0.2s",
+  },
+
+  addExpenseBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    width: "100%",
+    background: "none",
+    border: `2px dashed ${C.textFaint}`,
+    borderRadius: 12,
+    color: C.textDim,
+    padding: 14,
+    cursor: "pointer",
+    fontSize: 13,
+    fontWeight: 600,
+    transition: "all 0.2s",
+  },
+  addCostForm: {
+    display: "flex",
+    gap: 8,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  addCostInput: {
+    flex: 1,
+    background: C.bg,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 8,
+    color: C.text,
+    padding: "10px 12px",
+    fontSize: 13,
+    outline: "none",
+  },
+  addCostBtn: {
+    background: C.accent,
+    color: C.bg,
+    border: "none",
+    borderRadius: 8,
+    padding: "10px 20px",
+    fontWeight: 700,
+    cursor: "pointer",
+    fontSize: 13,
+  },
+  addCostCancel: {
+    background: "none",
+    border: "none",
+    color: C.textDim,
+    fontSize: 20,
+    cursor: "pointer",
+    padding: "0 8px",
+  },
+
+  resetBtn: {
+    width: "100%",
+    background: "none",
+    border: "none",
+    color: C.textFaint,
+    padding: 16,
+    marginTop: 16,
+    cursor: "pointer",
+    fontSize: 12,
+    transition: "color 0.2s",
+  },
+
+  // Challenges
+  challengesTab: {},
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 800,
+    margin: "24px 0 14px",
+    color: C.text,
+  },
+
+  podiumSection: { marginBottom: 24 },
+  podium: {
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    gap: 12,
+    padding: "20px 0",
+  },
+  podiumPlace: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 8,
+  },
+  podiumAvatar: {
+    position: "relative",
+    width: 48,
+    height: 48,
+    borderRadius: "50%",
+    background: `linear-gradient(135deg, ${C.accent} 0%, ${C.accentLight} 100%)`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: `0 4px 16px ${C.accentGlow}`,
+  },
+  podiumMedal: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    fontSize: 18,
+  },
+  podiumInitial: {
+    fontSize: 18,
+    fontWeight: 800,
+    color: C.bg,
+  },
+  podiumName: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.text,
+  },
+  podiumPts: {
+    fontSize: 14,
+    fontWeight: 800,
+    color: C.accent,
+    fontFamily: "'Space Grotesk', sans-serif",
+  },
+  podiumBar: {
+    width: 60,
+    background: `linear-gradient(to top, ${C.accent}, ${C.accentLight})`,
+    borderRadius: "8px 8px 0 0",
+    boxShadow: `0 -4px 16px ${C.accentGlow}`,
+  },
+
+  leaderboardList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    marginBottom: 24,
+  },
+  lbRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: "12px 14px",
+  },
+  lbRank: {
+    width: 32,
+    fontSize: 14,
+    fontWeight: 700,
+    textAlign: "center",
+    color: C.textDim,
+  },
+  lbAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    background: C.accentSoft,
+    color: C.accent,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 14,
+    fontWeight: 700,
+  },
   lbInfo: { flex: 1 },
-  lbName: { fontSize: 14, fontWeight: 600, marginBottom: 4 },
-  lbBar: { height: 6, background: C.bg, borderRadius: 3, overflow: "hidden" },
-  lbFill: { height: "100%", background: `linear-gradient(90deg, ${C.accent}, ${C.green})`, borderRadius: 3, transition: "width .3s" },
-  lbPts: { fontSize: 18, fontWeight: 800, color: C.accent, minWidth: 40, textAlign: "right" },
+  lbName: {
+    fontSize: 14,
+    fontWeight: 600,
+    marginBottom: 6,
+  },
+  lbBar: {
+    height: 6,
+    background: C.bg,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  lbFill: {
+    height: "100%",
+    background: `linear-gradient(90deg, ${C.accent}, ${C.green})`,
+    borderRadius: 3,
+    transition: "width 0.5s ease",
+  },
+  lbPts: {
+    fontSize: 20,
+    fontWeight: 800,
+    color: C.accent,
+    fontFamily: "'Space Grotesk', sans-serif",
+    minWidth: 50,
+    textAlign: "right",
+  },
 
-  memberPicker: { display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 },
-  memberBtn: { background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 20, color: C.textDim, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all .15s" },
-  memberBtnActive: { background: C.accentSoft, borderColor: C.accent, color: C.accent },
+  memberPicker: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+    marginBottom: 16,
+  },
+  memberBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 24,
+    color: C.textDim,
+    padding: "8px 14px",
+    cursor: "pointer",
+    fontSize: 13,
+    fontWeight: 600,
+    transition: "all 0.2s ease",
+  },
+  memberBtnActive: {
+    background: C.accentSoft,
+    borderColor: C.accent,
+    color: C.accent,
+  },
+  memberBtnInitial: {
+    width: 24,
+    height: 24,
+    borderRadius: "50%",
+    background: C.accentSoft,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 11,
+    fontWeight: 700,
+  },
+  memberBtnName: {},
 
-  challengeList: { display: "flex", flexDirection: "column", gap: 4, maxHeight: 400, overflowY: "auto" },
-  challengeSectionHead: { fontSize: 12, fontWeight: 700, color: C.textDim, padding: "8px 0 4px", textTransform: "uppercase", letterSpacing: 1 },
-  challengeRow: { display: "flex", alignItems: "center", gap: 8, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 8, padding: "8px 10px", cursor: "pointer", textAlign: "left", width: "100%", transition: "all .1s" },
-  challengeDone: { background: C.greenSoft, borderColor: C.green + "40" },
-  penaltyDone: { background: C.redSoft, borderColor: C.red + "40" },
+  challengeList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+    maxHeight: 500,
+    overflowY: "auto",
+    paddingRight: 8,
+  },
+  challengeSection: {},
+  challengeSectionHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  challengeDiffEmoji: { fontSize: 14 },
+  challengeDiffName: {
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  challengeRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 10,
+    padding: "10px 12px",
+    cursor: "pointer",
+    width: "100%",
+    textAlign: "left",
+    marginBottom: 4,
+    transition: "all 0.15s ease",
+  },
+  challengeDone: {
+    background: C.greenSoft,
+    borderColor: `${C.green}40`,
+  },
+  penaltyDone: {
+    background: C.redSoft,
+    borderColor: `${C.red}40`,
+  },
   challengeCheck: { fontSize: 16 },
-  challengeName: { flex: 1, fontSize: 13, color: C.text },
-  challengePts: { fontSize: 13, fontWeight: 700, color: C.green },
+  challengeName: {
+    flex: 1,
+    fontSize: 13,
+    color: C.text,
+  },
+  challengePts: {
+    fontSize: 13,
+    fontWeight: 700,
+  },
 
-  forfeitGrid: { display: "flex", gap: 6, flexWrap: "wrap" },
-  forfeitChip: { background: C.redSoft, border: `1px solid ${C.red}20`, borderRadius: 8, padding: "6px 10px", fontSize: 12, color: C.red },
+  forfeitGrid: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  forfeitChip: {
+    background: C.redSoft,
+    border: `1px solid ${C.red}30`,
+    borderRadius: 10,
+    padding: "8px 12px",
+    fontSize: 12,
+    color: C.red,
+    fontWeight: 500,
+  },
 
-  infoCard: { background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 12, padding: 14, marginBottom: 10 },
-  flightHead: { fontSize: 13, fontWeight: 700, color: C.accent, marginBottom: 4 },
-  flightRoute: { fontSize: 22, fontWeight: 800, letterSpacing: 2, marginBottom: 4 },
-  flightDetail: { fontSize: 12, color: C.textDim },
-  flightWho: { fontSize: 12, color: C.blue, marginTop: 4 },
+  // Info
+  infoTab: {},
+  infoSectionPicker: {
+    display: "flex",
+    gap: 6,
+    overflowX: "auto",
+    paddingBottom: 8,
+    marginBottom: 16,
+  },
+  infoSectionBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 20,
+    color: C.textDim,
+    padding: "8px 14px",
+    cursor: "pointer",
+    fontSize: 12,
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+    transition: "all 0.2s ease",
+  },
+  infoSectionBtnActive: {
+    background: C.accentSoft,
+    borderColor: C.accent,
+    color: C.accent,
+  },
 
-  transportRow: { display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, borderBottom: `1px solid ${C.cardBorder}` },
+  infoContent: {},
+  infoSubtitle: {
+    fontSize: 15,
+    fontWeight: 700,
+    margin: "20px 0 12px",
+    color: C.text,
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
 
-  spotGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 },
-  spotCard: { background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 10, padding: 12 },
-  spotCat: { fontSize: 13, fontWeight: 700, marginBottom: 6 },
-  spotItem: { fontSize: 12, color: C.textDim, padding: "2px 0" },
+  resortCard: {
+    background: `linear-gradient(135deg, ${C.card} 0%, ${C.accentSoft} 100%)`,
+    border: `1px solid ${C.accent}30`,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  resortHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  resortName: {
+    margin: 0,
+    fontSize: 18,
+    fontWeight: 800,
+    color: C.text,
+  },
+  resortStars: { fontSize: 14 },
+  resortAddress: {
+    fontSize: 12,
+    color: C.textDim,
+    marginBottom: 16,
+  },
+  resortDetails: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+  resortDetail: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    fontSize: 13,
+    color: C.text,
+  },
+  resortDetailIcon: { fontSize: 16 },
 
-  groupGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 },
-  groupChip: { background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 12, padding: 12, textAlign: "center" },
-  groupAvatar: { width: 36, height: 36, borderRadius: "50%", background: C.accentSoft, color: C.accent, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, margin: "0 auto 6px" },
-  groupName: { fontSize: 13, fontWeight: 700 },
-  groupDates: { fontSize: 10, color: C.textDim, marginTop: 2 },
+  includedGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 10,
+  },
+  includedItem: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 6,
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: 14,
+  },
+  includedIcon: { fontSize: 24 },
+  includedLabel: {
+    fontSize: 11,
+    color: C.textDim,
+    textAlign: "center",
+  },
+
+  restaurantList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+  restaurantCard: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: 12,
+  },
+  restaurantEmoji: { fontSize: 28 },
+  restaurantInfo: {},
+  restaurantName: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: C.text,
+  },
+  restaurantType: {
+    fontSize: 12,
+    color: C.textDim,
+  },
+
+  entertainmentGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: 8,
+  },
+  entertainmentCard: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: 12,
+  },
+  entertainmentDay: {
+    fontSize: 10,
+    color: C.accent,
+    fontWeight: 700,
+    textTransform: "uppercase",
+  },
+  entertainmentEmoji: { fontSize: 22 },
+  entertainmentEvent: {
+    fontSize: 9,
+    color: C.textDim,
+    textAlign: "center",
+    lineHeight: 1.3,
+  },
+
+  flightCard: {
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  flightHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  flightType: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: C.accent,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  flightDate: {
+    fontSize: 12,
+    color: C.textDim,
+  },
+  flightRoute: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  flightAirport: {
+    textAlign: "center",
+  },
+  flightCode: {
+    fontSize: 28,
+    fontWeight: 900,
+    fontFamily: "'Space Grotesk', sans-serif",
+    color: C.text,
+    letterSpacing: 2,
+  },
+  flightCity: {
+    fontSize: 11,
+    color: C.textDim,
+  },
+  flightPlane: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+    padding: "0 12px",
+  },
+  flightLine: {
+    flex: 1,
+    height: 2,
+    background: `linear-gradient(90deg, ${C.cardBorder}, ${C.accent}, ${C.cardBorder})`,
+  },
+  flightIcon: { fontSize: 20 },
+  flightTimes: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontSize: 13,
+    color: C.text,
+    marginBottom: 12,
+    padding: "10px 0",
+    borderTop: `1px solid ${C.cardBorder}`,
+    borderBottom: `1px solid ${C.cardBorder}`,
+  },
+  flightDuration: {
+    fontSize: 11,
+    color: C.accent,
+    fontWeight: 600,
+  },
+  flightDetails: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    marginBottom: 12,
+  },
+  flightDetailRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: 12,
+  },
+  flightDetailLabel: {
+    color: C.textDim,
+  },
+  flightDetailValue: {
+    color: C.text,
+    fontWeight: 500,
+  },
+  flightWho: {
+    display: "flex",
+    gap: 6,
+    flexWrap: "wrap",
+  },
+  flightWhoChip: {
+    fontSize: 11,
+    background: C.blueSoft,
+    color: C.blue,
+    padding: "4px 10px",
+    borderRadius: 20,
+    fontWeight: 600,
+  },
+
+  offsiteGrid: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+  offsiteCard: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: 12,
+  },
+  offsiteEmoji: { fontSize: 24 },
+  offsiteInfo: { flex: 1 },
+  offsiteName: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: C.text,
+  },
+  offsiteDesc: {
+    fontSize: 12,
+    color: C.textDim,
+  },
+  offsitePrice: {
+    fontSize: 12,
+    color: C.accent,
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+  },
+
+  transportList: {
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: 14,
+  },
+  transportRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "10px 0",
+    fontSize: 13,
+    borderBottom: `1px solid ${C.cardBorder}`,
+  },
+  transportCost: {
+    color: C.accent,
+    fontWeight: 600,
+  },
+
+  emergencyGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: 10,
+  },
+  emergencyCard: {
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: 14,
+  },
+  emergencyIcon: {
+    fontSize: 24,
+    display: "block",
+    marginBottom: 8,
+  },
+  emergencyLabel: {
+    fontSize: 10,
+    color: C.textDim,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  emergencyValue: {
+    fontSize: 12,
+    color: C.text,
+    fontWeight: 500,
+    lineHeight: 1.4,
+  },
+  emergencyNote: {
+    fontSize: 10,
+    color: C.accent,
+    marginTop: 4,
+  },
+
+  contactList: {
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: 14,
+  },
+  contactRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "10px 0",
+    borderBottom: `1px solid ${C.cardBorder}`,
+  },
+  contactLabel: {
+    fontSize: 13,
+    color: C.textDim,
+  },
+  contactValue: {
+    fontSize: 13,
+    color: C.text,
+    fontWeight: 600,
+  },
+
+  groupGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 10,
+  },
+  groupCard: {
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 16,
+    padding: 16,
+    textAlign: "center",
+  },
+  groupAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: "50%",
+    background: `linear-gradient(135deg, ${C.accent} 0%, ${C.accentLight} 100%)`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 auto 10px",
+    boxShadow: `0 4px 12px ${C.accentGlow}`,
+  },
+  groupAvatarInitial: {
+    fontSize: 20,
+    fontWeight: 800,
+    color: C.bg,
+  },
+  groupName: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: C.text,
+  },
+  groupDates: {
+    fontSize: 11,
+    color: C.textDim,
+    marginTop: 4,
+  },
+  groupDays: {
+    fontSize: 10,
+    color: C.accent,
+    fontWeight: 600,
+    marginTop: 4,
+  },
+
+  presenceTimeline: {
+    background: C.card,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 12,
+    padding: 14,
+  },
+  presenceRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "8px 0",
+    borderBottom: `1px solid ${C.cardBorder}`,
+  },
+  presenceDate: {
+    width: 60,
+    fontSize: 11,
+    color: C.textDim,
+    fontWeight: 500,
+  },
+  presenceDots: {
+    display: "flex",
+    gap: 6,
+    flex: 1,
+  },
+  presenceDot: {
+    width: 28,
+    height: 28,
+    borderRadius: "50%",
+    background: C.cardBorder,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 10,
+    fontWeight: 700,
+    color: "transparent",
+    transition: "all 0.2s",
+  },
+  presenceDotActive: {
+    background: `linear-gradient(135deg, ${C.accent} 0%, ${C.accentLight} 100%)`,
+    color: C.bg,
+  },
 };
