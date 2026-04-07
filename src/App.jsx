@@ -42,12 +42,12 @@ const MEMBERS = ["Kai", "Khari", "Candice", "Kyanna", "Camara", "Miles"];
 const FULL_GROUP = MEMBERS;
 
 const PLAYERS = [
-  { id: 1, num: "01", name: "Kai", title: "The Visionary", bio: "Content creator mode: always on. Will have every angle of the trip documented in 4K.", color: C.blue, emoji: "🎬", avatar: "/images/avatars/kai.png" },
-  { id: 2, num: "02", name: "Khari", title: "The Architect", bio: "Built this entire trip from scratch. If it's planned, it's because of this one.", color: C.gold, emoji: "👑", avatar: "/images/avatars/khari.png" },
-  { id: 3, num: "03", name: "Candice", title: "The Energy", bio: "First one up, last one to care. Brings the vibes that make the trip legendary.", color: C.coral, emoji: "💃", avatar: "/images/avatars/candice.png" },
-  { id: 4, num: "04", name: "Kyanna", title: "The Wildcard", bio: "Quiet until she's not. Expect the unexpected — that's the whole point.", color: C.purple, emoji: "✨", avatar: "/images/avatars/kyanna.png" },
-  { id: 5, num: "05", name: "Camara", title: "The Connector", bio: "Knows everyone within 30 minutes of landing. Somehow always finds the best spots.", color: C.green, emoji: "🌊", avatar: "/images/avatars/camara.png" },
-  { id: 6, num: "06", name: "Miles", title: "The Legend", bio: "Moves in silence but hits different. By day 3, the resort will know his name.", color: C.cyan, emoji: "🔥", avatar: "/images/avatars/miles.png" },
+  { id: 1, num: "01", name: "Kai", title: "The Game Master", bio: "Content creator mode: always on. Will have every angle of the trip documented in 4K.", about: "Self-appointed Game Master and one of the masterminds behind the trip alongside Kyanna and Candice. A huge driver of the activities, challenges, and all the chaos that comes with them. His main job? Cameraman — he'll be filming absolutely everything because the group is making a big vlog at the end. Loves games, competitions, and anything with stakes. Something switches when he's on holiday — he transforms into a completely different person. Expect maximum energy, maximum content, and zero chill.", color: C.blue, emoji: "🎮", avatar: "/images/avatars/kai.png" },
+  { id: 2, num: "02", name: "Khari", title: "The Godfather", bio: "Built this entire trip from scratch. If it's planned, it's because of this one.", about: "Adan's older brother and the one who put this whole thing together. Within the group he's the fatherly figure — steady, reliable, always got advice whether you asked for it or not. Doesn't stress about challenges or competitions, but somehow never really loses either. The quiet confidence that holds the whole trip together.", color: C.gold, emoji: "🧔‍♂️", avatar: "/images/avatars/khari.png" },
+  { id: 3, num: "03", name: "Candice", title: "The Lover Girl", bio: "First one up, last one to care. Brings the vibes that make the trip legendary.", about: "The group's reckless lover girl. Super funny, super chaotic — the kind of energy that turns a quiet evening into a story nobody's allowed to repeat. One thing's for certain though: she will NOT be sharing a bed with Kyanna. Don't ask, just know. Expect chaos, laughter, and absolutely zero regrets.", color: C.coral, emoji: "💋", avatar: "/images/avatars/candice.png" },
+  { id: 4, num: "04", name: "Kyanna", title: "The Instigator", bio: "Quiet until she's not. Expect the unexpected — that's the whole point.", about: "The best flirt in the group — knows exactly what to say and exactly when to say it. Smart, pretty, and down for anything... as long as \"dese man\" do it first. A core part of the planning team alongside Adan and Candice, and Adan's best friend. Don't underestimate the quiet ones.", color: C.purple, emoji: "😈", avatar: "/images/avatars/kyanna.png" },
+  { id: 5, num: "05", name: "Camara", title: "The Liability", bio: "Knows everyone within 30 minutes of landing. Somehow always finds the best spots.", about: "The most chaotic member of the group by a mile. Does way too much, all of the time. Deeps the most ridiculous things and you will absolutely find him in the most compromising scenarios — guaranteed. Cannot handle his drink at all but is fully convinced he's the best drunk in the group. He's not. Buckle up.", color: C.green, emoji: "💣", avatar: "/images/avatars/camara.png" },
+  { id: 6, num: "06", name: "Miles", title: "The Myth", bio: "Moves in silence but hits different. By day 3, the resort will know his name.", about: "The most non-committal committal guy in the group. Everything's a possibility, nothing's a reality. We'll believe he's actually coming when we see him step off the plane in DR — not a second before. Honestly, the group is just happy he said yes. If he shows up, that alone is the plot twist of the trip.", color: C.cyan, emoji: "👻", avatar: "/images/avatars/miles.png" },
 ];
 
 const PRESENCE = [
@@ -105,14 +105,12 @@ const DAYS = [
 ];
 
 const TRIP_INFO = [
-  { key: "Timezone", value: "AST (UTC-4)", icon: "🕐" },
-  { key: "UK Difference", value: "5 hours behind UK", icon: "🇬🇧" },
-  { key: "Currency", value: "Dominican Peso (DOP) / USD accepted", icon: "💰" },
-  { key: "Language", value: "Spanish (English at resort)", icon: "🗣️" },
-  { key: "Plug Type", value: "US Type A/B — UK adapter needed!", icon: "🔌" },
-  { key: "Emergency", value: "911", icon: "🚨" },
-  { key: "UK Embassy", value: "+1 809-472-7111", icon: "🏛️" },
-  { key: "Resort Phone", value: "+008299548177", icon: "📞" },
+  { key: "Time Zone", value: "AST (UTC-4) — 5 hours behind UK", icon: "🕐" },
+  { key: "Currency", value: "Dominican Peso (DOP) / USD widely accepted", icon: "💰" },
+  { key: "Language", value: "Spanish (English spoken at resort)", icon: "🗣️" },
+  { key: "Plug Type", value: "US Type A/B — bring a UK adapter!", icon: "🔌" },
+  { key: "Airport", value: "Punta Cana International (PUJ) — 40 min to resort", icon: "✈️" },
+  { key: "Emergency", value: "911 (local) · Resort: +008299548177", icon: "🚨" },
 ];
 
 const CHALLENGES = [
@@ -127,12 +125,12 @@ const CHALLENGES = [
 ];
 
 const ACTIVITIES = [
-  { id: "saona", name: "Saona Island", icon: "🏝️", description: "Full-day boat trip with open bar, starfish beach, and island BBQ lunch", price: "£70-120pp", day: "21 May", color: C.turquoise },
-  { id: "party-boat", name: "Jamaican Party Boat", icon: "🚤", description: "Afternoon party cruise with open bar, music, and ocean vibes", price: "£50pp", day: "22 May", color: C.blue },
-  { id: "coco-bongo", name: "Coco Bongo", icon: "🎭", description: "The wildest night in Punta Cana — live show, open bar, and non-stop party", price: "£60-100pp", day: "23 May", color: C.purple },
-  { id: "scape-park", name: "Scape Park", icon: "🎢", description: "Adventure park with zip-lines, cenotes, caves, and adrenaline rushes", price: "£90-130pp", day: "24 May", color: C.green },
-  { id: "sky-dinner", name: "Dinner in the Sky", icon: "🎈", description: "Fine dining suspended 150ft in the air with panoramic views", price: "£120-180pp", day: "24 May", color: C.coral },
-  { id: "altos", name: "Altos de Chavón", icon: "🌇", description: "16th-century Mediterranean village replica — golden hour views and exploring", price: "Free", day: "28 May", color: C.gold },
+  { id: "saona", name: "Saona Island", icon: "🏝️", bio: "A full-day escape by catamaran and speedboat to one of the DR's most stunning islands. Think palm-lined white sand, waist-deep turquoise natural pools with starfish, open bar the entire way, and a beachside BBQ lunch. It's a 10-hour adventure — you leave early and come back sun-kissed and half-asleep. The boat ride alone is worth it.", price: "£70-120pp", day: "21 May", color: C.turquoise, link: "https://www.viator.com/tours/Punta-Cana/Saona-Island-Day-Trip-From-Punta-Cana/d794-17793P7" },
+  { id: "party-boat", name: "Jamaican Party Boat", icon: "🚤", bio: "A 3-hour floating party on a custom Jamaican catamaran cruising the Punta Cana coastline. The DJ drops dancehall, afrobeats, and top hits while unlimited drinks and authentic Jamaican food keep flowing. There's a VIP stop at a natural pool for swimming. This isn't a scenic cruise — it's a full-blown party on the ocean and the energy is unmatched.", price: "£50pp", day: "22 May", color: C.blue, link: "https://www.viator.com/tours/Punta-Cana/Imagine-Disco-Nightclub-in-Punta-Cana/d794-36211P24" },
+  { id: "coco-bongo", name: "Coco Bongo", icon: "🎭", bio: "Punta Cana's biggest and most famous nightlife venue. The show kicks off at 8pm with confetti raining from the ceiling, tribute acts (Madonna, MJ, Beyoncé), acrobats, and dancers recreating scenes from Phantom of the Opera and Chicago. After midnight it turns into a full club until 3am. Open bar included with tickets. It's loud, packed, and absolutely wild — the kind of night you talk about for years.", price: "£60-100pp", day: "23 May", color: C.purple, link: "https://www.cocobongo.com/show/punta-cana/?lang=en" },
+  { id: "scape-park", name: "Scape Park", icon: "🎢", bio: "A nature adventure park in Cap Cana with 15+ attractions spread across jungle and coastline. The headline is the zip-line circuit — the longest is nearly 500m over the jungle canopy ending with a splash into water. There's also the Hoyo Azul cenote (crystal-clear turquoise water in a cave), underground caves to explore, and buggy rides through the trails. The staff are brilliant and the whole day feels like an adventure film.", price: "£90-130pp", day: "24 May", color: C.green, link: "https://scapepark.com/" },
+  { id: "sky-dinner", name: "Dinner in the Sky", icon: "🎈", bio: "You sit at a table suspended 50 metres in the air by a crane, with nothing but panoramic views, sunset cocktails, and a multi-course meal. It's surreal — the food is cooked on the ground and brought up, the music is curated, and the views at golden hour are unreal. It's one of those bucket-list experiences that sounds mad but everyone who does it says it was worth every penny.", price: "£120-180pp", day: "24 May", color: C.coral, link: "https://puntacanadinnerinthesky.com" },
+  { id: "altos", name: "Altos de Chavón", icon: "🌇", bio: "A replica 16th-century Mediterranean village perched above the Chavón River in La Romana. Cobblestone streets, art galleries, a beautiful church, and striking views from every angle. It was built in the late 70s and inaugurated with a Frank Sinatra concert. Best visited in the late afternoon for golden hour photography. It's calm, beautiful, and completely different from the resort vibe — a proper cultural change of pace.", price: "Free", day: "28 May", color: C.gold, link: "https://www.tripadvisor.com/Attraction_Review-g147292-d149775-Reviews-Altos_de_Chavon-La_Romana_La_Romana_Province_Dominican_Republic.html" },
 ];
 
 const NAV_ITEMS = [
@@ -548,83 +546,65 @@ const AdventureMap = () => {
   const [selected, setSelected] = useState(null);
 
   return (
-    <Reveal delay={0.15}>
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 24px" }}>
-        <div style={{
-          background: "#1a2a3a",
-          borderRadius: 24,
-          padding: 20,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-        }}>
-          <div style={{ textAlign: "center", marginBottom: 16 }}>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>Punta Cana</div>
-            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 16, color: C.white }}>Adventure Map</div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-            {ACTIVITIES.map((a) => (
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
+      <div style={{
+        background: "#1a2a3a",
+        borderRadius: 24,
+        padding: "24px 20px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>Punta Cana</div>
+          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.white }}>Adventure Map</div>
+          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>Tap an activity to learn more</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          {ACTIVITIES.map((a) => {
+            const isSelected = selected === a.id;
+            return (
               <div
                 key={a.id}
-                onClick={() => setSelected(selected === a.id ? null : a.id)}
+                onClick={() => setSelected(isSelected ? null : a.id)}
                 style={{
-                  background: selected === a.id
+                  background: isSelected
                     ? `linear-gradient(135deg, ${a.color}, ${a.color}CC)`
                     : `linear-gradient(135deg, ${a.color}25, ${a.color}15)`,
                   borderRadius: 16,
-                  padding: selected === a.id ? "16px 12px" : "14px 10px",
-                  textAlign: "center",
+                  padding: isSelected ? "20px 16px" : "14px 10px",
+                  textAlign: isSelected ? "left" : "center",
                   cursor: "pointer",
-                  border: `2px solid ${selected === a.id ? a.color : "rgba(255,255,255,0.08)"}`,
+                  border: `2px solid ${isSelected ? a.color : "rgba(255,255,255,0.08)"}`,
                   transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-                  transform: selected === a.id ? "scale(1.05)" : "scale(1)",
-                  gridColumn: selected === a.id ? "1 / -1" : "auto",
+                  gridColumn: isSelected ? "1 / -1" : "auto",
                 }}
               >
-                <div style={{ fontSize: selected === a.id ? 28 : 24, transition: "font-size 0.3s ease" }}>{a.icon}</div>
-                <div style={{
-                  fontFamily: "'Dela Gothic One', sans-serif",
-                  fontSize: selected === a.id ? 14 : 10,
-                  color: C.white,
-                  marginTop: 4,
-                  transition: "font-size 0.3s ease",
-                }}>{a.name}</div>
-                {selected !== a.id && (
-                  <div style={{
-                    width: 6, height: 6, borderRadius: "50%",
-                    background: a.color, margin: "6px auto 0",
-                    boxShadow: `0 0 8px ${a.color}`,
-                  }} />
+                {!isSelected && (
+                  <>
+                    <div style={{ fontSize: 24 }}>{a.icon}</div>
+                    <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 10, color: C.white, marginTop: 4 }}>{a.name}</div>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: a.color, margin: "6px auto 0", boxShadow: `0 0 8px ${a.color}` }} />
+                  </>
                 )}
-                {selected === a.id && (
-                  <div style={{ marginTop: 8 }}>
-                    <div style={{
-                      fontFamily: "Nunito, sans-serif", fontSize: 12, fontWeight: 600,
-                      color: "rgba(255,255,255,0.9)", lineHeight: 1.5, marginBottom: 8,
-                    }}>{a.description}</div>
-                    <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-                      <span style={{
-                        fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10,
-                        background: "rgba(255,255,255,0.2)", color: C.white,
-                        padding: "3px 10px", borderRadius: 8,
-                      }}>{a.price}</span>
-                      <span style={{
-                        fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10,
-                        background: "rgba(255,255,255,0.2)", color: C.white,
-                        padding: "3px 10px", borderRadius: 8,
-                      }}>{a.day}</span>
+                {isSelected && (
+                  <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+                    <div style={{ fontSize: 32, lineHeight: 1 }}>{a.icon}</div>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 16, color: C.white, marginBottom: 6 }}>{a.name}</div>
+                      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.85)", lineHeight: 1.6, marginBottom: 10 }}>{a.bio}</div>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                        <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, background: "rgba(255,255,255,0.2)", color: C.white, padding: "4px 12px", borderRadius: 8 }}>{a.price}</span>
+                        <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, background: "rgba(255,255,255,0.2)", color: C.white, padding: "4px 12px", borderRadius: 8 }}>{a.day}</span>
+                        <a href={a.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, background: a.color, color: C.white, padding: "4px 12px", borderRadius: 8, textDecoration: "none" }}>Learn more →</a>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-          <div style={{
-            textAlign: "center", marginTop: 12,
-            fontFamily: "Nunito, sans-serif", fontSize: 10, fontWeight: 600,
-            color: "rgba(255,255,255,0.3)",
-          }}>Tap a pin to explore</div>
+            );
+          })}
         </div>
       </div>
-    </Reveal>
+    </div>
   );
 };
 
@@ -691,52 +671,60 @@ export default function App() {
       {/* ── ABOUT THE HOLIDAY ──────────────────────────────────────────── */}
       <section id="about" style={{ padding: "80px 0 60px", background: C.white }}>
         <Reveal>
-          <div style={{ textAlign: "center", marginBottom: 36, padding: "0 24px" }}>
+          <div style={{ textAlign: "center", marginBottom: 40, padding: "0 24px" }}>
             <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>The Mission Briefing</div>
             <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>About the Holiday</h2>
           </div>
         </Reveal>
 
-        {/* Hotel Highlights */}
+        {/* Desktop: Hotel left, Need to Know right */}
         <Reveal delay={0.1}>
-          <div style={{ textAlign: "center", padding: "0 24px", marginBottom: 32 }}>
-            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(18px, 4vw, 28px)", color: C.dark, marginBottom: 4 }}>{RESORT.name}</div>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.textBody, fontWeight: 600 }}>{"⭐".repeat(RESORT.stars)} All-Inclusive</div>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, fontWeight: 600, marginTop: 4 }}>Check-in: {RESORT.checkIn} · Check-out: {RESORT.checkOut}</div>
-          </div>
-        </Reveal>
-        <Reveal delay={0.15}>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10, maxWidth: 520, margin: "0 auto 40px", padding: "0 24px" }}>
-            {RESORT.included.map((item, i) => (
-              <div key={i} style={{ background: `${C.turquoise}10`, borderRadius: 14, padding: "8px 16px", display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 18 }}>{item.icon}</span>
-                <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 12, color: C.dark }}>{item.label}</span>
-              </div>
-            ))}
-          </div>
-        </Reveal>
+          <div style={{ maxWidth: 960, margin: "0 auto 48px", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 24, alignItems: "start" }}>
 
-        {/* Key Dates & Travel Info */}
-        <Reveal delay={0.2}>
-          <div style={{ maxWidth: 600, margin: "0 auto 40px", padding: "0 24px" }}>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 16 }}>Need to Know</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
-              {TRIP_INFO.map((item) => (
-                <div key={item.key} style={{ background: `${C.turquoise}08`, borderRadius: 16, padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: `${C.turquoise}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{item.icon}</div>
-                  <div>
-                    <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, color: C.textBody, letterSpacing: 0.3 }}>{item.key}</div>
-                    <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 600, fontSize: 12, color: C.dark, lineHeight: 1.4 }}>{item.value}</div>
+            {/* Hotel Highlights */}
+            <div style={{ background: C.sand, borderRadius: 24, padding: "28px 24px", height: "100%" }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>Your Hotel</div>
+              <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(18px, 3vw, 24px)", color: C.dark, marginBottom: 4 }}>{RESORT.name}</div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.textBody, fontWeight: 600, marginBottom: 16 }}>{"⭐".repeat(RESORT.stars)} All-Inclusive · Adults Only</div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.textBody, fontWeight: 600, lineHeight: 1.8, marginBottom: 16 }}>
+                An Autograph Collection resort on Uvero Alto Beach, designed for social trips, group holidays, and non-stop energy. The pool area is the heartbeat — DJs, foam parties, and electro beats from morning to night. The nightclub keeps things going well past midnight. Food is all-inclusive across multiple restaurants, premium drinks are unlimited, and the beach is right there.
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                {RESORT.included.map((item, i) => (
+                  <div key={i} style={{ background: `${C.turquoise}12`, borderRadius: 12, padding: "6px 12px", display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ fontSize: 14 }}>{item.icon}</span>
+                    <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 11, color: C.dark }}>{item.label}</span>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, fontWeight: 600, borderTop: `1px solid ${C.turquoise}20`, paddingTop: 12 }}>
+                Check-in: {RESORT.checkIn} · Check-out: {RESORT.checkOut}
+              </div>
+            </div>
+
+            {/* Need to Know */}
+            <div style={{ background: C.sand, borderRadius: 24, padding: "28px 24px", height: "100%" }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>Need to Know</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {TRIP_INFO.map((item) => (
+                  <div key={item.key} style={{ background: C.white, borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${C.turquoise}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{item.icon}</div>
+                    <div>
+                      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, color: C.textBody, letterSpacing: 0.3, textTransform: "uppercase" }}>{item.key}</div>
+                      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 600, fontSize: 13, color: C.dark, lineHeight: 1.4 }}>{item.value}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </Reveal>
 
-        {/* Adventure Map */}
-        <Reveal delay={0.1}>
-          <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 16 }}>What's Planned</div>
+        {/* Adventure Map — full width */}
+        <Reveal delay={0.15}>
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase" }}>What's Planned</div>
+          </div>
         </Reveal>
         <AdventureMap />
       </section>
@@ -749,7 +737,7 @@ export default function App() {
             <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>Meet the Players</h2>
           </div>
         </Reveal>
-        <div className="no-scrollbar" style={{ display: "flex", gap: 16, overflowX: "auto", padding: "8px 28px 32px", scrollSnapType: "x mandatory" }}>
+        <div className="no-scrollbar" style={{ display: "flex", gap: 16, overflowX: "auto", padding: "8px 28px 32px", scrollSnapType: "x mandatory", justifyContent: "center" }}>
           {PLAYERS.map((p, i) => (
             <ProfileCard
               key={p.id}
