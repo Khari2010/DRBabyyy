@@ -688,12 +688,65 @@ export default function App() {
         </div>
       </section>
 
+      {/* ── ABOUT THE HOLIDAY ──────────────────────────────────────────── */}
+      <section id="about" style={{ padding: "80px 0 60px", background: C.white }}>
+        <Reveal>
+          <div style={{ textAlign: "center", marginBottom: 36, padding: "0 24px" }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>The Mission Briefing</div>
+            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>About the Holiday</h2>
+          </div>
+        </Reveal>
+
+        {/* Hotel Highlights */}
+        <Reveal delay={0.1}>
+          <div style={{ textAlign: "center", padding: "0 24px", marginBottom: 32 }}>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(18px, 4vw, 28px)", color: C.dark, marginBottom: 4 }}>{RESORT.name}</div>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.textBody, fontWeight: 600 }}>{"⭐".repeat(RESORT.stars)} All-Inclusive</div>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, fontWeight: 600, marginTop: 4 }}>Check-in: {RESORT.checkIn} · Check-out: {RESORT.checkOut}</div>
+          </div>
+        </Reveal>
+        <Reveal delay={0.15}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10, maxWidth: 520, margin: "0 auto 40px", padding: "0 24px" }}>
+            {RESORT.included.map((item, i) => (
+              <div key={i} style={{ background: `${C.turquoise}10`, borderRadius: 14, padding: "8px 16px", display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 18 }}>{item.icon}</span>
+                <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 12, color: C.dark }}>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+
+        {/* Key Dates & Travel Info */}
+        <Reveal delay={0.2}>
+          <div style={{ maxWidth: 600, margin: "0 auto 40px", padding: "0 24px" }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 16 }}>Need to Know</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
+              {TRIP_INFO.map((item) => (
+                <div key={item.key} style={{ background: `${C.turquoise}08`, borderRadius: 16, padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: `${C.turquoise}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{item.icon}</div>
+                  <div>
+                    <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, color: C.textBody, letterSpacing: 0.3 }}>{item.key}</div>
+                    <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 600, fontSize: 12, color: C.dark, lineHeight: 1.4 }}>{item.value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+
+        {/* Adventure Map */}
+        <Reveal delay={0.1}>
+          <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 16 }}>What's Planned</div>
+        </Reveal>
+        <AdventureMap />
+      </section>
+
       {/* ── PLAYERS ─────────────────────────────────────────────────────── */}
-      <section id="crew" style={{ padding: "80px 0 60px", background: C.sand }}>
+      <section id="players" style={{ padding: "80px 0 60px", background: C.sand }}>
         <Reveal>
           <div style={{ textAlign: "center", marginBottom: 36, padding: "0 24px" }}>
             <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>The Lineup</div>
-            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>The Crew</h2>
+            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>Meet the Players</h2>
           </div>
         </Reveal>
         <div className="no-scrollbar" style={{ display: "flex", gap: 16, overflowX: "auto", padding: "8px 28px 32px", scrollSnapType: "x mandatory" }}>
@@ -739,63 +792,14 @@ export default function App() {
         <Reveal>
           <div style={{ textAlign: "center", marginBottom: 32, padding: "0 24px" }}>
             <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Earn Your Bragging Rights</div>
-            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>The Gauntlet</h2>
-            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, marginTop: 8, fontWeight: 600 }}>Challenges to settle who really ran this trip</p>
+            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>Learn the Game</h2>
+            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, marginTop: 8, fontWeight: 600 }}>The rules of engagement — challenges to settle who really ran this trip</p>
           </div>
         </Reveal>
         <div className="no-scrollbar" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "8px 28px 24px", scrollSnapType: "x mandatory" }}>
           {CHALLENGES.map((c, i) => <ChallengeCard key={c.id} challenge={c} index={i} />)}
         </div>
         <Leaderboard />
-      </section>
-
-      {/* ── RESORT ──────────────────────────────────────────────────────── */}
-      <section id="resort" style={{ padding: "80px 24px 60px", background: C.white }}>
-        <Reveal>
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.green, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Home Base</div>
-            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(24px, 6vw, 40px)", color: C.dark }}>{RESORT.name}</h2>
-            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.textBody, fontWeight: 600, marginTop: 4 }}>{"⭐".repeat(RESORT.stars)} All-Inclusive</p>
-          </div>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12, maxWidth: 500, margin: "0 auto" }}>
-            {RESORT.included.map((item, i) => (
-              <div key={i} style={{ background: `${C.green}10`, borderRadius: 16, padding: "10px 18px", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 20 }}>{item.icon}</span>
-                <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 13, color: C.dark }}>{item.label}</span>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-        <Reveal delay={0.2}>
-          <div style={{ textAlign: "center", marginTop: 24, fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, fontWeight: 600 }}>
-            Check-in: {RESORT.checkIn} • Check-out: {RESORT.checkOut}
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ── NEED TO KNOW ────────────────────────────────────────────────── */}
-      <section id="need-to-know" style={{ padding: "80px 24px 60px", background: C.sand }}>
-        <Reveal>
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.purple, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Before You Go</div>
-            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(24px, 6vw, 40px)", color: C.dark }}>Need to Know</h2>
-          </div>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <div style={{ maxWidth: 600, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 12 }}>
-            {TRIP_INFO.map((item) => (
-              <div key={item.key} style={{ background: C.white, borderRadius: 18, padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: `${C.purple}10`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{item.icon}</div>
-                <div>
-                  <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: C.textBody, letterSpacing: 0.3, marginBottom: 2 }}>{item.key}</div>
-                  <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 600, fontSize: 13, color: C.dark, lineHeight: 1.5 }}>{item.value}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────────────── */}
