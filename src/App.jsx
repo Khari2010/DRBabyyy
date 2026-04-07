@@ -544,6 +544,90 @@ const Leaderboard = () => (
   </Reveal>
 );
 
+const AdventureMap = () => {
+  const [selected, setSelected] = useState(null);
+
+  return (
+    <Reveal delay={0.15}>
+      <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 24px" }}>
+        <div style={{
+          background: "#1a2a3a",
+          borderRadius: 24,
+          padding: 20,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+        }}>
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>Punta Cana</div>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 16, color: C.white }}>Adventure Map</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+            {ACTIVITIES.map((a) => (
+              <div
+                key={a.id}
+                onClick={() => setSelected(selected === a.id ? null : a.id)}
+                style={{
+                  background: selected === a.id
+                    ? `linear-gradient(135deg, ${a.color}, ${a.color}CC)`
+                    : `linear-gradient(135deg, ${a.color}25, ${a.color}15)`,
+                  borderRadius: 16,
+                  padding: selected === a.id ? "16px 12px" : "14px 10px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  border: `2px solid ${selected === a.id ? a.color : "rgba(255,255,255,0.08)"}`,
+                  transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
+                  transform: selected === a.id ? "scale(1.05)" : "scale(1)",
+                  gridColumn: selected === a.id ? "1 / -1" : "auto",
+                }}
+              >
+                <div style={{ fontSize: selected === a.id ? 28 : 24, transition: "font-size 0.3s ease" }}>{a.icon}</div>
+                <div style={{
+                  fontFamily: "'Dela Gothic One', sans-serif",
+                  fontSize: selected === a.id ? 14 : 10,
+                  color: C.white,
+                  marginTop: 4,
+                  transition: "font-size 0.3s ease",
+                }}>{a.name}</div>
+                {selected !== a.id && (
+                  <div style={{
+                    width: 6, height: 6, borderRadius: "50%",
+                    background: a.color, margin: "6px auto 0",
+                    boxShadow: `0 0 8px ${a.color}`,
+                  }} />
+                )}
+                {selected === a.id && (
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{
+                      fontFamily: "Nunito, sans-serif", fontSize: 12, fontWeight: 600,
+                      color: "rgba(255,255,255,0.9)", lineHeight: 1.5, marginBottom: 8,
+                    }}>{a.description}</div>
+                    <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                      <span style={{
+                        fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10,
+                        background: "rgba(255,255,255,0.2)", color: C.white,
+                        padding: "3px 10px", borderRadius: 8,
+                      }}>{a.price}</span>
+                      <span style={{
+                        fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10,
+                        background: "rgba(255,255,255,0.2)", color: C.white,
+                        padding: "3px 10px", borderRadius: 8,
+                      }}>{a.day}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div style={{
+            textAlign: "center", marginTop: 12,
+            fontFamily: "Nunito, sans-serif", fontSize: 10, fontWeight: 600,
+            color: "rgba(255,255,255,0.3)",
+          }}>Tap a pin to explore</div>
+        </div>
+      </div>
+    </Reveal>
+  );
+};
+
 // ─── MAIN APP ───────────────────────────────────────────────────────────────
 export default function App() {
   const [loaded, setLoaded] = useState(false);
