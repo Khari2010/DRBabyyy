@@ -279,22 +279,36 @@ const ProfileCard = ({ player, index, onOpen }) => (
     <div
       onClick={onOpen}
       style={{
-        width: 200, height: 300, borderRadius: 24, cursor: "pointer", userSelect: "none",
-        background: `linear-gradient(170deg, ${C.white} 0%, ${player.color}15 100%)`,
-        border: `3px solid ${player.color}44`,
-        boxShadow: `0 8px 32px ${player.color}22`,
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        gap: 10, padding: 20,
+        width: 220, paddingTop: 70, cursor: "pointer", userSelect: "none",
+        position: "relative",
         transition: "all 0.3s ease",
       }}
     >
-      <div style={{ width: 100, height: 100, borderRadius: "50%", overflow: "hidden", border: `3px solid ${player.color}55`, boxShadow: `0 4px 16px ${player.color}30` }}>
+      {/* Avatar — oversized, overlapping the card top */}
+      <div style={{
+        position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", zIndex: 2,
+        width: 130, height: 130, borderRadius: "50%", overflow: "hidden",
+        border: `4px solid ${player.color}`,
+        boxShadow: `0 8px 24px ${player.color}40, 0 0 0 6px ${C.white}`,
+        background: `linear-gradient(135deg, ${player.color}30, ${player.color}10)`,
+      }}>
         <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
       </div>
-      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: player.color, letterSpacing: 3 }}>#{player.num}</div>
-      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 16, color: C.dark, textAlign: "center", lineHeight: 1.3 }}>{player.name}</div>
-      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: C.white, background: player.color, padding: "4px 14px", borderRadius: 16, letterSpacing: 0.5, textTransform: "uppercase" }}>{player.title}</div>
-      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, marginTop: "auto", animation: "tapPulse 2.5s ease-in-out infinite" }}>tap to view profile</div>
+      {/* Card body — starts below avatar overlap */}
+      <div style={{
+        background: `linear-gradient(170deg, ${C.white} 0%, ${player.color}12 100%)`,
+        border: `2px solid ${player.color}30`,
+        borderRadius: 24,
+        boxShadow: `0 8px 32px ${player.color}18`,
+        padding: "72px 16px 20px",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        gap: 8, textAlign: "center",
+      }}>
+        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 13, color: player.color, letterSpacing: 3 }}>#{player.num}</div>
+        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.dark, lineHeight: 1.2 }}>{player.name}</div>
+        <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: C.white, background: player.color, padding: "5px 16px", borderRadius: 16, letterSpacing: 0.5, textTransform: "uppercase" }}>{player.title}</div>
+        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, marginTop: 4, animation: "tapPulse 2.5s ease-in-out infinite" }}>tap to view profile</div>
+      </div>
     </div>
   </Reveal>
 );
@@ -358,7 +372,12 @@ const ProfileModal = ({ player, onClose }) => {
         {/* Content */}
         <div style={{ padding: "24px 24px 28px" }}>
           {/* Bio */}
-          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, lineHeight: 1.8, fontWeight: 600, textAlign: "center", marginBottom: 20 }}>{player.bio}</div>
+          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, lineHeight: 1.8, fontWeight: 600, textAlign: "center", marginBottom: player.about ? 12 : 20 }}>{player.bio}</div>
+
+          {/* About */}
+          {player.about && (
+            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.textBody, lineHeight: 1.7, fontWeight: 500, textAlign: "center", marginBottom: 20, opacity: 0.8 }}>{player.about}</div>
+          )}
 
           {/* Travel dates */}
           {presence && (
