@@ -333,7 +333,7 @@ const ProfileModal = ({ player, onClose }) => {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "90vw", maxWidth: 420, maxHeight: "85vh", overflowY: "auto",
+          width: "90vw", maxWidth: 480, maxHeight: "90vh", overflowY: "auto",
           background: C.white, borderRadius: 28,
           boxShadow: `0 24px 80px rgba(0,0,0,0.3), 0 0 0 1px ${player.color}22`,
           animation: "modalScaleIn 0.3s cubic-bezier(0.16,1,0.3,1)",
@@ -346,37 +346,54 @@ const ProfileModal = ({ player, onClose }) => {
           onClick={onClose}
           style={{
             position: "absolute", top: 16, right: 16, zIndex: 3,
-            width: 32, height: 32, borderRadius: "50%",
-            background: "rgba(0,0,0,0.08)", border: "none", cursor: "pointer",
+            width: 36, height: 36, borderRadius: "50%",
+            background: "rgba(255,255,255,0.25)", border: "none", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: "Nunito, sans-serif", fontSize: 16, color: C.textBody, fontWeight: 700,
+            fontFamily: "Nunito, sans-serif", fontSize: 18, color: C.white, fontWeight: 700,
+            backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
           }}
         >
           ✕
         </button>
 
-        {/* Colored header band */}
+        {/* Hero avatar section — large illustration showcase */}
         <div style={{
-          background: `linear-gradient(135deg, ${player.color}, ${player.color}CC)`,
-          borderRadius: "28px 28px 0 0", padding: "32px 24px 24px",
-          display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
+          background: `linear-gradient(160deg, ${player.color}DD, ${player.color}99)`,
+          borderRadius: "28px 28px 0 0",
+          position: "relative", overflow: "hidden",
         }}>
-          <div style={{ width: 110, height: 110, borderRadius: "50%", overflow: "hidden", border: "3px solid rgba(255,255,255,0.3)", boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}>
-            <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+          {/* Decorative background circles */}
+          <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+          <div style={{ position: "absolute", bottom: -20, left: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
+
+          {/* Avatar — large, rounded square showcase */}
+          <div style={{ display: "flex", justifyContent: "center", padding: "28px 24px 0" }}>
+            <div style={{
+              width: 200, height: 200, borderRadius: 28, overflow: "hidden",
+              border: "4px solid rgba(255,255,255,0.25)",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
+              background: `linear-gradient(135deg, ${player.color}40, ${player.color}20)`,
+            }}>
+              <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 10%" }} />
+            </div>
           </div>
-          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: "rgba(255,255,255,0.7)", letterSpacing: 3 }}>#{player.num}</div>
-          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 24, color: C.white, textAlign: "center" }}>{player.name}</div>
-          <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: "rgba(255,255,255,0.9)", background: "rgba(255,255,255,0.15)", padding: "5px 16px", borderRadius: 16, letterSpacing: 1, textTransform: "uppercase" }}>{player.title}</div>
+
+          {/* Name + title overlay */}
+          <div style={{ textAlign: "center", padding: "16px 24px 24px" }}>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", letterSpacing: 4, marginBottom: 4 }}>#{player.num}</div>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.white, marginBottom: 8 }}>{player.name}</div>
+            <div style={{ display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.white, background: "rgba(255,255,255,0.18)", padding: "6px 20px", borderRadius: 16, letterSpacing: 1.5, textTransform: "uppercase" }}>{player.title}</div>
+          </div>
         </div>
 
         {/* Content */}
         <div style={{ padding: "24px 24px 28px" }}>
-          {/* Bio */}
-          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, lineHeight: 1.8, fontWeight: 600, textAlign: "center", marginBottom: player.about ? 12 : 20 }}>{player.bio}</div>
+          {/* Bio quote */}
+          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 15, color: C.dark, lineHeight: 1.7, fontWeight: 700, textAlign: "center", marginBottom: 16, fontStyle: "italic" }}>"{player.bio}"</div>
 
           {/* About */}
           {player.about && (
-            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.textBody, lineHeight: 1.7, fontWeight: 500, textAlign: "center", marginBottom: 20, opacity: 0.8 }}>{player.about}</div>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, lineHeight: 1.8, fontWeight: 500, textAlign: "left", marginBottom: 24 }}>{player.about}</div>
           )}
 
           {/* Travel dates */}
