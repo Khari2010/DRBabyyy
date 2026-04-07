@@ -356,33 +356,28 @@ const ProfileModal = ({ player, onClose }) => {
           ✕
         </button>
 
-        {/* Hero avatar section — large illustration showcase */}
+        {/* Hero — avatar as full background with text overlay */}
         <div style={{
-          background: `linear-gradient(160deg, ${player.color}DD, ${player.color}99)`,
           borderRadius: "28px 28px 0 0",
           position: "relative", overflow: "hidden",
+          minHeight: 380,
+          display: "flex", flexDirection: "column", justifyContent: "flex-end",
         }}>
-          {/* Decorative background circles */}
-          <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
-          <div style={{ position: "absolute", bottom: -20, left: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
-
-          {/* Avatar — large, rounded square showcase */}
-          <div style={{ display: "flex", justifyContent: "center", padding: "28px 24px 0" }}>
-            <div style={{
-              width: 200, height: 200, borderRadius: 28, overflow: "hidden",
-              border: "4px solid rgba(255,255,255,0.25)",
-              boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
-              background: `linear-gradient(135deg, ${player.color}40, ${player.color}20)`,
-            }}>
-              <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 10%" }} />
-            </div>
-          </div>
-
-          {/* Name + title overlay */}
-          <div style={{ textAlign: "center", padding: "16px 24px 24px" }}>
-            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", letterSpacing: 4, marginBottom: 4 }}>#{player.num}</div>
-            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.white, marginBottom: 8 }}>{player.name}</div>
-            <div style={{ display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.white, background: "rgba(255,255,255,0.18)", padding: "6px 20px", borderRadius: 16, letterSpacing: 1.5, textTransform: "uppercase" }}>{player.title}</div>
+          {/* Avatar as full-bleed background */}
+          <img src={player.avatar} alt={player.name} style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover", objectPosition: "center 10%",
+          }} />
+          {/* Gradient overlay for text legibility */}
+          <div style={{
+            position: "absolute", inset: 0,
+            background: `linear-gradient(180deg, transparent 30%, ${player.color}44 60%, ${player.color}DD 85%, ${player.color} 100%)`,
+          }} />
+          {/* Text overlay at bottom */}
+          <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 24px 24px" }}>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.6)", letterSpacing: 4, marginBottom: 4 }}>#{player.num}</div>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 32, color: C.white, textShadow: "0 2px 12px rgba(0,0,0,0.3)", marginBottom: 8 }}>{player.name}</div>
+            <div style={{ display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.white, background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "6px 20px", borderRadius: 16, letterSpacing: 1.5, textTransform: "uppercase" }}>{player.title}</div>
           </div>
         </div>
 
