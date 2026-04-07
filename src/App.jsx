@@ -42,12 +42,12 @@ const MEMBERS = ["Kai", "Khari", "Candice", "Kyanna", "Camara", "Miles"];
 const FULL_GROUP = MEMBERS;
 
 const PLAYERS = [
-  { id: 1, num: "01", name: "Kai", title: "The Visionary", bio: "Content creator mode: always on. Will have every angle of the trip documented in 4K.", color: C.blue, emoji: "🎬" },
-  { id: 2, num: "02", name: "Khari", title: "The Architect", bio: "Built this entire trip from scratch. If it's planned, it's because of this one.", color: C.gold, emoji: "👑" },
-  { id: 3, num: "03", name: "Candice", title: "The Energy", bio: "First one up, last one to care. Brings the vibes that make the trip legendary.", color: C.coral, emoji: "💃" },
-  { id: 4, num: "04", name: "Kyanna", title: "The Wildcard", bio: "Quiet until she's not. Expect the unexpected — that's the whole point.", color: C.purple, emoji: "✨" },
-  { id: 5, num: "05", name: "Camara", title: "The Connector", bio: "Knows everyone within 30 minutes of landing. Somehow always finds the best spots.", color: C.green, emoji: "🌊" },
-  { id: 6, num: "06", name: "Miles", title: "The Legend", bio: "Moves in silence but hits different. By day 3, the resort will know his name.", color: C.cyan, emoji: "🔥" },
+  { id: 1, num: "01", name: "Kai", title: "The Visionary", bio: "Content creator mode: always on. Will have every angle of the trip documented in 4K.", color: C.blue, emoji: "🎬", avatar: "/images/avatars/kai.png" },
+  { id: 2, num: "02", name: "Khari", title: "The Architect", bio: "Built this entire trip from scratch. If it's planned, it's because of this one.", color: C.gold, emoji: "👑", avatar: "/images/avatars/khari.png" },
+  { id: 3, num: "03", name: "Candice", title: "The Energy", bio: "First one up, last one to care. Brings the vibes that make the trip legendary.", color: C.coral, emoji: "💃", avatar: "/images/avatars/candice.png" },
+  { id: 4, num: "04", name: "Kyanna", title: "The Wildcard", bio: "Quiet until she's not. Expect the unexpected — that's the whole point.", color: C.purple, emoji: "✨", avatar: "/images/avatars/kyanna.png" },
+  { id: 5, num: "05", name: "Camara", title: "The Connector", bio: "Knows everyone within 30 minutes of landing. Somehow always finds the best spots.", color: C.green, emoji: "🌊", avatar: "/images/avatars/camara.png" },
+  { id: 6, num: "06", name: "Miles", title: "The Legend", bio: "Moves in silence but hits different. By day 3, the resort will know his name.", color: C.cyan, emoji: "🔥", avatar: "/images/avatars/miles.png" },
 ];
 
 const PRESENCE = [
@@ -104,48 +104,42 @@ const DAYS = [
   { date: "29 May", dow: "Fri", title: "Departure", tagline: "Until next time, paradise", who: ["Kai", "Khari"], items: [{ time: "AM", activity: "Pack / chill", icon: "🧳" }, { time: "13:30", activity: "Leave for airport", icon: "🚐" }, { time: "17:10", activity: "Flight home (TOM569)", icon: "✈️" }] },
 ];
 
-const TRIP_INFO = {
-  shared: [
-    { key: "Timezone", value: "AST (UTC-4)", icon: "🕐" },
-    { key: "UK Difference", value: "5 hours behind UK", icon: "🇬🇧" },
-    { key: "Currency", value: "Dominican Peso (DOP) / USD accepted", icon: "💰" },
-    { key: "Language", value: "Spanish (English at resort)", icon: "🗣️" },
-    { key: "Plug Type", value: "US Type A/B — UK adapter needed!", icon: "🔌" },
-    { key: "Emergency", value: "911", icon: "🚨" },
-    { key: "UK Embassy", value: "+1 809-472-7111", icon: "🏛️" },
-    { key: "Resort Phone", value: "+008299548177", icon: "📞" },
-  ],
-  groups: [
-    {
-      label: "TUI Flights",
-      who: ["Kai", "Khari", "Candice", "Kyanna"],
-      color: C.blue,
-      items: [
-        { key: "Booking Ref", value: "LOV13307110U" },
-        { key: "Outbound", value: "TOM566 · BHX → PUJ · 18 May" },
-        { key: "Return (Candice & Kyanna)", value: "TOM567 · PUJ → BHX · 25 May" },
-        { key: "Return (Kai & Khari)", value: "TOM569 · PUJ → BHX · 29 May" },
-      ],
-    },
-    {
-      label: "Avianca Flights",
-      who: ["Camara", "Miles"],
-      color: C.green,
-      items: [
-        { key: "Outbound", value: "AV121 + AV128 · LHR → BOG → PUJ · 19 May" },
-        { key: "Return (Camara)", value: "AV137 + AV120 · PUJ → BOG → LHR · 25 May" },
-        { key: "Return (Miles)", value: "AV137 + AV120 · PUJ → BOG → LHR · 26 May" },
-      ],
-    },
-  ],
-};
+const TRIP_INFO = [
+  { key: "Timezone", value: "AST (UTC-4)", icon: "🕐" },
+  { key: "UK Difference", value: "5 hours behind UK", icon: "🇬🇧" },
+  { key: "Currency", value: "Dominican Peso (DOP) / USD accepted", icon: "💰" },
+  { key: "Language", value: "Spanish (English at resort)", icon: "🗣️" },
+  { key: "Plug Type", value: "US Type A/B — UK adapter needed!", icon: "🔌" },
+  { key: "Emergency", value: "911", icon: "🚨" },
+  { key: "UK Embassy", value: "+1 809-472-7111", icon: "🏛️" },
+  { key: "Resort Phone", value: "+008299548177", icon: "📞" },
+];
+
+const CHALLENGES = [
+  { id: 1, title: "First Splash", description: "First person in the ocean after landing", icon: "🏊", points: 10 },
+  { id: 2, title: "Sunrise Chaser", description: "Catch 3 sunrises during the trip", icon: "🌅", points: 15 },
+  { id: 3, title: "Content King", description: "Post the best trip reel", icon: "📸", points: 20 },
+  { id: 4, title: "Iron Stomach", description: "Try every restaurant at the resort", icon: "🍽️", points: 15 },
+  { id: 5, title: "Dance Floor MVP", description: "Own the dance floor at Coco Bongo", icon: "💃", points: 20 },
+  { id: 6, title: "Early Bird", description: "First to breakfast 3 mornings", icon: "☀️", points: 10 },
+  { id: 7, title: "Squad Goals", description: "Organise a group activity", icon: "🤝", points: 15 },
+  { id: 8, title: "Last One Standing", description: "Last person awake 3 nights running", icon: "🌙", points: 15 },
+];
+
+const ACTIVITIES = [
+  { id: "saona", name: "Saona Island", icon: "🏝️", description: "Full-day boat trip with open bar, starfish beach, and island BBQ lunch", price: "£70-120pp", day: "21 May", color: C.turquoise },
+  { id: "party-boat", name: "Jamaican Party Boat", icon: "🚤", description: "Afternoon party cruise with open bar, music, and ocean vibes", price: "£50pp", day: "22 May", color: C.blue },
+  { id: "coco-bongo", name: "Coco Bongo", icon: "🎭", description: "The wildest night in Punta Cana — live show, open bar, and non-stop party", price: "£60-100pp", day: "23 May", color: C.purple },
+  { id: "scape-park", name: "Scape Park", icon: "🎢", description: "Adventure park with zip-lines, cenotes, caves, and adrenaline rushes", price: "£90-130pp", day: "24 May", color: C.green },
+  { id: "sky-dinner", name: "Dinner in the Sky", icon: "🎈", description: "Fine dining suspended 150ft in the air with panoramic views", price: "£120-180pp", day: "24 May", color: C.coral },
+  { id: "altos", name: "Altos de Chavón", icon: "🌇", description: "16th-century Mediterranean village replica — golden hour views and exploring", price: "Free", day: "28 May", color: C.gold },
+];
 
 const NAV_ITEMS = [
-  { id: "crew", label: "The Crew" },
+  { id: "about", label: "About the Holiday" },
+  { id: "players", label: "Meet the Players" },
   { id: "itinerary", label: "Itinerary" },
-  { id: "flights", label: "Flights" },
-  { id: "resort", label: "Hotel" },
-  { id: "need-to-know", label: "Need to Know" },
+  { id: "challenges", label: "Learn the Game" },
 ];
 
 // ─── HOOKS ──────────────────────────────────────────────────────────────────
@@ -282,29 +276,129 @@ const Countdown = ({ loaded }) => {
   );
 };
 
-const PlayerCard = ({ player, index }) => {
-  const [flipped, setFlipped] = useState(false);
+const ProfileCard = ({ player, index, onOpen }) => (
+  <Reveal delay={index * 0.08} style={{ flex: "0 0 auto" }}>
+    <div
+      onClick={onOpen}
+      style={{
+        width: 200, height: 300, borderRadius: 24, cursor: "pointer", userSelect: "none",
+        background: `linear-gradient(170deg, ${C.white} 0%, ${player.color}15 100%)`,
+        border: `3px solid ${player.color}44`,
+        boxShadow: `0 8px 32px ${player.color}22`,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        gap: 10, padding: 20,
+        transition: "all 0.3s ease",
+      }}
+    >
+      <div style={{ width: 100, height: 100, borderRadius: "50%", overflow: "hidden", border: `3px solid ${player.color}55`, boxShadow: `0 4px 16px ${player.color}30` }}>
+        <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+      </div>
+      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: player.color, letterSpacing: 3 }}>#{player.num}</div>
+      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 16, color: C.dark, textAlign: "center", lineHeight: 1.3 }}>{player.name}</div>
+      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: C.white, background: player.color, padding: "4px 14px", borderRadius: 16, letterSpacing: 0.5, textTransform: "uppercase" }}>{player.title}</div>
+      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, marginTop: "auto", animation: "tapPulse 2.5s ease-in-out infinite" }}>tap to view profile</div>
+    </div>
+  </Reveal>
+);
+
+const ProfileModal = ({ player, onClose }) => {
+  if (!player) return null;
+  const presence = PRESENCE.find((p) => p.name === player.name);
+  const playerFlights = FLIGHTS.filter((f) => f.who.includes(player.name));
+
   return (
-    <Reveal delay={index * 0.08} style={{ flex: "0 0 auto" }}>
-      <div onClick={() => setFlipped(!flipped)} style={{ width: 200, height: 300, perspective: "900px", cursor: "pointer", userSelect: "none" }}>
-        <div style={{ width: "100%", height: "100%", position: "relative", transformStyle: "preserve-3d", transition: "transform 0.7s cubic-bezier(0.4,0,0.2,1)", transform: flipped ? "rotateY(180deg)" : "rotateY(0)" }}>
-          {/* Front */}
-          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", borderRadius: 24, background: `linear-gradient(170deg, ${C.white} 0%, ${player.color}15 100%)`, border: `3px solid ${player.color}44`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 20, boxShadow: `0 8px 32px ${player.color}22` }}>
-            <div style={{ width: 90, height: 90, borderRadius: "50%", background: `linear-gradient(135deg, ${player.color}30, ${player.color}60)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, border: `3px solid ${player.color}55` }}>{player.emoji}</div>
-            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: player.color, letterSpacing: 3 }}>#{player.num}</div>
-            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 16, color: C.dark, textAlign: "center", lineHeight: 1.3 }}>{player.name}</div>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: C.white, background: player.color, padding: "4px 14px", borderRadius: 16, letterSpacing: 0.5, textTransform: "uppercase" }}>{player.title}</div>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, marginTop: "auto", animation: "tapPulse 2.5s ease-in-out infinite" }}>tap to reveal ↻</div>
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 200,
+        background: "rgba(0,0,0,0.6)",
+        backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 20,
+        animation: "modalFadeIn 0.3s ease",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "90vw", maxWidth: 420, maxHeight: "85vh", overflowY: "auto",
+          background: C.white, borderRadius: 28,
+          boxShadow: `0 24px 80px rgba(0,0,0,0.3), 0 0 0 1px ${player.color}22`,
+          animation: "modalScaleIn 0.3s cubic-bezier(0.16,1,0.3,1)",
+          position: "relative",
+        }}
+        className="no-scrollbar"
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute", top: 16, right: 16, zIndex: 3,
+            width: 32, height: 32, borderRadius: "50%",
+            background: "rgba(0,0,0,0.08)", border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: "Nunito, sans-serif", fontSize: 16, color: C.textBody, fontWeight: 700,
+          }}
+        >
+          ✕
+        </button>
+
+        {/* Colored header band */}
+        <div style={{
+          background: `linear-gradient(135deg, ${player.color}, ${player.color}CC)`,
+          borderRadius: "28px 28px 0 0", padding: "32px 24px 24px",
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
+        }}>
+          <div style={{ width: 110, height: 110, borderRadius: "50%", overflow: "hidden", border: "3px solid rgba(255,255,255,0.3)", boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}>
+            <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
           </div>
-          {/* Back */}
-          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", transform: "rotateY(180deg)", borderRadius: 24, background: player.color, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 24, boxShadow: `0 12px 40px ${player.color}44` }}>
-            <div style={{ fontSize: 28 }}>{player.emoji}</div>
-            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 15, color: C.white }}>{player.title}</div>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: "rgba(255,255,255,0.9)", textAlign: "center", lineHeight: 1.7, fontWeight: 600 }}>{player.bio}</div>
-          </div>
+          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: "rgba(255,255,255,0.7)", letterSpacing: 3 }}>#{player.num}</div>
+          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 24, color: C.white, textAlign: "center" }}>{player.name}</div>
+          <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: "rgba(255,255,255,0.9)", background: "rgba(255,255,255,0.15)", padding: "5px 16px", borderRadius: 16, letterSpacing: 1, textTransform: "uppercase" }}>{player.title}</div>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: "24px 24px 28px" }}>
+          {/* Bio */}
+          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, lineHeight: 1.8, fontWeight: 600, textAlign: "center", marginBottom: 20 }}>{player.bio}</div>
+
+          {/* Travel dates */}
+          {presence && (
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+              <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: player.color, background: `${player.color}12`, padding: "6px 14px", borderRadius: 12, letterSpacing: 0.3 }}>Arrives: {presence.start} May</span>
+              <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: player.color, background: `${player.color}12`, padding: "6px 14px", borderRadius: 12, letterSpacing: 0.3 }}>Departs: {presence.end} May</span>
+            </div>
+          )}
+
+          {/* Flights */}
+          <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.textBody, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10, textAlign: "center", opacity: 0.5 }}>Flights</div>
+          {playerFlights.map((f) => (
+            <div key={f.id} style={{ background: `${player.color}08`, borderRadius: 16, padding: "14px 16px", marginBottom: 8, border: `1px solid ${player.color}15` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.white, background: f.type === "Outbound" ? C.turquoise : C.coral, padding: "3px 10px", borderRadius: 10, letterSpacing: 0.5, textTransform: "uppercase" }}>{f.type}</span>
+                <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 11, color: C.textBody }}>{f.date}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px" }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.dark }}>{f.from.code}</div>
+                  <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 700 }}>{f.depart}</div>
+                </div>
+                <div style={{ flex: 1, textAlign: "center", padding: "0 8px" }}>
+                  <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 700 }}>{f.duration}</div>
+                  <div style={{ height: 2, background: `linear-gradient(90deg, ${player.color}44, ${player.color}, ${player.color}44)`, borderRadius: 2, margin: "4px 0" }} />
+                  {f.stops ? <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, color: player.color, fontWeight: 800 }}>via {f.stopCity}</div> : <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, color: C.green, fontWeight: 800 }}>Direct</div>}
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.dark }}>{f.to.code}</div>
+                  <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 700 }}>{f.arrive}</div>
+                </div>
+              </div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 600, textAlign: "center", marginTop: 8 }}>{f.flight} · {f.aircraft}</div>
+            </div>
+          ))}
         </div>
       </div>
-    </Reveal>
+    </div>
   );
 };
 
@@ -417,40 +511,44 @@ const DayCard = ({ day, dayIndex, isActive, onClick }) => {
   );
 };
 
-const FlightCard = ({ flight }) => {
-  const isOut = flight.type === "Outbound";
-  const color = isOut ? C.turquoise : C.coral;
-  return (
-    <div style={{ flex: "0 0 auto", width: 300, borderRadius: 20, background: C.white, border: `2px solid ${color}22`, padding: 20, boxShadow: `0 4px 20px ${color}15`, scrollSnapAlign: "center" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.white, background: color, padding: "3px 12px", borderRadius: 12, letterSpacing: 1, textTransform: "uppercase" }}>{flight.type}</span>
-        <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 12, color: C.textBody }}>{flight.date}</span>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 22, color: C.dark }}>{flight.from.code}</div>
-          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 700 }}>{flight.depart}</div>
-        </div>
-        <div style={{ flex: 1, textAlign: "center", padding: "0 8px" }}>
-          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 700 }}>{flight.duration}</div>
-          <div style={{ height: 2, background: `linear-gradient(90deg, ${color}44, ${color}, ${color}44)`, borderRadius: 2, margin: "4px 0" }} />
-          {flight.stops ? <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, color: color, fontWeight: 800 }}>via {flight.stopCity}</div> : <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, color: C.green, fontWeight: 800 }}>Direct</div>}
-        </div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 22, color: C.dark }}>{flight.to.code}</div>
-          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 700 }}>{flight.arrive}</div>
-        </div>
-      </div>
-      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 11, color: C.textBody, fontWeight: 600 }}>{flight.flight} • {flight.aircraft}</div>
-      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 11, color: color, fontWeight: 800, marginTop: 6 }}>{flight.who.join(", ")}</div>
+const ChallengeCard = ({ challenge, index }) => (
+  <Reveal delay={index * 0.06} style={{ flex: "0 0 auto" }}>
+    <div style={{ width: 160, borderRadius: 20, background: C.white, padding: "20px 16px", boxShadow: "0 4px 16px rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center", scrollSnapAlign: "center" }}>
+      <div style={{ fontSize: 32 }}>{challenge.icon}</div>
+      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 12, color: C.dark, lineHeight: 1.3 }}>{challenge.title}</div>
+      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 11, color: C.textBody, fontWeight: 600, lineHeight: 1.5 }}>{challenge.description}</div>
+      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.gold, background: `${C.gold}15`, padding: "3px 12px", borderRadius: 10, letterSpacing: 0.5, marginTop: "auto" }}>{challenge.points} pts</div>
     </div>
-  );
-};
+  </Reveal>
+);
+
+const Leaderboard = () => (
+  <Reveal delay={0.15}>
+    <div style={{ maxWidth: 540, margin: "24px auto 0", background: C.white, borderRadius: 20, padding: "20px 20px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.gold, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 16 }}>Leaderboard</div>
+      {PLAYERS.map((p, i) => (
+        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i > 0 ? "1px solid #f0f0f0" : "none" }}>
+          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: C.textBody, width: 24, textAlign: "center" }}>{i + 1}</div>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: `${p.color}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{p.emoji}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 13, color: C.dark }}>{p.name}</div>
+            <div style={{ height: 4, borderRadius: 2, background: `${p.color}15`, marginTop: 4 }}>
+              <div style={{ height: "100%", width: "0%", borderRadius: 2, background: p.color, transition: "width 0.6s ease" }} />
+            </div>
+          </div>
+          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: p.color }}>0</div>
+        </div>
+      ))}
+      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, textAlign: "center", marginTop: 14, fontWeight: 600, opacity: 0.5 }}>Tracking starts on arrival</div>
+    </div>
+  </Reveal>
+);
 
 // ─── MAIN APP ───────────────────────────────────────────────────────────────
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [activeDay, setActiveDay] = useState(0);
+  const [expandedPlayer, setExpandedPlayer] = useState(null);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -465,6 +563,8 @@ export default function App() {
       @keyframes heroZoom{from{transform:scale(1.1)}to{transform:scale(1)}}
       @keyframes tapPulse{0%,100%{opacity:0.35}50%{opacity:0.7}}
       @keyframes ctaShimmer{0%{background-position:0% center}100%{background-position:200% center}}
+      @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+      @keyframes modalScaleIn{from{opacity:0;transform:scale(0.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
       *{box-sizing:border-box;margin:0;padding:0}
       html{scroll-behavior:smooth}
       body{overflow-x:hidden}
@@ -513,7 +613,14 @@ export default function App() {
           </div>
         </Reveal>
         <div className="no-scrollbar" style={{ display: "flex", gap: 16, overflowX: "auto", padding: "8px 28px 32px", scrollSnapType: "x mandatory" }}>
-          {PLAYERS.map((p, i) => <PlayerCard key={p.id} player={p} index={i} />)}
+          {PLAYERS.map((p, i) => (
+            <ProfileCard
+              key={p.id}
+              player={p}
+              index={i}
+              onOpen={() => setExpandedPlayer(p.id)}
+            />
+          ))}
         </div>
         <PresenceChart />
       </section>
@@ -543,21 +650,19 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── FLIGHTS ─────────────────────────────────────────────────────── */}
-      <section id="flights" style={{ padding: "80px 0 60px", background: C.sand }}>
+      {/* ── CHALLENGES ──────────────────────────────────────────────────── */}
+      <section id="challenges" style={{ padding: "80px 0 60px", background: C.sand }}>
         <Reveal>
           <div style={{ textAlign: "center", marginBottom: 32, padding: "0 24px" }}>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Getting There & Back</div>
-            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>Flights</h2>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Earn Your Bragging Rights</div>
+            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>The Gauntlet</h2>
+            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, marginTop: 8, fontWeight: 600 }}>Challenges to settle who really ran this trip</p>
           </div>
         </Reveal>
-        <div className="no-scrollbar" style={{ display: "flex", gap: 16, overflowX: "auto", padding: "8px 28px 24px", scrollSnapType: "x mandatory" }}>
-          {FLIGHTS.map((f) => (
-            <Reveal key={f.id} delay={0.05}>
-              <FlightCard flight={f} />
-            </Reveal>
-          ))}
+        <div className="no-scrollbar" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "8px 28px 24px", scrollSnapType: "x mandatory" }}>
+          {CHALLENGES.map((c, i) => <ChallengeCard key={c.id} challenge={c} index={i} />)}
         </div>
+        <Leaderboard />
       </section>
 
       {/* ── RESORT ──────────────────────────────────────────────────────── */}
@@ -594,37 +699,15 @@ export default function App() {
             <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(24px, 6vw, 40px)", color: C.dark }}>Need to Know</h2>
           </div>
         </Reveal>
-        {/* Shared info grid */}
         <Reveal delay={0.1}>
           <div style={{ maxWidth: 600, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 12 }}>
-            {TRIP_INFO.shared.map((item) => (
+            {TRIP_INFO.map((item) => (
               <div key={item.key} style={{ background: C.white, borderRadius: 18, padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: `${C.purple}10`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{item.icon}</div>
                 <div>
                   <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: C.textBody, letterSpacing: 0.3, marginBottom: 2 }}>{item.key}</div>
                   <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 600, fontSize: 13, color: C.dark, lineHeight: 1.5 }}>{item.value}</div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-        {/* Per-group travel details */}
-        <Reveal delay={0.2}>
-          <div style={{ maxWidth: 600, margin: "24px auto 0", display: "flex", flexDirection: "column", gap: 16 }}>
-            {TRIP_INFO.groups.map((group) => (
-              <div key={group.label} style={{ background: C.white, borderRadius: 18, padding: "20px 20px", borderLeft: `4px solid ${group.color}`, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-                  <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: C.dark }}>{group.label}</div>
-                  {group.who.map((name) => (
-                    <span key={name} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, color: group.color, background: `${group.color}12`, padding: "3px 10px", borderRadius: 10, letterSpacing: 0.3 }}>{name}</span>
-                  ))}
-                </div>
-                {group.items.map((item, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderTop: i > 0 ? "1px solid #f0f0f0" : "none" }}>
-                    <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.textBody }}>{item.key}</span>
-                    <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 600, fontSize: 12, color: C.dark, textAlign: "right", maxWidth: "60%" }}>{item.value}</span>
-                  </div>
-                ))}
               </div>
             ))}
           </div>
@@ -651,6 +734,12 @@ export default function App() {
       <footer style={{ textAlign: "center", padding: "16px 24px 24px", fontFamily: "Nunito, sans-serif", fontSize: 11, color: C.textBody, opacity: 0.4, fontWeight: 700, letterSpacing: 1 }}>
         PUNTA CANA '26 • ROYALTON CHIC • 🌊
       </footer>
+
+      {/* ── PROFILE MODAL ──────────────────────────────────────────────── */}
+      <ProfileModal
+        player={PLAYERS.find((p) => p.id === expandedPlayer) || null}
+        onClose={() => setExpandedPlayer(null)}
+      />
     </div>
   );
 }
