@@ -595,35 +595,31 @@ const ChallengeCard = ({ challenge, index }) => (
 );
 
 const Leaderboard = () => (
-  <Reveal delay={0.2}>
-    <div style={{ maxWidth: 540, margin: "32px auto 0", padding: "0 24px" }}>
-      <div style={{
-        background: `linear-gradient(145deg, ${C.dark}, ${C.darkSoft})`,
-        borderRadius: 24, padding: "36px 28px", textAlign: "center",
-        position: "relative", overflow: "hidden",
-      }}>
-        <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: `${C.gold}10` }} />
-        <div style={{ position: "absolute", bottom: -30, left: -30, width: 120, height: 120, borderRadius: "50%", background: `${C.coral}08` }} />
-        <div style={{ position: "relative", zIndex: 2 }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>🏆</div>
-          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 20, color: C.white, marginBottom: 8 }}>Leaderboard</div>
-          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: "rgba(255,255,255,0.5)", fontWeight: 600, lineHeight: 1.6, marginBottom: 20 }}>Live score tracking, personal logins, and challenge completion — all coming before we land.</div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 16 }}>
-            {PLAYERS.map((p) => (
-              <div key={p.id} style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", border: `2px solid ${p.color}`, boxShadow: `0 0 8px ${p.color}40` }}>
-                <img src={p.avatar} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
-              </div>
-            ))}
+  <div style={{
+    background: `linear-gradient(145deg, ${C.dark}, ${C.darkSoft})`,
+    borderRadius: 24, padding: "32px 24px", textAlign: "center",
+    position: "relative", overflow: "hidden",
+  }}>
+    <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: `${C.gold}10` }} />
+    <div style={{ position: "absolute", bottom: -30, left: -30, width: 120, height: 120, borderRadius: "50%", background: `${C.coral}08` }} />
+    <div style={{ position: "relative", zIndex: 2 }}>
+      <div style={{ fontSize: 36, marginBottom: 10 }}>🏆</div>
+      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.white, marginBottom: 8 }}>Leaderboard</div>
+      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", fontWeight: 600, lineHeight: 1.6, marginBottom: 16 }}>Live score tracking, personal logins, and challenge completion — all coming before we land.</div>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 14 }}>
+        {PLAYERS.map((p) => (
+          <div key={p.id} style={{ width: 38, height: 38, borderRadius: "50%", overflow: "hidden", border: `2px solid ${p.color}`, boxShadow: `0 0 8px ${p.color}40` }}>
+            <img src={p.avatar} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
           </div>
-          <div style={{
-            display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11,
-            color: C.gold, background: `${C.gold}15`, padding: "8px 20px", borderRadius: 14,
-            letterSpacing: 1.5, textTransform: "uppercase",
-          }}>Coming Soon</div>
-        </div>
+        ))}
       </div>
+      <div style={{
+        display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11,
+        color: C.gold, background: `${C.gold}15`, padding: "8px 20px", borderRadius: 14,
+        letterSpacing: 1.5, textTransform: "uppercase",
+      }}>Coming Soon</div>
     </div>
-  </Reveal>
+  </div>
 );
 
 const AdventureMap = () => {
@@ -865,20 +861,13 @@ export default function App() {
           <div style={{ textAlign: "center", marginBottom: 32, padding: "0 24px" }}>
             <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Earn Your Bragging Rights</div>
             <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>Learn the Game</h2>
-            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, marginTop: 8, fontWeight: 600, maxWidth: 500, margin: "8px auto 0" }}>Earn points by completing challenges. Points tracked daily. Lowest score each day = forfeit. Overall loser at end of trip = final forfeit.</p>
+            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, fontWeight: 600, maxWidth: 500, margin: "8px auto 0" }}>Earn points by completing challenges. Points tracked daily. Lowest score each day = forfeit. Overall loser at end of trip = final forfeit.</p>
           </div>
         </Reveal>
 
-        {/* Challenge cards — centered wrap */}
+        {/* Leaderboard centre, Negative points + Forfeits flanking */}
         <Reveal delay={0.1}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", padding: "8px 24px 32px", maxWidth: 960, margin: "0 auto" }}>
-            {CHALLENGES.map((c, i) => <ChallengeCard key={c.id} challenge={c} index={i} />)}
-          </div>
-        </Reveal>
-
-        {/* Negative points + Forfeits side by side */}
-        <Reveal delay={0.15}>
-          <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
+          <div style={{ maxWidth: 1000, margin: "0 auto 40px", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20, alignItems: "start" }}>
             {/* Negative points */}
             <div style={{ background: C.white, borderRadius: 20, padding: "20px 20px" }}>
               <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 14 }}>Negative Points</div>
@@ -890,19 +879,35 @@ export default function App() {
                 </div>
               ))}
             </div>
+
+            {/* Leaderboard — centre stage */}
+            <Leaderboard />
+
             {/* Forfeits */}
             <div style={{ background: C.white, borderRadius: 20, padding: "20px 20px" }}>
               <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.purple, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 14 }}>Daily Forfeits</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {FORFEITS.map((f, i) => (
-                  <div key={i} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 11, color: C.dark, background: `${C.purple}10`, padding: "5px 12px", borderRadius: 10 }}>{f}</div>
+                  <div key={i} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 12, color: C.dark, background: `${C.purple}08`, padding: "8px 14px", borderRadius: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 10, color: C.purple, opacity: 0.5 }}>{String(i + 1).padStart(2, "0")}</span>
+                    {f}
+                  </div>
                 ))}
               </div>
             </div>
           </div>
         </Reveal>
 
-        <Leaderboard />
+        {/* Challenge carousel */}
+        <Reveal delay={0.15}>
+          <div style={{ textAlign: "center", marginBottom: 12, padding: "0 24px" }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.gold, letterSpacing: 3, textTransform: "uppercase" }}>Ways to Earn Points</div>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, fontWeight: 600, color: C.textBody, marginTop: 4 }}>Swipe through the challenges</div>
+          </div>
+        </Reveal>
+        <div className="no-scrollbar" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "8px 28px 24px", scrollSnapType: "x mandatory" }}>
+          {CHALLENGES.map((c, i) => <ChallengeCard key={c.id} challenge={c} index={i} />)}
+        </div>
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────────────── */}
