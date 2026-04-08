@@ -56,7 +56,7 @@ const PRESENCE = [
   { name: "Candice", start: 18, end: 25, color: C.coral },
   { name: "Kyanna", start: 18, end: 25, color: C.purple },
   { name: "Camara", start: 20, end: 26, color: C.green },
-  { name: "Miles", start: 20, end: 26, color: C.cyan },
+  { name: "Miles", start: 20, end: 25, color: C.cyan },
 ];
 
 const RESORT = {
@@ -82,7 +82,7 @@ const FLIGHTS = [
   { id: "out-cm", type: "Outbound", date: "19 May", flight: "AV121 + AV128", aircraft: "787-8 / A320", from: { code: "LHR", city: "London" }, to: { code: "PUJ", city: "Punta Cana" }, depart: "22:05", arrive: "11:25+1", duration: "18h 20m", stops: 1, stopCity: "Bogota", who: ["Camara", "Miles"] },
   { id: "return-girls", type: "Return", date: "25 May", flight: "TOM567", aircraft: "Boeing 787 Dreamliner", from: { code: "PUJ", city: "Punta Cana" }, to: { code: "BHX", city: "Birmingham" }, depart: "16:50", arrive: "06:00+1", duration: "8h 10m", who: ["Candice", "Kyanna"] },
   { id: "return-camara", type: "Return", date: "26 May", flight: "AV137 + AV120", aircraft: "A320 / 787-8", from: { code: "PUJ", city: "Punta Cana" }, to: { code: "LHR", city: "London" }, depart: "18:35", arrive: "15:35+1", duration: "16h", stops: 1, stopCity: "Bogota", who: ["Camara"] },
-  { id: "return-miles", type: "Return", date: "26 May", flight: "AV137 + AV120", aircraft: "A320 / 787-8", from: { code: "PUJ", city: "Punta Cana" }, to: { code: "LHR", city: "London" }, depart: "18:35", arrive: "15:35+1", duration: "16h", stops: 1, stopCity: "Bogota", who: ["Miles"] },
+  { id: "return-miles", type: "Return", date: "25 May", flight: "AV137 + AV120", aircraft: "A320 / 787-8", from: { code: "PUJ", city: "Punta Cana" }, to: { code: "LHR", city: "London" }, depart: "18:35", arrive: "15:35+1", duration: "16h", stops: 1, stopCity: "Bogota", who: ["Miles"] },
   { id: "return-boys", type: "Return", date: "29 May", flight: "TOM569", aircraft: "Boeing 787 Dreamliner", from: { code: "PUJ", city: "Punta Cana" }, to: { code: "BHX", city: "Birmingham" }, depart: "17:10", arrive: "06:15+1", duration: "8h 05m", who: ["Kai", "Khari"] },
 ];
 
@@ -97,8 +97,8 @@ const DAYS = [
   { date: "22 May", dow: "Fri", title: "Party Boat + Games", tagline: "Open bar on the ocean", who: FULL_GROUP, items: [{ time: "AM", activity: "Free time / pool", icon: "🏊" }, { time: "14:30", activity: "Jamaican Party Boat (£50pp)", icon: "🚤" }, { time: "21:00", activity: "Game Night", icon: "🎲" }, { time: "23:00", activity: "White Party", icon: "⚪" }] },
   { date: "23 May", dow: "Sat", title: "Coco Bongo Night", tagline: "The wildest night in Punta Cana", who: FULL_GROUP, items: [{ time: "Day", activity: "Chill / pool", icon: "🏖️" }, { time: "16:00", activity: "Glow Party at pool", icon: "✨" }, { time: "21:00", activity: "Coco Bongo Show + Club (£60-100pp)", icon: "🎭" }, { time: "Late", activity: "Optional Drink Point", icon: "🍾" }] },
   { date: "24 May", dow: "Sun", title: "Scape Park + Sky Dinner", tagline: "Adventure by day, sky-high by night", who: FULL_GROUP, items: [{ time: "08:30", activity: "Leave for Scape Park", icon: "🚐" }, { time: "09:30", activity: "Scape Park (£90-130pp)", icon: "🎢" }, { time: "19:30", activity: "Dinner in the Sky (£120-180pp)", icon: "🎈" }, { time: "22:30", activity: "Optional nightlife", icon: "🌙" }] },
-  { date: "25 May", dow: "Mon", title: "Departures Begin", tagline: "Bittersweet goodbyes", who: FULL_GROUP, items: [{ time: "AM", activity: "Breakfast / send-off", icon: "🌅" }, { time: "16:50", activity: "Candice & Kyanna depart (TOM567)", icon: "✈️" }, { time: "22:30", activity: "Boys night begins", icon: "🔥" }] },
-  { date: "26 May", dow: "Tue", title: "Recovery Day", tagline: "Absolutely nothing. As planned.", who: ["Kai", "Khari", "Camara", "Miles"], items: [{ time: "Late AM", activity: "Wake up slowly", icon: "☕" }, { time: "Day", activity: "Pool / beach / spa", icon: "💆" }, { time: "18:35", activity: "Camara & Miles depart (AV137)", icon: "✈️" }] },
+  { date: "25 May", dow: "Mon", title: "Departures Begin", tagline: "Bittersweet goodbyes", who: FULL_GROUP, items: [{ time: "AM", activity: "Breakfast / send-off", icon: "🌅" }, { time: "16:50", activity: "Candice & Kyanna depart (TOM567)", icon: "✈️" }, { time: "18:35", activity: "Miles departs (AV137)", icon: "✈️" }, { time: "22:30", activity: "Boys night begins", icon: "🔥" }] },
+  { date: "26 May", dow: "Tue", title: "Recovery Day", tagline: "Absolutely nothing. As planned.", who: ["Kai", "Khari", "Camara"], items: [{ time: "Late AM", activity: "Wake up slowly", icon: "☕" }, { time: "Day", activity: "Pool / beach / spa", icon: "💆" }, { time: "18:35", activity: "Camara departs (AV137)", icon: "✈️" }] },
   { date: "27 May", dow: "Wed", title: "Filming Day", tagline: "Golden hour content creation", who: ["Kai", "Khari"], items: [{ time: "06:00", activity: "Sunrise filming at Macao", icon: "🌅" }, { time: "10:00", activity: "Explore / B-roll", icon: "📹" }, { time: "PM", activity: "Rest", icon: "😴" }] },
   { date: "28 May", dow: "Thu", title: "Altos de Chavon", tagline: "Last sunset, make it count", who: ["Kai", "Khari"], items: [{ time: "14:30", activity: "Depart for Altos de Chavon", icon: "🚐" }, { time: "16:00", activity: "Explore + golden hour", icon: "🌇" }, { time: "Eve", activity: "Final dinner", icon: "🍽️" }] },
   { date: "29 May", dow: "Fri", title: "Departure", tagline: "Until next time, paradise", who: ["Kai", "Khari"], items: [{ time: "AM", activity: "Pack / chill", icon: "🧳" }, { time: "13:30", activity: "Leave for airport", icon: "🚐" }, { time: "17:10", activity: "Flight home (TOM569)", icon: "✈️" }] },
