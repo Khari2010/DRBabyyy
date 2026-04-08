@@ -595,23 +595,33 @@ const ChallengeCard = ({ challenge, index }) => (
 );
 
 const Leaderboard = () => (
-  <Reveal delay={0.15}>
-    <div style={{ maxWidth: 540, margin: "24px auto 0", background: C.white, borderRadius: 20, padding: "20px 20px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
-      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.gold, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 16 }}>Leaderboard</div>
-      {PLAYERS.map((p, i) => (
-        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i > 0 ? "1px solid #f0f0f0" : "none" }}>
-          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: C.textBody, width: 24, textAlign: "center" }}>{i + 1}</div>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: `${p.color}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{p.emoji}</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 13, color: C.dark }}>{p.name}</div>
-            <div style={{ height: 4, borderRadius: 2, background: `${p.color}15`, marginTop: 4 }}>
-              <div style={{ height: "100%", width: "0%", borderRadius: 2, background: p.color, transition: "width 0.6s ease" }} />
-            </div>
+  <Reveal delay={0.2}>
+    <div style={{ maxWidth: 540, margin: "32px auto 0", padding: "0 24px" }}>
+      <div style={{
+        background: `linear-gradient(145deg, ${C.dark}, ${C.darkSoft})`,
+        borderRadius: 24, padding: "36px 28px", textAlign: "center",
+        position: "relative", overflow: "hidden",
+      }}>
+        <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: `${C.gold}10` }} />
+        <div style={{ position: "absolute", bottom: -30, left: -30, width: 120, height: 120, borderRadius: "50%", background: `${C.coral}08` }} />
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🏆</div>
+          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 20, color: C.white, marginBottom: 8 }}>Leaderboard</div>
+          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: "rgba(255,255,255,0.5)", fontWeight: 600, lineHeight: 1.6, marginBottom: 20 }}>Live score tracking, personal logins, and challenge completion — all coming before we land.</div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 16 }}>
+            {PLAYERS.map((p) => (
+              <div key={p.id} style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", border: `2px solid ${p.color}`, boxShadow: `0 0 8px ${p.color}40` }}>
+                <img src={p.avatar} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+              </div>
+            ))}
           </div>
-          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: p.color }}>0</div>
+          <div style={{
+            display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11,
+            color: C.gold, background: `${C.gold}15`, padding: "8px 20px", borderRadius: 14,
+            letterSpacing: 1.5, textTransform: "uppercase",
+          }}>Coming Soon</div>
         </div>
-      ))}
-      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, textAlign: "center", marginTop: 14, fontWeight: 600, opacity: 0.5 }}>Tracking starts on arrival</div>
+      </div>
     </div>
   </Reveal>
 );
