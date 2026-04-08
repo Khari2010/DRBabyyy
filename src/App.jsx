@@ -114,14 +114,55 @@ const TRIP_INFO = [
 ];
 
 const CHALLENGES = [
-  { id: 1, title: "First Splash", description: "First person in the ocean after landing", icon: "🏊", points: 10 },
-  { id: 2, title: "Sunrise Chaser", description: "Catch 3 sunrises during the trip", icon: "🌅", points: 15 },
-  { id: 3, title: "Content King", description: "Post the best trip reel", icon: "📸", points: 20 },
-  { id: 4, title: "Iron Stomach", description: "Try every restaurant at the resort", icon: "🍽️", points: 15 },
-  { id: 5, title: "Dance Floor MVP", description: "Own the dance floor at Coco Bongo", icon: "💃", points: 20 },
-  { id: 6, title: "Early Bird", description: "First to breakfast 3 mornings", icon: "☀️", points: 10 },
-  { id: 7, title: "Squad Goals", description: "Organise a group activity", icon: "🤝", points: 15 },
-  { id: 8, title: "Last One Standing", description: "Last person awake 3 nights running", icon: "🌙", points: 15 },
+  { id: 1, title: "Kiss Someone", icon: "💋", points: 100 },
+  { id: 2, title: "Sing in Public", icon: "🎤", points: 15, bonus: "+50 crowd, +50 money" },
+  { id: 3, title: "Run 1km", icon: "🏃", points: 20 },
+  { id: 4, title: "5 Shots at Once", icon: "🥃", points: 20 },
+  { id: 5, title: "Get Someone to Buy You Drinks", icon: "🍹", points: 5 },
+  { id: 6, title: "Selfie with Stranger", icon: "🤳", points: 3 },
+  { id: 7, title: "Selfie with Someone Sleeping", icon: "😴", points: 3, bonus: "+30 bonus" },
+  { id: 8, title: "Wear Someone's Clothes (10 min)", icon: "👕", points: 15 },
+  { id: 9, title: "30 Min Gym Workout", icon: "💪", points: 15 },
+  { id: 10, title: "Get Number / Insta / Snap", icon: "📱", points: 5 },
+  { id: 11, title: "Build Sand Sculpture", icon: "🏖️", points: 30 },
+  { id: 12, title: "Stranger Gives You Money", icon: "💸", points: 75 },
+  { id: 13, title: "Make a TikTok", icon: "📹", points: 2 },
+  { id: 14, title: "Stranger Joins TikTok", icon: "🎬", points: 10 },
+  { id: 15, title: "Cliff Jump", icon: "🪂", points: 100 },
+  { id: 16, title: "Find Group Lookalike", icon: "👥", points: 70 },
+  { id: 17, title: "Sleep Somewhere Else", icon: "🛏️", points: 100 },
+  { id: 18, title: "Receive Compliments", icon: "😊", points: 7 },
+  { id: 19, title: "Get a Tan", icon: "☀️", points: 1 },
+  { id: 20, title: "Hold Hands with Stranger", icon: "🤝", points: 15 },
+  { id: 21, title: "Down a Drink", icon: "🍺", points: 2 },
+  { id: 22, title: "Shot", icon: "🥂", points: 2 },
+  { id: 23, title: "Play Game with Stranger", icon: "🎲", points: 25 },
+  { id: 24, title: "Buy Souvenir", icon: "🎁", points: 4 },
+  { id: 25, title: "Matching Outfit Stranger", icon: "👯", points: 15 },
+  { id: 26, title: "Pic with 5 People 50+", icon: "📸", points: 50 },
+  { id: 27, title: "Ask Something Embarrassing", icon: "😳", points: 35 },
+  { id: 28, title: "Scare Someone in Group", icon: "👻", points: 10 },
+  { id: 29, title: "Try Something New", icon: "✨", points: 10 },
+  { id: 30, title: "Ride Gianni's Bike", icon: "🚲", points: 85 },
+  { id: 31, title: "Give Massage", icon: "💆", points: 1, bonus: "per minute" },
+  { id: 32, title: "Shower with Someone", icon: "🚿", points: 100 },
+  { id: 33, title: "Get a Tattoo", icon: "🖋️", points: 250 },
+  { id: 34, title: "All Nighter", icon: "🌙", points: 20 },
+];
+
+const NEGATIVE_POINTS = [
+  { action: "Throwing up", points: -50, icon: "🤮" },
+  { action: "Going to bed before 12", points: -40, icon: "😴" },
+  { action: "Debating chosen drinks", points: -10, icon: "🙄" },
+  { action: "First to go bed", points: -30, icon: "💤" },
+];
+
+const FORFEITS = [
+  "Skinny dipping", "Run naked around villa", "Jump in pool fully clothed",
+  "Wax", "Eat chili", "Spanked by everyone", "Waterboarded",
+  "Cold shower (1 min)", "Deduct points from someone else", "90 second plank",
+  "Opposite sex underwear", "21 questions hot seat", "Streaking at the beach",
+  "Coin flip (double or nothing)",
 ];
 
 const ACTIVITIES = [
@@ -543,12 +584,12 @@ const DayCard = ({ day, dayIndex, isActive, onClick }) => {
 };
 
 const ChallengeCard = ({ challenge, index }) => (
-  <Reveal delay={index * 0.06} style={{ flex: "0 0 auto" }}>
-    <div style={{ width: 160, borderRadius: 20, background: C.white, padding: "20px 16px", boxShadow: "0 4px 16px rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center", scrollSnapAlign: "center" }}>
-      <div style={{ fontSize: 32 }}>{challenge.icon}</div>
-      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 12, color: C.dark, lineHeight: 1.3 }}>{challenge.title}</div>
-      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 11, color: C.textBody, fontWeight: 600, lineHeight: 1.5 }}>{challenge.description}</div>
-      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.gold, background: `${C.gold}15`, padding: "3px 12px", borderRadius: 10, letterSpacing: 0.5, marginTop: "auto" }}>{challenge.points} pts</div>
+  <Reveal delay={index * 0.02} style={{ flex: "0 0 auto" }}>
+    <div style={{ width: 150, borderRadius: 18, background: C.white, padding: "16px 12px", boxShadow: "0 4px 16px rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center", scrollSnapAlign: "center" }}>
+      <div style={{ fontSize: 28 }}>{challenge.icon}</div>
+      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 11, color: C.dark, lineHeight: 1.3 }}>{challenge.title}</div>
+      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.gold, background: `${C.gold}15`, padding: "3px 10px", borderRadius: 10, letterSpacing: 0.5, marginTop: "auto" }}>{challenge.points} pts</div>
+      {challenge.bonus && <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 700, color: C.green }}>{challenge.bonus}</div>}
     </div>
   </Reveal>
 );
@@ -814,12 +855,43 @@ export default function App() {
           <div style={{ textAlign: "center", marginBottom: 32, padding: "0 24px" }}>
             <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Earn Your Bragging Rights</div>
             <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>Learn the Game</h2>
-            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, marginTop: 8, fontWeight: 600 }}>The rules of engagement — challenges to settle who really ran this trip</p>
+            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, marginTop: 8, fontWeight: 600, maxWidth: 500, margin: "8px auto 0" }}>Earn points by completing challenges. Points tracked daily. Lowest score each day = forfeit. Overall loser at end of trip = final forfeit.</p>
           </div>
         </Reveal>
-        <div className="no-scrollbar" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "8px 28px 24px", scrollSnapType: "x mandatory" }}>
-          {CHALLENGES.map((c, i) => <ChallengeCard key={c.id} challenge={c} index={i} />)}
-        </div>
+
+        {/* Challenge cards — centered wrap */}
+        <Reveal delay={0.1}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", padding: "8px 24px 32px", maxWidth: 960, margin: "0 auto" }}>
+            {CHALLENGES.map((c, i) => <ChallengeCard key={c.id} challenge={c} index={i} />)}
+          </div>
+        </Reveal>
+
+        {/* Negative points + Forfeits side by side */}
+        <Reveal delay={0.15}>
+          <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
+            {/* Negative points */}
+            <div style={{ background: C.white, borderRadius: 20, padding: "20px 20px" }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 14 }}>Negative Points</div>
+              {NEGATIVE_POINTS.map((n, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: i > 0 ? "1px solid #f0f0f0" : "none" }}>
+                  <span style={{ fontSize: 20, width: 28, textAlign: "center" }}>{n.icon}</span>
+                  <div style={{ flex: 1, fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 13, color: C.dark }}>{n.action}</div>
+                  <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: C.coral }}>{n.points}</div>
+                </div>
+              ))}
+            </div>
+            {/* Forfeits */}
+            <div style={{ background: C.white, borderRadius: 20, padding: "20px 20px" }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.purple, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 14 }}>Daily Forfeits</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+                {FORFEITS.map((f, i) => (
+                  <div key={i} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 11, color: C.dark, background: `${C.purple}10`, padding: "5px 12px", borderRadius: 10 }}>{f}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
+
         <Leaderboard />
       </section>
 
