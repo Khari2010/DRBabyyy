@@ -885,13 +885,11 @@ export default function App() {
 
             {/* Forfeits */}
             <div style={{ background: C.white, borderRadius: 20, padding: "20px 20px" }}>
-              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.purple, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 14 }}>Daily Forfeits</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.purple, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 6 }}>Daily Forfeits</div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 11, fontWeight: 600, color: C.textBody, textAlign: "center", marginBottom: 14 }}>Lowest scorer picks one at random</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
                 {FORFEITS.map((f, i) => (
-                  <div key={i} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 12, color: C.dark, background: `${C.purple}08`, padding: "8px 14px", borderRadius: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 10, color: C.purple, opacity: 0.5 }}>{String(i + 1).padStart(2, "0")}</span>
-                    {f}
-                  </div>
+                  <div key={i} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 11, color: C.purple, background: `${C.purple}08`, padding: "6px 12px", borderRadius: 10, border: `1px solid ${C.purple}15` }}>{f}</div>
                 ))}
               </div>
             </div>
