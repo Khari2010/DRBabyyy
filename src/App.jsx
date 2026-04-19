@@ -48,6 +48,7 @@ const PLAYERS = [
   { id: 4, num: "04", name: "Kyanna", title: "The Ex-Wildcard", role: "Claims she's retired from the chaos. We'll see.", bio: "She was once the wildcard but now claims retirement and wants to chill by the pool. She'll tell everyone she's done with the chaos... but give it two drinks and we'll see how long that retirement lasts.", color: C.purple, emoji: "😈", avatar: "/images/avatars/kyanna.png" },
   { id: 5, num: "05", name: "Camara", title: "The Messy One", role: "Never stops, never sleeps, always tries to be the main character", bio: "Gets the most drunk, will never sleep, doesn't ever want to stop partying. Three drinks deep and it's already over — says he can handle it every time, never can, and somehow always ends up in the most embarrassing situation possible.", color: C.green, emoji: "💣", avatar: "/images/avatars/camara.png" },
   { id: 6, num: "06", name: "Miles", title: "The Joker", role: "Funniest in the room, first to disappear", bio: "Always funny, always cracking people up, and might just vanish into thin air halfway through the night. Will have everyone crying laughing at dinner then completely disappear by midnight with zero explanation.", color: C.cyan, emoji: "🃏", avatar: "/images/avatars/miles.png" },
+  { id: 7, num: "0?", name: "Ebony", title: "The Game Changer", role: "Pretty face, nice figure, sunset specialist", bio: "The ultimate hot girl. Pretty face, killer figure, and lives for a good sunset. The kind of energy that flips the whole vibe of a holiday — if she actually books, this trip levels up instantly. Status: pending. Whispers in the group chat say it's happening. 👀", color: C.pink, emoji: "🌅", avatar: null, mystery: true, initial: "E" },
 ];
 
 const PRESENCE = [
@@ -323,22 +324,45 @@ const ProfileCard = ({ player, index, onOpen }) => (
         width: 220, paddingTop: 70, cursor: "pointer", userSelect: "none",
         position: "relative",
         transition: "all 0.3s ease",
+        animation: player.mystery ? "mysteryWobble 4s ease-in-out infinite" : "none",
       }}
     >
+      {/* TBC badge — only on mystery card */}
+      {player.mystery && (
+        <div style={{
+          position: "absolute", top: 4, right: 4, zIndex: 3,
+          fontFamily: "'Dela Gothic One', sans-serif", fontSize: 10,
+          color: C.white, background: C.coral,
+          padding: "5px 10px", borderRadius: 10, letterSpacing: 1.5,
+          boxShadow: `0 4px 12px ${C.coral}66`,
+          transform: "rotate(8deg)",
+        }}>TBC</div>
+      )}
       {/* Avatar — oversized, overlapping the card top */}
       <div style={{
         position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", zIndex: 2,
         width: 130, height: 130, borderRadius: "50%", overflow: "hidden",
-        border: `4px solid ${player.color}`,
+        border: player.mystery ? `4px dashed ${player.color}` : `4px solid ${player.color}`,
         boxShadow: `0 8px 24px ${player.color}40, 0 0 0 6px ${C.white}`,
-        background: `linear-gradient(135deg, ${player.color}30, ${player.color}10)`,
+        background: player.mystery
+          ? `linear-gradient(135deg, ${C.purple}, ${C.pink})`
+          : `linear-gradient(135deg, ${player.color}30, ${player.color}10)`,
+        display: "flex", alignItems: "center", justifyContent: "center",
       }}>
-        <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+        {player.mystery ? (
+          <span style={{
+            fontFamily: "'Dela Gothic One', sans-serif", fontSize: 72,
+            color: C.white, textShadow: "0 4px 16px rgba(0,0,0,0.25)",
+            lineHeight: 1,
+          }}>{player.initial || "?"}</span>
+        ) : (
+          <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+        )}
       </div>
       {/* Card body — starts below avatar overlap */}
       <div style={{
         background: `linear-gradient(170deg, ${C.white} 0%, ${player.color}12 100%)`,
-        border: `2px solid ${player.color}30`,
+        border: player.mystery ? `2px dashed ${player.color}66` : `2px solid ${player.color}30`,
         borderRadius: 24,
         boxShadow: `0 8px 32px ${player.color}18`,
         padding: "72px 16px 20px",
@@ -403,12 +427,44 @@ const ProfileModal = ({ player, onClose }) => {
           position: "relative", overflow: "hidden",
           minHeight: 380,
           display: "flex", flexDirection: "column", justifyContent: "flex-end",
+          background: player.mystery
+            ? `linear-gradient(135deg, ${C.purple}, ${C.pink} 60%, ${C.coral})`
+            : "transparent",
         }}>
-          {/* Avatar as full-bleed background */}
-          <img src={player.avatar} alt={player.name} style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            objectFit: "cover", objectPosition: "center 10%",
-          }} />
+          {/* Avatar as full-bleed background — or floating ?'s for mystery */}
+          {player.mystery ? (
+            <>
+              {["?", "?", "?", "?", "?", "?"].map((q, i) => (
+                <span key={i} style={{
+                  position: "absolute",
+                  fontFamily: "'Dela Gothic One', sans-serif",
+                  color: "rgba(255,255,255,0.18)",
+                  fontSize: [120, 80, 60, 100, 70, 90][i],
+                  top: ["8%", "55%", "20%", "70%", "10%", "60%"][i],
+                  left: ["10%", "75%", "70%", "8%", "50%", "40%"][i],
+                  animation: `float ${4 + i}s ease-in-out infinite`,
+                  animationDelay: `${i * 0.4}s`,
+                  pointerEvents: "none",
+                }}>{q}</span>
+              ))}
+              <div style={{
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{
+                  fontFamily: "'Dela Gothic One', sans-serif", fontSize: 220,
+                  color: "rgba(255,255,255,0.85)",
+                  textShadow: "0 8px 40px rgba(0,0,0,0.25)",
+                  lineHeight: 1,
+                }}>{player.initial || "?"}</span>
+              </div>
+            </>
+          ) : (
+            <img src={player.avatar} alt={player.name} style={{
+              position: "absolute", inset: 0, width: "100%", height: "100%",
+              objectFit: "cover", objectPosition: "center 10%",
+            }} />
+          )}
           {/* Gradient overlay for text legibility */}
           <div style={{
             position: "absolute", inset: 0,
@@ -442,9 +498,16 @@ const ProfileModal = ({ player, onClose }) => {
             </div>
           )}
 
-          {/* Flights */}
-          <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.textBody, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10, textAlign: "center", opacity: 0.5 }}>Flights</div>
-          {playerFlights.map((f) => (
+          {/* Flights — hidden for mystery (none booked) */}
+          {player.mystery ? (
+            <div style={{ textAlign: "center", padding: "16px 12px", border: `2px dashed ${player.color}55`, borderRadius: 16, background: `${player.color}08` }}>
+              <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: player.color, marginBottom: 6 }}>NO FLIGHT BOOKED</div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, fontWeight: 600, lineHeight: 1.5 }}>If they say yes, we'll find a seat. Until then — pure speculation.</div>
+            </div>
+          ) : (
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.textBody, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10, textAlign: "center", opacity: 0.5 }}>Flights</div>
+          )}
+          {!player.mystery && playerFlights.map((f) => (
             <div key={f.id} style={{ background: `${player.color}08`, borderRadius: 16, padding: "14px 16px", marginBottom: 8, border: `1px solid ${player.color}15` }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                 <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.white, background: f.type === "Outbound" ? C.turquoise : C.coral, padding: "3px 10px", borderRadius: 10, letterSpacing: 0.5, textTransform: "uppercase" }}>{f.type}</span>
@@ -608,8 +671,18 @@ const Leaderboard = () => (
       <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", fontWeight: 600, lineHeight: 1.6, marginBottom: 16 }}>Live score tracking, personal logins, and challenge completion — all coming before we land.</div>
       <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 14 }}>
         {PLAYERS.map((p) => (
-          <div key={p.id} style={{ width: 38, height: 38, borderRadius: "50%", overflow: "hidden", border: `2px solid ${p.color}`, boxShadow: `0 0 8px ${p.color}40` }}>
-            <img src={p.avatar} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+          <div key={p.id} style={{
+            width: 38, height: 38, borderRadius: "50%", overflow: "hidden",
+            border: p.mystery ? `2px dashed ${p.color}` : `2px solid ${p.color}`,
+            boxShadow: `0 0 8px ${p.color}40`,
+            background: p.mystery ? `linear-gradient(135deg, ${C.purple}, ${C.pink})` : "transparent",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {p.mystery ? (
+              <span style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.white }}>{p.initial || "?"}</span>
+            ) : (
+              <img src={p.avatar} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+            )}
           </div>
         ))}
       </div>
@@ -709,6 +782,7 @@ export default function App() {
       @keyframes ctaShimmer{0%{background-position:0% center}100%{background-position:200% center}}
       @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
       @keyframes modalScaleIn{from{opacity:0;transform:scale(0.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+      @keyframes mysteryWobble{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
       *{box-sizing:border-box;margin:0;padding:0}
       html{scroll-behavior:smooth}
       body{overflow-x:hidden}
