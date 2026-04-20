@@ -118,7 +118,15 @@ export default function LoginModal({ open, onClose, onSuccess }) {
                     opacity: busy ? 0.6 : 1,
                   }}
                 >
-                  <div style={{ fontSize: 32 }}>{p.emoji}</div>
+                  {p.avatar ? (
+                    <img
+                      src={p.avatar}
+                      alt={p.name}
+                      style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", display: "block", margin: "0 auto", border: "3px solid rgba(255,255,255,0.9)" }}
+                    />
+                  ) : (
+                    <div style={{ fontSize: 32 }}>{p.emoji}</div>
+                  )}
                   <div style={{ fontWeight: 800, marginTop: 8 }}>{p.name}</div>
                 </button>
               ))}
