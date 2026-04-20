@@ -51,7 +51,7 @@ function PresenceRow({ p, isYou }) {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 12,
+        gap: "clamp(6px, 2vw, 12px)",
         marginBottom: 10,
         padding: isYou ? "8px 10px" : "4px 10px",
         borderRadius: 14,
@@ -60,6 +60,7 @@ function PresenceRow({ p, isYou }) {
         border: isYou ? `2px solid ${C.white}` : "2px solid transparent",
         outline: isYou ? `1px solid ${p.color}33` : "none",
         transition: "all 0.3s ease",
+        minWidth: 0,
       }}
     >
       {/* Avatar */}
@@ -90,12 +91,15 @@ function PresenceRow({ p, isYou }) {
       {/* Name */}
       <div
         style={{
-          width: 68,
+          width: "clamp(48px, 15vw, 68px)",
           fontFamily: "Nunito, sans-serif",
           fontWeight: 800,
           fontSize: isYou ? 13 : 12,
           color: C.dark,
           flexShrink: 0,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
       >
         {isYou ? "You" : p.name}
@@ -105,6 +109,7 @@ function PresenceRow({ p, isYou }) {
       <div
         style={{
           flex: 1,
+          minWidth: 0,
           position: "relative",
           height: isYou ? 18 : 12,
           background: `${C.dark}08`,
@@ -130,13 +135,14 @@ function PresenceRow({ p, isYou }) {
         style={{
           fontFamily: "Nunito, sans-serif",
           fontWeight: 800,
-          fontSize: 10,
+          fontSize: "clamp(10px, 2.5vw, 11px)",
           color: p.color,
           background: `${p.color}14`,
-          padding: "3px 8px",
+          padding: "3px 6px",
           borderRadius: 8,
           flexShrink: 0,
           letterSpacing: 0.3,
+          whiteSpace: "nowrap",
         }}
       >
         {p.start}–{p.end}
@@ -165,7 +171,7 @@ export default function YourStay({ player }) {
       style={{
         background: C.white,
         borderRadius: 28,
-        padding: "28px 24px",
+        padding: "clamp(20px, 5vw, 28px) clamp(16px, 4vw, 24px)",
         boxShadow: "0 16px 40px rgba(0,0,0,0.08)",
         border: `1px solid ${player.color}1A`,
       }}
@@ -202,9 +208,14 @@ export default function YourStay({ player }) {
         style={{
           background: C.sand,
           borderRadius: 20,
-          padding: "20px 16px 16px",
+          padding: "20px clamp(10px, 3vw, 16px) 16px",
         }}
       >
+        <style>{`
+          @media (max-width: 480px) {
+            .presence-axis-day:nth-child(odd) { visibility: hidden; }
+          }
+        `}</style>
         {ordered.map((p) => (
           <PresenceRow
             key={p.name}
@@ -212,24 +223,25 @@ export default function YourStay({ player }) {
             isYou={mine && p.name === mine.name}
           />
         ))}
-        {/* Day axis */}
+        {/* Day axis — visually aligned under the pill bar (approximate) */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             marginTop: 10,
-            paddingLeft: 118,
-            paddingRight: 52,
+            paddingLeft: "clamp(92px, 28vw, 118px)",
+            paddingRight: "clamp(44px, 12vw, 52px)",
           }}
         >
           {Array.from({ length: TOTAL_DAYS }, (_, i) => (
             <div
               key={i}
+              className="presence-axis-day"
               style={{
                 flex: 1,
                 textAlign: "center",
                 fontFamily: "Nunito, sans-serif",
-                fontSize: 9,
+                fontSize: "clamp(10px, 2.5vw, 11px)",
                 fontWeight: 800,
                 color: C.textBody,
                 opacity: 0.55,

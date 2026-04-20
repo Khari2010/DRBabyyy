@@ -28,7 +28,7 @@ export default function YourResort() {
         <div
           style={{
             background: `linear-gradient(145deg, ${ACCENT}18, ${ACCENT}08 60%, ${C.sand})`,
-            padding: "32px 28px",
+            padding: "clamp(24px, 6vw, 32px) clamp(20px, 5vw, 28px)",
             position: "relative",
             overflow: "hidden",
           }}
@@ -108,7 +108,7 @@ export default function YourResort() {
         {/* Right: What's included */}
         <div
           style={{
-            padding: "32px 28px",
+            padding: "clamp(24px, 6vw, 32px) clamp(20px, 5vw, 28px)",
             background: C.white,
           }}
         >
@@ -128,7 +128,7 @@ export default function YourResort() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
               gap: 10,
             }}
           >
@@ -174,7 +174,7 @@ export default function YourResort() {
         style={{
           borderTop: `1px solid ${ACCENT}22`,
           background: `${C.sand}`,
-          padding: "16px 24px",
+          padding: "16px clamp(16px, 4vw, 24px)",
           display: "flex",
           flexWrap: "wrap",
           gap: 16,
@@ -216,7 +216,7 @@ export default function YourResort() {
                 style={{
                   fontFamily: "Nunito, sans-serif",
                   fontWeight: 900,
-                  fontSize: 9,
+                  fontSize: 10,
                   color: C.textBody,
                   letterSpacing: 1.5,
                   textTransform: "uppercase",
@@ -228,9 +228,10 @@ export default function YourResort() {
                 style={{
                   fontFamily: "Nunito, sans-serif",
                   fontWeight: 800,
-                  fontSize: 12,
+                  fontSize: 13,
                   color: C.dark,
                   lineHeight: 1.3,
+                  wordBreak: "break-word",
                 }}
               >
                 {row.value}

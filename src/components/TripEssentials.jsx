@@ -8,7 +8,7 @@ export default function TripEssentials() {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
         gap: 14,
       }}
     >
@@ -83,6 +83,7 @@ export default function TripEssentials() {
                 lineHeight: 1.45,
                 position: "relative",
                 zIndex: 1,
+                wordBreak: "break-word",
               }}
             >
               {item.value}

@@ -79,11 +79,12 @@ function DayCard({ day, accent, currentName }) {
       <div
         style={{
           background: `linear-gradient(135deg, ${accent}, ${accent}DD)`,
-          padding: "14px 20px",
+          padding: "14px clamp(16px, 4vw, 20px)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: 10,
+          flexWrap: "wrap",
         }}
       >
         <div>
@@ -131,7 +132,7 @@ function DayCard({ day, accent, currentName }) {
       </div>
 
       {/* Title + tagline */}
-      <div style={{ padding: "18px 22px 4px" }}>
+      <div style={{ padding: "18px clamp(16px, 4vw, 22px) 4px" }}>
         <div
           style={{
             fontFamily: "'Dela Gothic One', sans-serif",
@@ -235,7 +236,7 @@ function DayCard({ day, accent, currentName }) {
       {/* Crew */}
       <div
         style={{
-          padding: "14px 22px 16px",
+          padding: "14px clamp(16px, 4vw, 22px) 16px",
           borderTop: `1px solid ${C.sandDark}`,
           background: `${accent}08`,
         }}

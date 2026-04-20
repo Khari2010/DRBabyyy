@@ -151,19 +151,20 @@ function LeaderboardPanel() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 12,
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 10,
             justifyItems: "center",
             margin: "0 auto 20px",
-            maxWidth: 220,
+            maxWidth: 200,
           }}
         >
           {PLAYERS.map((p) => (
             <div
               key={p.id}
               style={{
-                width: 48,
-                height: 48,
+                width: "100%",
+                maxWidth: 48,
+                aspectRatio: "1 / 1",
                 borderRadius: "50%",
                 overflow: "hidden",
                 border: p.mystery ? `2px dashed ${p.color}` : `2px solid ${p.color}`,
@@ -203,6 +204,7 @@ function LeaderboardPanel() {
         <div
           style={{
             display: "inline-block",
+            maxWidth: "100%",
             fontFamily: "Nunito, sans-serif",
             fontWeight: 900,
             fontSize: 11,
@@ -212,6 +214,7 @@ function LeaderboardPanel() {
             borderRadius: 14,
             letterSpacing: 2,
             textTransform: "uppercase",
+            whiteSpace: "nowrap",
           }}
         >
           Coming Soon
@@ -380,11 +383,14 @@ export default function GamesOverview({ player }) {
 
   return (
     <div style={{ display: "grid", gap: 24 }}>
+      <style>{`
+        .games-no-scrollbar::-webkit-scrollbar { display: none; }
+      `}</style>
       {/* 3-panel row — Learn the Game layout */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
           gap: 16,
           alignItems: "stretch",
         }}
@@ -433,13 +439,16 @@ export default function GamesOverview({ player }) {
           </div>
         </div>
         <div
-          className="no-scrollbar"
+          className="games-no-scrollbar"
           style={{
             display: "flex",
             gap: 14,
             overflowX: "auto",
-            padding: "10px 4px 16px",
+            WebkitOverflowScrolling: "touch",
+            padding: "10px 12px 16px",
             scrollSnapType: "x mandatory",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
           }}
         >
           {TOP_CHALLENGES.map((c) => (

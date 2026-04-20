@@ -62,7 +62,7 @@ export default function CrewAnswersPanel({ mySlug, allAnswers }) {
         const p = crew.find((c) => c.slug === expandedSlug);
         const answers = answersFor(expandedSlug);
         return (
-          <div style={{ marginTop: 18, display: "grid", gap: 10 }}>
+          <div style={{ marginTop: 18, display: "grid", gap: 10, minWidth: 0 }}>
             {QUESTIONS.map((q) => (
               <QuestionBlock
                 key={q.id}

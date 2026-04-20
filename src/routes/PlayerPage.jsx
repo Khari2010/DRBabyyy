@@ -21,8 +21,10 @@ import GamesOverview from "../components/GamesOverview.jsx";
 const SECTION_WRAPPER = {
   maxWidth: 960,
   margin: "0 auto",
-  padding: "0 20px",
+  padding: "0 clamp(16px, 4vw, 20px)",
   marginBottom: 40,
+  boxSizing: "border-box",
+  width: "100%",
 };
 
 export default function PlayerPage() {
@@ -97,25 +99,27 @@ export default function PlayerPage() {
   };
 
   return (
-    <div style={{ background: C.sand, minHeight: "100vh", paddingBottom: 80, fontFamily: "Nunito, sans-serif" }}>
+    <div style={{ background: C.sand, minHeight: "100vh", paddingBottom: 80, fontFamily: "Nunito, sans-serif", overflowX: "hidden" }}>
       {/* Logout chip */}
       <div style={{
         position: "fixed", top: 16, right: 16, zIndex: 900,
-        background: C.white, borderRadius: 999, padding: "6px 10px 6px 14px",
+        background: C.white, borderRadius: 999,
+        padding: "clamp(5px, 1.5vw, 6px) clamp(8px, 2vw, 10px) clamp(5px, 1.5vw, 6px) clamp(10px, 2.5vw, 14px)",
         boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-        display: "flex", alignItems: "center", gap: 10,
+        display: "flex", alignItems: "center", gap: "clamp(6px, 2vw, 10px)",
         fontFamily: "Nunito, sans-serif", fontWeight: 800,
+        maxWidth: "calc(100vw - 32px)",
       }}>
         <button
           onClick={() => navigate("/")}
-          style={{ background: "transparent", border: "none", color: C.textBody, cursor: "pointer", fontWeight: 800, fontSize: 13 }}
+          style={{ background: "transparent", border: "none", color: C.textBody, cursor: "pointer", fontWeight: 800, fontSize: 13, padding: "6px 4px", minHeight: 32 }}
         >
           ← Home
         </button>
         <span style={{ width: 1, height: 18, background: C.sandDark }} />
         <button
           onClick={handleLogout}
-          style={{ background: "transparent", border: "none", color: C.textBody, cursor: "pointer", fontWeight: 800, fontSize: 13 }}
+          style={{ background: "transparent", border: "none", color: C.textBody, cursor: "pointer", fontWeight: 800, fontSize: 13, padding: "6px 4px", minHeight: 32 }}
         >
           Log out
         </button>
@@ -123,7 +127,8 @@ export default function PlayerPage() {
 
       {/* Hero */}
       <section style={{
-        padding: "64px 20px 48px", textAlign: "center",
+        padding: "clamp(56px, 12vw, 72px) clamp(16px, 4vw, 24px) clamp(32px, 8vw, 48px)",
+        textAlign: "center",
         background: `linear-gradient(180deg, ${player.color}33 0%, ${C.sand} 100%)`,
       }}>
         <div style={{

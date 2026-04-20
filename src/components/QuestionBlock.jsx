@@ -27,9 +27,10 @@ export default function QuestionBlock({ prompt, answer, readOnly, color, onSave 
       style={{
         background: C.white,
         borderRadius: 20,
-        padding: "22px 22px",
+        padding: "clamp(18px, 4vw, 22px)",
         boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
         border: `1px solid ${(color ?? C.dark)}14`,
+        boxSizing: "border-box",
       }}
     >
       <div
@@ -66,6 +67,8 @@ export default function QuestionBlock({ prompt, answer, readOnly, color, onSave 
             rows={3}
             style={{
               width: "100%",
+              maxWidth: "100%",
+              boxSizing: "border-box",
               padding: 12,
               fontFamily: "Nunito, sans-serif",
               fontSize: 14,
@@ -75,9 +78,9 @@ export default function QuestionBlock({ prompt, answer, readOnly, color, onSave 
               outline: "none",
             }}
           />
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, flexWrap: "wrap", gap: 8 }}>
             <span style={{ fontSize: 12, color: C.textBody, fontWeight: 600 }}>{text.length}/{ANSWER_MAX_CHARS}</span>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {answer && (
                 <button
                   onClick={cancel}
@@ -90,6 +93,8 @@ export default function QuestionBlock({ prompt, answer, readOnly, color, onSave 
                     fontFamily: "Nunito, sans-serif",
                     fontWeight: 800,
                     fontSize: 13,
+                    padding: "10px 12px",
+                    minHeight: 44,
                   }}
                 >
                   Cancel
@@ -102,7 +107,8 @@ export default function QuestionBlock({ prompt, answer, readOnly, color, onSave 
                   background: color ?? C.dark,
                   color: "white",
                   border: "none",
-                  padding: "10px 18px",
+                  padding: "12px 20px",
+                  minHeight: 44,
                   borderRadius: 10,
                   fontFamily: "Nunito, sans-serif",
                   fontWeight: 900,

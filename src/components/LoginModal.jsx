@@ -89,8 +89,12 @@ export default function LoginModal({ open, onClose, onSuccess }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: C.sand, borderRadius: 20, padding: 32,
-          maxWidth: 480, width: "90%",
+          background: C.sand, borderRadius: 20,
+          padding: "clamp(20px, 5vw, 32px)",
+          width: "min(480px, calc(100vw - 24px))",
+          maxHeight: "calc(100vh - 32px)",
+          overflowY: "auto",
+          boxSizing: "border-box",
           fontFamily: "Nunito, sans-serif",
         }}
       >
@@ -99,7 +103,7 @@ export default function LoginModal({ open, onClose, onSuccess }) {
             <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 24, marginBottom: 16, color: C.dark }}>
               Who are you?
             </h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "clamp(8px, 2vw, 12px)" }}>
               {LOGIN_PLAYERS.map((p) => (
                 <button
                   key={p.slug}
@@ -107,20 +111,21 @@ export default function LoginModal({ open, onClose, onSuccess }) {
                   disabled={busy}
                   style={{
                     background: p.color, border: "none", borderRadius: 16,
-                    padding: 16, cursor: "pointer", color: "white",
+                    padding: "clamp(10px, 3vw, 16px)", cursor: "pointer", color: "white",
                     opacity: busy ? 0.6 : 1,
+                    minWidth: 0,
                   }}
                 >
                   {p.avatar ? (
                     <img
                       src={p.avatar}
                       alt={p.name}
-                      style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", display: "block", margin: "0 auto", border: "3px solid rgba(255,255,255,0.9)" }}
+                      style={{ width: "clamp(56px, 16vw, 72px)", height: "clamp(56px, 16vw, 72px)", borderRadius: "50%", objectFit: "cover", display: "block", margin: "0 auto", border: "3px solid rgba(255,255,255,0.9)" }}
                     />
                   ) : (
                     <div style={{ fontSize: 32 }}>{p.emoji}</div>
                   )}
-                  <div style={{ fontWeight: 800, marginTop: 8 }}>{p.name}</div>
+                  <div style={{ fontWeight: 800, marginTop: 8, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
                 </button>
               ))}
             </div>
@@ -143,7 +148,7 @@ export default function LoginModal({ open, onClose, onSuccess }) {
               value={passcode}
               onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ""))}
               placeholder="4 digits"
-              style={{ width: "100%", padding: 12, fontSize: 18, borderRadius: 8, border: `2px solid ${C.sandDark}`, marginBottom: 12 }}
+              style={{ width: "100%", padding: 12, fontSize: 16, borderRadius: 8, border: `2px solid ${C.sandDark}`, marginBottom: 12, boxSizing: "border-box" }}
             />
             <input
               type="password"
@@ -153,13 +158,13 @@ export default function LoginModal({ open, onClose, onSuccess }) {
               value={passcodeConfirm}
               onChange={(e) => setPasscodeConfirm(e.target.value.replace(/\D/g, ""))}
               placeholder="Confirm 4 digits"
-              style={{ width: "100%", padding: 12, fontSize: 18, borderRadius: 8, border: `2px solid ${C.sandDark}`, marginBottom: 12 }}
+              style={{ width: "100%", padding: 12, fontSize: 16, borderRadius: 8, border: `2px solid ${C.sandDark}`, marginBottom: 12, boxSizing: "border-box" }}
             />
             {error && <div style={{ color: C.coralDeep, marginBottom: 12 }}>{error}</div>}
             <button
               onClick={submitFirstTime}
               disabled={busy}
-              style={{ width: "100%", padding: 14, background: selected.color, color: "white", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 16, cursor: "pointer" }}
+              style={{ width: "100%", padding: 14, background: selected.color, color: "white", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 16, cursor: "pointer", minHeight: 48, boxSizing: "border-box" }}
             >
               {busy ? "Saving…" : "Set passcode & enter"}
             </button>
@@ -180,13 +185,13 @@ export default function LoginModal({ open, onClose, onSuccess }) {
               value={passcode}
               onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ""))}
               placeholder="4 digits"
-              style={{ width: "100%", padding: 12, fontSize: 18, borderRadius: 8, border: `2px solid ${C.sandDark}`, marginBottom: 12 }}
+              style={{ width: "100%", padding: 12, fontSize: 16, borderRadius: 8, border: `2px solid ${C.sandDark}`, marginBottom: 12, boxSizing: "border-box" }}
             />
             {error && <div style={{ color: C.coralDeep, marginBottom: 12 }}>{error}</div>}
             <button
               onClick={submitReturning}
               disabled={busy}
-              style={{ width: "100%", padding: 14, background: selected.color, color: "white", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 16, cursor: "pointer" }}
+              style={{ width: "100%", padding: 14, background: selected.color, color: "white", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 16, cursor: "pointer", minHeight: 48, boxSizing: "border-box" }}
             >
               {busy ? "Checking…" : "Enter"}
             </button>

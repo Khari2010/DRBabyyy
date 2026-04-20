@@ -57,10 +57,12 @@ function ActivityCard({ activity, myVote, likers, dislikers, onVote }) {
             color: likeActive ? C.white : C.dark,
             border: `2px solid ${likeActive ? C.green : C.sandDark}`,
             borderRadius: 999,
-            padding: "5px 12px",
+            padding: "10px 14px",
+            minHeight: 40,
+            minWidth: 64,
             fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 13,
             cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 6,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}
           aria-pressed={likeActive}
         >
@@ -74,10 +76,12 @@ function ActivityCard({ activity, myVote, likers, dislikers, onVote }) {
             color: dislikeActive ? C.white : C.dark,
             border: `2px solid ${dislikeActive ? C.coralDeep : C.sandDark}`,
             borderRadius: 999,
-            padding: "5px 12px",
+            padding: "10px 14px",
+            minHeight: 40,
+            minWidth: 64,
             fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 13,
             cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 6,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}
           aria-pressed={dislikeActive}
         >
@@ -87,7 +91,7 @@ function ActivityCard({ activity, myVote, likers, dislikers, onVote }) {
       </div>
 
       {(likers.length > 0 || dislikers.length > 0) && (
-        <div style={{ marginTop: 8, fontSize: 11, color: C.textBody, lineHeight: 1.5 }}>
+        <div style={{ marginTop: 10, fontSize: 12, color: C.textBody, lineHeight: 1.5, wordBreak: "break-word" }}>
           {likers.length > 0 && (
             <span>👍 {likers.map(playerName).join(", ")}</span>
           )}

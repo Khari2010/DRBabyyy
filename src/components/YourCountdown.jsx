@@ -54,15 +54,16 @@ export default function YourCountdown({ player }) {
 
   const cardStyle = {
     position: "relative",
-    maxWidth: 620,
+    maxWidth: "min(620px, 100%)",
     margin: "0 auto",
     background: `linear-gradient(135deg, ${player.color}22, ${C.sand})`,
     border: `1px solid ${player.color}33`,
     borderRadius: 28,
-    padding: "48px 32px",
+    padding: "clamp(32px, 7vw, 48px) clamp(20px, 5vw, 32px)",
     textAlign: "center",
     boxShadow: `0 24px 60px ${player.color}22, inset 0 0 60px ${player.color}0A`,
     overflow: "hidden",
+    boxSizing: "border-box",
   };
 
   const DecorativeBlobs = () => (

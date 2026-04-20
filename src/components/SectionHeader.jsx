@@ -2,7 +2,7 @@ import { C } from "../data/colors.js";
 
 export default function SectionHeader({ label, title, tagline, accent = C.coral }) {
   return (
-    <div style={{ textAlign: "center", padding: "56px 20px 12px", maxWidth: 760, margin: "0 auto" }}>
+    <div style={{ textAlign: "center", padding: "clamp(28px, 8vw, 56px) clamp(16px, 4vw, 20px) clamp(10px, 3vw, 16px)", maxWidth: 760, margin: "0 auto" }}>
       {label && (
         <div
           style={{
@@ -21,7 +21,7 @@ export default function SectionHeader({ label, title, tagline, accent = C.coral 
       <h2
         style={{
           fontFamily: "'Dela Gothic One', sans-serif",
-          fontSize: "clamp(36px, 8vw, 72px)",
+          fontSize: "clamp(28px, 8vw, 72px)",
           margin: 0,
           color: C.dark,
           lineHeight: 1.05,
