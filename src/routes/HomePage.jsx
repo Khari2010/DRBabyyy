@@ -1,0 +1,1020 @@
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { C } from "../data/colors.js";
+import { MEMBERS, FULL_GROUP, PLAYERS } from "../data/players.js";
+import { FLIGHTS } from "../data/flights.js";
+import LoginModal from "../components/LoginModal.jsx";
+import LoggedInChip from "../components/LoggedInChip.jsx";
+import { saveSession, loadSession } from "../lib/session.js";
+
+// ─── FONTS ──────────────────────────────────────────────────────────────────
+const FONTS_URL =
+  "https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Nunito:wght@400;600;700;800;900&display=swap";
+
+// ─── IMAGES ─────────────────────────────────────────────────────────────────
+const IMAGES = {
+  heroBeach: "/images/group/hero-beach.jpg",
+  heroTown: "/images/group/hero-town.jpg",
+  heroMarket: "/images/group/hero-market.jpg",
+  heroScenic: "/images/group/hero-scenic.jpg",
+  venueRestaurants: "/images/venues/restaurants.webp",
+  venueExcursions: "/images/venues/excursions.webp",
+  venueNightlife: "/images/venues/nightlife.webp",
+};
+
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const PRESENCE = [
+  { name: "Kai", start: 18, end: 29, color: C.blue },
+  { name: "Khari", start: 18, end: 29, color: C.gold },
+  { name: "Candice", start: 18, end: 25, color: C.coral },
+  { name: "Kyanna", start: 18, end: 25, color: C.purple },
+  { name: "Camara", start: 20, end: 26, color: C.green },
+  { name: "Miles", start: 20, end: 25, color: C.cyan },
+];
+
+const RESORT = {
+  name: "Royalton CHIC Punta Cana",
+  address: "Highway Macao, Uvero Alto Beach, Punta Cana, DO 23000",
+  stars: 5,
+  checkIn: "3:00 PM",
+  checkOut: "12:00 PM",
+  phone: "+008299548177",
+  allInclusive: true,
+  included: [
+    { icon: "🍽️", label: "All Meals" },
+    { icon: "🍹", label: "Premium Drinks" },
+    { icon: "🎉", label: "Entertainment" },
+    { icon: "🏊", label: "Pools & Beach" },
+    { icon: "💪", label: "Gym & Spa" },
+    { icon: "📶", label: "WiFi" },
+  ],
+};
+
+const DAY_COLORS = [C.turquoise, C.sky, C.coral, C.gold, C.green, C.coralDeep, C.purple, C.pink, C.cyan, C.blue, C.gold, C.coral];
+const DAY_IMAGES = ["heroBeach", "heroTown", "heroMarket", "heroScenic", "heroBeach", "heroTown", "heroMarket", "heroScenic", "heroBeach", "heroTown", "heroMarket", "heroBeach"];
+
+const DAYS = [
+  { date: "18 May", dow: "Mon", title: "Arrival Day", tagline: "Touchdown in paradise", who: ["Kai", "Khari", "Candice", "Kyanna"], status: "resort", items: [{ time: "11:00", activity: "Depart Birmingham (TOM566)", icon: "✈️" }, { time: "14:50", activity: "Arrive Punta Cana", icon: "🛬" }, { time: "15:30", activity: "Transfer & check-in", icon: "🚐" }, { time: "20:00", activity: "Dinner at resort", icon: "🍽️" }, { time: "22:00", activity: "Welcome drinks", icon: "🥂" }] },
+  { date: "19 May", dow: "Tue", title: "Chill Day", tagline: "Pool vibes & resort exploring", who: ["Kai", "Khari", "Candice", "Kyanna"], status: "resort", items: [{ time: "09:00", activity: "Breakfast", icon: "🌅" }, { time: "11:30", activity: "Beach & pool", icon: "🏖️" }, { time: "20:00", activity: "Dinner at resort", icon: "🍽️" }, { time: "22:00", activity: "CHIC Angels Show", icon: "👯" }, { time: "22:05", activity: "Camara & Miles depart LHR", icon: "✈️" }] },
+  { date: "20 May", dow: "Wed", title: "Squad Complete", tagline: "First meal together", who: FULL_GROUP, status: "mixed", cost: "£40-80pp", items: [{ time: "Day", activity: "Relax / Camara & Miles arrive", icon: "🛬" }, { time: "15:00", activity: "Foam Party at pool", icon: "🫧" }, { time: "19:30", activity: "Dinner at Cabana Restaurant", icon: "🍽️", note: "First squad meal · £40-80pp", link: "https://www.tripadvisor.com/Restaurant_Review-g1544061-d23543124-Reviews-Cabana-Uvero_Alto_Punta_Cana_La_Altagracia_Province_Dominican_Republic.html" }, { time: "22:00", activity: "Drinks / light night", icon: "🍹" }] },
+  { date: "21 May", dow: "Thu", title: "Saona Island", tagline: "Island hopping & starfish", who: FULL_GROUP, status: "paid", cost: "£70-90pp", items: [{ time: "06:30", activity: "Pickup from resort", icon: "🚐" }, { time: "09:30", activity: "Boat departure", icon: "⛵" }, { time: "11:30", activity: "Saona Island + lunch", icon: "🏝️", note: "£70-90pp · open bar + BBQ", link: "https://www.viator.com/tours/Punta-Cana/Saona-Island-Day-Trip-From-Punta-Cana/d794-17793P7" }, { time: "16:00", activity: "Return journey", icon: "🚤" }, { time: "Eve", activity: "Caribbean Night at resort", icon: "🌴" }] },
+  { date: "22 May", dow: "Fri", title: "Party Boat + White Party", tagline: "Open bar on the ocean", who: FULL_GROUP, status: "mixed", cost: "£50pp", items: [{ time: "AM", activity: "Free time / pool", icon: "🏊" }, { time: "14:30", activity: "Caribbean Party Boat", icon: "🚤", note: "£50pp · DJ + open bar", link: "https://www.viator.com/tours/Punta-Cana/Caribbean-Festival-Catamaran-Party-Cruise/d794-6214P9" }, { time: "19:00", activity: "Back to resort + dinner", icon: "🍽️" }, { time: "21:00", activity: "Game Night", icon: "🎲" }, { time: "23:00", activity: "White Party (at resort)", icon: "⚪" }] },
+  { date: "23 May", dow: "Sat", title: "Culture + Coco Bongo", tagline: "Culture by day, cave by night", who: FULL_GROUP, status: "paid", cost: "£130-180pp", items: [{ time: "AM", activity: "Free morning (girls: church option)", icon: "🌅" }, { time: "11:00", activity: "Altos de Chavón — cultural day", icon: "🌇", note: "Optional — subject to group vote", link: "https://www.tripadvisor.com/Attraction_Review-g147292-d149775-Reviews-Altos_de_Chavon-La_Romana_La_Romana_Province_Dominican_Republic.html" }, { time: "16:00", activity: "Return to resort", icon: "🚐" }, { time: "18:00", activity: "Pre-night dinner at resort", icon: "🍽️" }, { time: "20:00", activity: "Coco Bongo show + club (VIP)", icon: "🎭", note: "£130-180pp · VIP + open bar", link: "https://www.cocobongo.com/show/punta-cana/?lang=en" }, { time: "23:00", activity: "Kviar Drink Point after-party", icon: "🍾", note: "Late-night casino / bar spot", link: "https://www.tripadvisor.com/Attraction_Review-g147293-d10247470-Reviews-Kviar_Show_Disco-Bavaro_Punta_Cana_La_Altagracia_Province_Dominican_Republic.html" }] },
+  { date: "24 May", dow: "Sun", title: "Jellyfish + Sky", tagline: "Golden finish", who: FULL_GROUP, status: "paid", cost: "~£155pp", items: [{ time: "AM", activity: "Free / optional light activity", icon: "🌅" }, { time: "Day", activity: "Pool / beach / relax", icon: "🏖️" }, { time: "19:00", activity: "Dinner at Jellyfish Beach Restaurant", icon: "🪼", note: "Beachfront seafood · sunset views", link: "https://www.jellyfishrestaurant.com/" }, { time: "21:15", activity: "Drinks at Dinner in the Sky (late session)", icon: "🎈", note: "~£155pp total for the night", link: "https://puntacanadinnerinthesky.com" }, { time: "Late", activity: "Back to resort", icon: "🌙" }] },
+  { date: "25 May", dow: "Mon", title: "Departures Begin", tagline: "Bittersweet goodbyes", who: FULL_GROUP, status: "resort", items: [{ time: "AM", activity: "Breakfast / send-off", icon: "🌅" }, { time: "16:50", activity: "Candice & Kyanna depart (TOM567)", icon: "✈️" }, { time: "18:35", activity: "Miles departs (AV137)", icon: "✈️" }, { time: "22:30", activity: "Lads chill evening at resort", icon: "🌴" }] },
+];
+
+const TRIP_INFO = [
+  { key: "Time Zone", value: "AST (UTC-4) — 5 hours behind UK", icon: "🕐" },
+  { key: "Currency", value: "Dominican Peso (DOP) / USD widely accepted", icon: "💰" },
+  { key: "Language", value: "Spanish (English spoken at resort)", icon: "🗣️" },
+  { key: "Plug Type", value: "US Type A/B — bring a UK adapter!", icon: "🔌" },
+  { key: "Airport", value: "Punta Cana International (PUJ) — 40 min to resort", icon: "✈️" },
+  { key: "Emergency", value: "911 (local) · Resort: +008299548177", icon: "🚨" },
+];
+
+const CHALLENGES = [
+  { id: 1, title: "Kiss Someone", icon: "💋", points: 100 },
+  { id: 2, title: "Sing in Public", icon: "🎤", points: 15, bonus: "+50 crowd, +50 money" },
+  { id: 3, title: "Run 1km", icon: "🏃", points: 20 },
+  { id: 4, title: "5 Shots at Once", icon: "🥃", points: 20 },
+  { id: 5, title: "Get Someone to Buy You Drinks", icon: "🍹", points: 5 },
+  { id: 6, title: "Selfie with Stranger", icon: "🤳", points: 3 },
+  { id: 7, title: "Selfie with Someone Sleeping", icon: "😴", points: 3, bonus: "+30 bonus" },
+  { id: 8, title: "Wear Someone's Clothes (10 min)", icon: "👕", points: 15 },
+  { id: 9, title: "30 Min Gym Workout", icon: "💪", points: 15 },
+  { id: 10, title: "Get Number / Insta / Snap", icon: "📱", points: 5 },
+  { id: 11, title: "Build Sand Sculpture", icon: "🏖️", points: 30 },
+  { id: 12, title: "Stranger Gives You Money", icon: "💸", points: 75 },
+  { id: 13, title: "Make a TikTok", icon: "📹", points: 2 },
+  { id: 14, title: "Stranger Joins TikTok", icon: "🎬", points: 10 },
+  { id: 15, title: "Cliff Jump", icon: "🪂", points: 100 },
+  { id: 16, title: "Find Group Lookalike", icon: "👥", points: 70 },
+  { id: 17, title: "Sleep Somewhere Else", icon: "🛏️", points: 100 },
+  { id: 18, title: "Receive Compliments", icon: "😊", points: 7 },
+  { id: 19, title: "Get a Tan", icon: "☀️", points: 1 },
+  { id: 20, title: "Hold Hands with Stranger", icon: "🤝", points: 15 },
+  { id: 21, title: "Down a Drink", icon: "🍺", points: 2 },
+  { id: 22, title: "Shot", icon: "🥂", points: 2 },
+  { id: 23, title: "Play Game with Stranger", icon: "🎲", points: 25 },
+  { id: 24, title: "Buy Souvenir", icon: "🎁", points: 4 },
+  { id: 25, title: "Matching Outfit Stranger", icon: "👯", points: 15 },
+  { id: 26, title: "Pic with 5 People 50+", icon: "📸", points: 50 },
+  { id: 27, title: "Ask Something Embarrassing", icon: "😳", points: 35 },
+  { id: 28, title: "Scare Someone in Group", icon: "👻", points: 10 },
+  { id: 29, title: "Try Something New", icon: "✨", points: 10 },
+  { id: 30, title: "Ride Gianni's Bike", icon: "🚲", points: 85 },
+  { id: 31, title: "Give Massage", icon: "💆", points: 1, bonus: "per minute" },
+  { id: 32, title: "Shower with Someone", icon: "🚿", points: 100 },
+  { id: 33, title: "Get a Tattoo", icon: "🖋️", points: 250 },
+  { id: 34, title: "All Nighter", icon: "🌙", points: 20 },
+];
+
+const NEGATIVE_POINTS = [
+  { action: "Throwing up", points: -50, icon: "🤮" },
+  { action: "Going to bed before 12", points: -40, icon: "😴" },
+  { action: "Debating chosen drinks", points: -10, icon: "🙄" },
+  { action: "First to go bed", points: -30, icon: "💤" },
+];
+
+const FORFEITS = [
+  "Skinny dipping", "Run naked around villa", "Jump in pool fully clothed",
+  "Wax", "Eat chili", "Spanked by everyone", "Waterboarded",
+  "Cold shower (1 min)", "Deduct points from someone else", "90 second plank",
+  "Opposite sex underwear", "21 questions hot seat", "Streaking at the beach",
+  "Coin flip (double or nothing)",
+];
+
+const ACTIVITIES = [
+  { id: "saona", name: "Saona Island", icon: "🏝️", bio: "A full-day escape by catamaran and speedboat to one of the DR's most stunning islands. Think palm-lined white sand, waist-deep turquoise natural pools with starfish, open bar the entire way, and a beachside BBQ lunch. It's a 10-hour adventure — you leave early and come back sun-kissed and half-asleep. The boat ride alone is worth it.", price: "£70-90pp", day: "21 May", color: C.turquoise, link: "https://www.viator.com/tours/Punta-Cana/Saona-Island-Day-Trip-From-Punta-Cana/d794-17793P7" },
+  { id: "party-boat", name: "Caribbean Party Boat", icon: "🚤", bio: "A 3-hour floating party on a catamaran cruising the Punta Cana coastline. The DJ drops dancehall, afrobeats, and top hits while unlimited drinks and Caribbean food keep flowing. There's a VIP stop at a natural pool for swimming. This isn't a scenic cruise — it's a full-blown party on the ocean and the energy is unmatched.", price: "£50pp", day: "22 May", color: C.blue, link: "https://www.viator.com/tours/Punta-Cana/Caribbean-Festival-Catamaran-Party-Cruise/d794-6214P9" },
+  { id: "altos", name: "Altos de Chavón", icon: "🌇", bio: "A replica 16th-century Mediterranean village perched above the Chavón River in La Romana. Cobblestone streets, art galleries, a beautiful church, and striking views from every angle. It was built in the late 70s and inaugurated with a Frank Sinatra concert. Best visited in the late afternoon for golden hour photography. It's calm, beautiful, and completely different from the resort vibe — a proper cultural change of pace.", price: "Free", day: "23 May", color: C.gold, link: "https://www.tripadvisor.com/Attraction_Review-g147292-d149775-Reviews-Altos_de_Chavon-La_Romana_La_Romana_Province_Dominican_Republic.html" },
+  { id: "coco-bongo", name: "Coco Bongo", icon: "🎭", bio: "Punta Cana's biggest and most famous nightlife venue. The show kicks off at 8pm with confetti raining from the ceiling, tribute acts (Madonna, MJ, Beyoncé), acrobats, and dancers recreating scenes from Phantom of the Opera and Chicago. After midnight it turns into a full club until 3am. Open bar included with tickets. It's loud, packed, and absolutely wild — the kind of night you talk about for years.", price: "£130-180pp", day: "23 May", color: C.purple, link: "https://www.cocobongo.com/show/punta-cana/?lang=en" },
+  { id: "jellyfish", name: "Jellyfish Restaurant", icon: "🪼", bio: "A beachfront restaurant built right on the sand at Bavaro Beach, with thatched-roof palapas and tables looking out at the Caribbean. Known for fresh seafood, lobster, and a laid-back but upscale vibe. Sunsets here are unreal — the kind of meal that sets the tone for a golden final night before Dinner in the Sky.", price: "~£60pp", day: "24 May", color: C.coral, link: "https://www.jellyfishrestaurant.com/" },
+  { id: "sky-dinner", name: "Dinner in the Sky", icon: "🎈", bio: "A table suspended 50 metres in the air by a crane, with nothing but panoramic views, sunset cocktails, and a curated experience. We're doing the late drinks session — lift up at dusk, sip champagne, take in the skyline, float back down buzzing. Surreal, unforgettable, and the perfect send-off to the squad phase.", price: "~£95pp (drinks session)", day: "24 May", color: C.pink, link: "https://puntacanadinnerinthesky.com" },
+];
+
+const NAV_ITEMS = [
+  { id: "about", label: "About the Holiday" },
+  { id: "players", label: "Meet the Players" },
+  { id: "itinerary", label: "Itinerary" },
+  { id: "challenges", label: "Learn the Game" },
+];
+
+// ─── HOOKS ──────────────────────────────────────────────────────────────────
+function useReveal(threshold = 0.12) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return [ref, visible];
+}
+
+function useScrollSpy(ids, offset = 80) {
+  const [activeId, setActiveId] = useState("");
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveId(entry.target.id);
+        });
+      },
+      { rootMargin: `-${offset}px 0px -50% 0px`, threshold: 0 }
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [ids, offset]);
+  return activeId;
+}
+
+// ─── COMPONENTS ─────────────────────────────────────────────────────────────
+const Reveal = ({ children, delay = 0, direction = "up", style = {} }) => {
+  const [ref, visible] = useReveal();
+  const dirs = { up: "translateY(50px)", down: "translateY(-50px)", left: "translateX(60px)", right: "translateX(-60px)", scale: "scale(0.85)" };
+  return (
+    <div ref={ref} style={{ opacity: visible ? 1 : 0, transform: visible ? "translate(0) scale(1)" : dirs[direction], transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 0.8s cubic-bezier(0.16,1,0.3,1) ${delay}s`, ...style }}>
+      {children}
+    </div>
+  );
+};
+
+const StickyNav = () => {
+  const activeId = useScrollSpy(NAV_ITEMS.map((n) => n.id));
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setShow(window.scrollY > window.innerHeight * 0.85);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <nav style={{
+      position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+      transform: show ? "translateY(0)" : "translateY(-100%)",
+      opacity: show ? 1 : 0,
+      transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease",
+      background: "rgba(255,255,255,0.75)",
+      backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+      borderBottom: "1px solid rgba(0,0,0,0.06)",
+      padding: "12px 0",
+    }}>
+      <div className="no-scrollbar" style={{ display: "flex", justifyContent: "center", gap: 6, overflowX: "auto", padding: "0 16px" }}>
+        {NAV_ITEMS.map((item) => (
+          <a
+            key={item.id}
+            href={`#${item.id}`}
+            onClick={(e) => { e.preventDefault(); document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" }); }}
+            style={{
+              fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11,
+              padding: "6px 14px", borderRadius: 20, border: "none", textDecoration: "none",
+              whiteSpace: "nowrap", cursor: "pointer", transition: "all 0.3s ease",
+              background: activeId === item.id ? C.coral : "rgba(0,0,0,0.04)",
+              color: activeId === item.id ? C.white : C.textBody,
+              letterSpacing: 0.5,
+            }}
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+};
+
+const Countdown = ({ loaded }) => {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const target = new Date("2026-05-18T11:00:00+01:00");
+  const diff = target - now;
+
+  if (diff <= 0) {
+    return (
+      <div style={{ opacity: loaded ? 1 : 0, transition: "all 0.6s ease 0.7s", marginTop: 24 }}>
+        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(20px, 5vw, 32px)", color: C.yellow, textShadow: `0 0 30px ${C.yellow}66` }}>
+          WE OUT HERE
+        </div>
+      </div>
+    );
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const mins = Math.floor((diff / (1000 * 60)) % 60);
+  const secs = Math.floor((diff / 1000) % 60);
+
+  const units = [
+    { val: days, label: "days" },
+    { val: hours, label: "hrs" },
+    { val: mins, label: "min" },
+    { val: secs, label: "sec" },
+  ];
+
+  return (
+    <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24, opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s ease 0.7s" }}>
+      {units.map((u) => (
+        <div key={u.label} style={{ textAlign: "center", background: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderRadius: 14, padding: "10px 12px", minWidth: 56 }}>
+          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 22, color: C.white, lineHeight: 1 }}>{String(u.val).padStart(2, "0")}</div>
+          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>{u.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const ProfileCard = ({ player, index, onOpen }) => (
+  <Reveal delay={index * 0.08} style={{ flex: "0 0 auto" }}>
+    <div
+      onClick={onOpen}
+      style={{
+        width: 220, paddingTop: 70, cursor: "pointer", userSelect: "none",
+        position: "relative",
+        transition: "all 0.3s ease",
+        animation: player.mystery ? "mysteryWobble 4s ease-in-out infinite" : "none",
+      }}
+    >
+      {/* TBC badge — only on mystery card */}
+      {player.mystery && (
+        <div style={{
+          position: "absolute", top: 4, right: 4, zIndex: 3,
+          fontFamily: "'Dela Gothic One', sans-serif", fontSize: 10,
+          color: C.white, background: C.coral,
+          padding: "5px 10px", borderRadius: 10, letterSpacing: 1.5,
+          boxShadow: `0 4px 12px ${C.coral}66`,
+          transform: "rotate(8deg)",
+        }}>TBC</div>
+      )}
+      {/* Avatar — oversized, overlapping the card top */}
+      <div style={{
+        position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", zIndex: 2,
+        width: 130, height: 130, borderRadius: "50%", overflow: "hidden",
+        border: player.mystery ? `4px dashed ${player.color}` : `4px solid ${player.color}`,
+        boxShadow: `0 8px 24px ${player.color}40, 0 0 0 6px ${C.white}`,
+        background: player.mystery
+          ? `linear-gradient(135deg, ${C.purple}, ${C.pink})`
+          : `linear-gradient(135deg, ${player.color}30, ${player.color}10)`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {player.mystery ? (
+          <span style={{
+            fontFamily: "'Dela Gothic One', sans-serif", fontSize: 72,
+            color: C.white, textShadow: "0 4px 16px rgba(0,0,0,0.25)",
+            lineHeight: 1,
+          }}>{player.initial || "?"}</span>
+        ) : (
+          <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+        )}
+      </div>
+      {/* Card body — starts below avatar overlap */}
+      <div style={{
+        background: `linear-gradient(170deg, ${C.white} 0%, ${player.color}12 100%)`,
+        border: player.mystery ? `2px dashed ${player.color}66` : `2px solid ${player.color}30`,
+        borderRadius: 24,
+        boxShadow: `0 8px 32px ${player.color}18`,
+        padding: "72px 16px 20px",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        gap: 8, textAlign: "center",
+      }}>
+        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 13, color: player.color, letterSpacing: 3 }}>#{player.num}</div>
+        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.dark, lineHeight: 1.2 }}>{player.name}</div>
+        <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: C.white, background: player.color, padding: "5px 16px", borderRadius: 16, letterSpacing: 0.5, textTransform: "uppercase" }}>{player.title}</div>
+        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, marginTop: 4, animation: "tapPulse 2.5s ease-in-out infinite" }}>tap to view profile</div>
+      </div>
+    </div>
+  </Reveal>
+);
+
+const ProfileModal = ({ player, onClose }) => {
+  if (!player) return null;
+  const presence = PRESENCE.find((p) => p.name === player.name);
+  const playerFlights = FLIGHTS.filter((f) => f.who.includes(player.name));
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 200,
+        background: "rgba(0,0,0,0.6)",
+        backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 20,
+        animation: "modalFadeIn 0.3s ease",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "90vw", maxWidth: 480, maxHeight: "90vh", overflowY: "auto",
+          background: C.white, borderRadius: 28,
+          boxShadow: `0 24px 80px rgba(0,0,0,0.3), 0 0 0 1px ${player.color}22`,
+          animation: "modalScaleIn 0.3s cubic-bezier(0.16,1,0.3,1)",
+          position: "relative",
+        }}
+        className="no-scrollbar"
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute", top: 16, right: 16, zIndex: 3,
+            width: 36, height: 36, borderRadius: "50%",
+            background: "rgba(255,255,255,0.25)", border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: "Nunito, sans-serif", fontSize: 18, color: C.white, fontWeight: 700,
+            backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+          }}
+        >
+          ✕
+        </button>
+
+        {/* Hero — avatar as full background with text overlay */}
+        <div style={{
+          borderRadius: "28px 28px 0 0",
+          position: "relative", overflow: "hidden",
+          minHeight: 380,
+          display: "flex", flexDirection: "column", justifyContent: "flex-end",
+          background: player.mystery
+            ? `linear-gradient(135deg, ${C.purple}, ${C.pink} 60%, ${C.coral})`
+            : "transparent",
+        }}>
+          {/* Avatar as full-bleed background — or floating ?'s for mystery */}
+          {player.mystery ? (
+            <>
+              {["?", "?", "?", "?", "?", "?"].map((q, i) => (
+                <span key={i} style={{
+                  position: "absolute",
+                  fontFamily: "'Dela Gothic One', sans-serif",
+                  color: "rgba(255,255,255,0.18)",
+                  fontSize: [120, 80, 60, 100, 70, 90][i],
+                  top: ["8%", "55%", "20%", "70%", "10%", "60%"][i],
+                  left: ["10%", "75%", "70%", "8%", "50%", "40%"][i],
+                  animation: `float ${4 + i}s ease-in-out infinite`,
+                  animationDelay: `${i * 0.4}s`,
+                  pointerEvents: "none",
+                }}>{q}</span>
+              ))}
+              <div style={{
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{
+                  fontFamily: "'Dela Gothic One', sans-serif", fontSize: 220,
+                  color: "rgba(255,255,255,0.85)",
+                  textShadow: "0 8px 40px rgba(0,0,0,0.25)",
+                  lineHeight: 1,
+                }}>{player.initial || "?"}</span>
+              </div>
+            </>
+          ) : (
+            <img src={player.avatar} alt={player.name} style={{
+              position: "absolute", inset: 0, width: "100%", height: "100%",
+              objectFit: "cover", objectPosition: "center 10%",
+            }} />
+          )}
+          {/* Gradient overlay for text legibility */}
+          <div style={{
+            position: "absolute", inset: 0,
+            background: `linear-gradient(180deg, transparent 30%, ${player.color}44 60%, ${player.color}DD 85%, ${player.color} 100%)`,
+          }} />
+          {/* Text overlay at bottom */}
+          <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 24px 24px" }}>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.6)", letterSpacing: 4, marginBottom: 4 }}>#{player.num}</div>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 32, color: C.white, textShadow: "0 2px 12px rgba(0,0,0,0.3)", marginBottom: 8 }}>{player.name}</div>
+            <div style={{ display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.white, background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "6px 20px", borderRadius: 16, letterSpacing: 1.5, textTransform: "uppercase" }}>{player.title}</div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: "24px 24px 28px" }}>
+          {/* Role badge */}
+          {player.role && (
+            <div style={{ textAlign: "center", marginBottom: 16 }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: player.color, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Role</div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 14, color: C.dark }}>{player.role}</div>
+            </div>
+          )}
+          {/* Bio */}
+          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 15, color: C.textBody, lineHeight: 1.8, fontWeight: 600, textAlign: "center", marginBottom: 24 }}>{player.bio}</div>
+
+          {/* Travel dates */}
+          {presence && (
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+              <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: player.color, background: `${player.color}12`, padding: "6px 14px", borderRadius: 12, letterSpacing: 0.3 }}>Arrives: {presence.start} May</span>
+              <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: player.color, background: `${player.color}12`, padding: "6px 14px", borderRadius: 12, letterSpacing: 0.3 }}>Departs: {presence.end} May</span>
+            </div>
+          )}
+
+          {/* Flights — hidden for mystery (none booked) */}
+          {player.mystery ? (
+            <div style={{ textAlign: "center", padding: "16px 12px", border: `2px dashed ${player.color}55`, borderRadius: 16, background: `${player.color}08` }}>
+              <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: player.color, marginBottom: 6 }}>NO FLIGHT BOOKED</div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, fontWeight: 600, lineHeight: 1.5 }}>If they say yes, we'll find a seat. Until then — pure speculation.</div>
+            </div>
+          ) : (
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.textBody, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10, textAlign: "center", opacity: 0.5 }}>Flights</div>
+          )}
+          {!player.mystery && playerFlights.map((f) => (
+            <div key={f.id} style={{ background: `${player.color}08`, borderRadius: 16, padding: "14px 16px", marginBottom: 8, border: `1px solid ${player.color}15` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.white, background: f.type === "Outbound" ? C.turquoise : C.coral, padding: "3px 10px", borderRadius: 10, letterSpacing: 0.5, textTransform: "uppercase" }}>{f.type}</span>
+                <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 11, color: C.textBody }}>{f.date}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px" }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.dark }}>{f.from.code}</div>
+                  <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 700 }}>{f.depart}</div>
+                </div>
+                <div style={{ flex: 1, textAlign: "center", padding: "0 8px" }}>
+                  <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 700 }}>{f.duration}</div>
+                  <div style={{ height: 2, background: `linear-gradient(90deg, ${player.color}44, ${player.color}, ${player.color}44)`, borderRadius: 2, margin: "4px 0" }} />
+                  {f.stops ? <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, color: player.color, fontWeight: 800 }}>via {f.stopCity}</div> : <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, color: C.green, fontWeight: 800 }}>Direct</div>}
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.dark }}>{f.to.code}</div>
+                  <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 700 }}>{f.arrive}</div>
+                </div>
+              </div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, fontWeight: 600, textAlign: "center", marginTop: 8 }}>{f.flight} · {f.aircraft}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PresenceChart = () => {
+  const totalDays = 12; // 18 to 29
+  return (
+    <Reveal delay={0.15}>
+      <div style={{ padding: "0 24px", marginTop: 8 }}>
+        <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.gold, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 16 }}>Who's There When</div>
+        <div style={{ maxWidth: 540, margin: "0 auto", background: C.white, borderRadius: 20, padding: "20px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+          {/* Date axis */}
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 12, paddingLeft: 72 }}>
+            {Array.from({ length: totalDays }, (_, i) => (
+              <div key={i} style={{ flex: 1, textAlign: "center", fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 800, color: C.textBody, opacity: 0.5 }}>{18 + i}</div>
+            ))}
+          </div>
+          {/* Rows */}
+          {PRESENCE.map((p) => (
+            <div key={p.name} style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+              <div style={{ width: 68, fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.dark, flexShrink: 0, paddingRight: 4 }}>{p.name}</div>
+              <div style={{ flex: 1, display: "flex", gap: 2, height: 22 }}>
+                {Array.from({ length: totalDays }, (_, i) => {
+                  const day = 18 + i;
+                  const present = day >= p.start && day <= p.end;
+                  const allOverlap = day >= 20 && day <= 25;
+                  return (
+                    <div key={i} style={{
+                      flex: 1, borderRadius: 4,
+                      background: present ? p.color : `${C.dark}08`,
+                      opacity: present ? (allOverlap ? 1 : 0.7) : 1,
+                      position: "relative",
+                    }}>
+                      {present && allOverlap && (
+                        <div style={{ position: "absolute", inset: 0, borderRadius: 4, boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.3)` }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          {/* Legend */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 12, paddingLeft: 72 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 10, height: 10, borderRadius: 2, background: C.green }} />
+              <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 700, color: C.textBody }}>Present</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 10, height: 10, borderRadius: 2, background: `${C.dark}08` }} />
+              <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 700, color: C.textBody }}>Not there</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 10, height: 10, borderRadius: 2, background: C.gold, opacity: 1 }} />
+              <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 700, color: C.textBody }}>Full squad (20-25)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  );
+};
+
+const DayCard = ({ day, dayIndex, isActive, onClick }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const color = DAY_COLORS[dayIndex % DAY_COLORS.length];
+  const imgKey = DAY_IMAGES[dayIndex % DAY_IMAGES.length];
+  return (
+    <div
+      onClick={() => { onClick(); setExpanded(!expanded); }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        flex: "0 0 auto", width: 280, minHeight: 180, borderRadius: 24, overflow: "hidden", cursor: "pointer",
+        transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
+        transform: isActive ? "scale(1.03)" : hovered ? "scale(1.0)" : "scale(0.96)",
+        boxShadow: isActive ? `0 16px 48px ${color}33` : hovered ? `0 12px 36px ${color}22` : "0 4px 16px rgba(0,0,0,0.08)",
+        background: C.white, border: isActive ? `3px solid ${color}` : "3px solid transparent",
+        userSelect: "none", scrollSnapAlign: "center",
+      }}
+    >
+      <div style={{ height: 100, backgroundImage: `url(${IMAGES[imgKey]})`, backgroundSize: "cover", backgroundPosition: "center", position: "relative" }}>
+        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, ${color}88 0%, ${color}DD 100%)` }} />
+        {(day.status === "resort" || day.status === "mixed" || day.cost) && (
+          <div style={{ position: "absolute", top: 10, right: 10, zIndex: 3, display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end", maxWidth: "70%" }}>
+            {(day.status === "resort" || day.status === "mixed") && (
+              <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: C.white, background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "4px 9px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.3)" }}>🏝️ Resort</span>
+            )}
+            {day.cost && (
+              <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 9, letterSpacing: 0.5, color: color, background: C.white, padding: "4px 9px", borderRadius: 10, boxShadow: `0 4px 12px ${color}33` }}>{day.cost}</span>
+            )}
+          </div>
+        )}
+        <div style={{ position: "relative", zIndex: 2, padding: 16, display: "flex", alignItems: "flex-end", height: "100%" }}>
+          <div>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 22, color: C.white, lineHeight: 1 }}>{day.date}</div>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, color: "rgba(255,255,255,0.85)", letterSpacing: 2, textTransform: "uppercase" }}>{day.dow} — {day.title}</div>
+          </div>
+        </div>
+      </div>
+      <div style={{ padding: "14px 16px" }}>
+        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, fontWeight: 700, color: C.textBody, fontStyle: "italic", marginBottom: 4 }}>{"\u201C"}{day.tagline}{"\u201D"}</div>
+        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, fontWeight: 700, color: C.textBody, opacity: 0.5, marginBottom: 8 }}>{day.who.join(", ")}</div>
+        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 11, fontWeight: 800, color: color, textTransform: "uppercase", letterSpacing: 0.5 }}>{expanded ? "Hide plan ▲" : "See the plan ▼"}</div>
+        <div style={{ maxHeight: expanded ? 700 : 0, overflow: "hidden", transition: "max-height 0.6s cubic-bezier(0.33,1,0.68,1)" }}>
+          <div style={{ paddingTop: 10 }}>
+            {day.items.map((item, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderTop: i > 0 ? "1px solid #f0f0f0" : "none" }}>
+                <span style={{ fontSize: 18, width: 28, textAlign: "center", paddingTop: 2 }}>{item.icon}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, color: color, textTransform: "uppercase", letterSpacing: 0.5 }}>{item.time}</div>
+                  {item.link ? (
+                    <a href={item.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 13, color: C.dark, lineHeight: 1.5, textDecoration: "none", borderBottom: `1.5px dashed ${color}`, paddingBottom: 1 }}>
+                      {item.activity} <span style={{ fontSize: 10, color, fontWeight: 900 }}>↗</span>
+                    </a>
+                  ) : (
+                    <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 600, fontSize: 13, color: C.dark, lineHeight: 1.6 }}>{item.activity}</div>
+                  )}
+                  {item.note && <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, fontWeight: 700, color: C.textBody, opacity: 0.65, marginTop: 3, lineHeight: 1.4 }}>{item.note}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChallengeCard = ({ challenge, index }) => (
+  <Reveal delay={index * 0.02} style={{ flex: "0 0 auto" }}>
+    <div style={{ width: 150, borderRadius: 18, background: C.white, padding: "16px 12px", boxShadow: "0 4px 16px rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center", scrollSnapAlign: "center" }}>
+      <div style={{ fontSize: 28 }}>{challenge.icon}</div>
+      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 11, color: C.dark, lineHeight: 1.3 }}>{challenge.title}</div>
+      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.gold, background: `${C.gold}15`, padding: "3px 10px", borderRadius: 10, letterSpacing: 0.5, marginTop: "auto" }}>{challenge.points} pts</div>
+      {challenge.bonus && <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 700, color: C.green }}>{challenge.bonus}</div>}
+    </div>
+  </Reveal>
+);
+
+const Leaderboard = () => (
+  <div style={{
+    background: `linear-gradient(145deg, ${C.dark}, ${C.darkSoft})`,
+    borderRadius: 24, padding: "32px 24px", textAlign: "center",
+    position: "relative", overflow: "hidden",
+  }}>
+    <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: `${C.gold}10` }} />
+    <div style={{ position: "absolute", bottom: -30, left: -30, width: 120, height: 120, borderRadius: "50%", background: `${C.coral}08` }} />
+    <div style={{ position: "relative", zIndex: 2 }}>
+      <div style={{ fontSize: 36, marginBottom: 10 }}>🏆</div>
+      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.white, marginBottom: 8 }}>Leaderboard</div>
+      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", fontWeight: 600, lineHeight: 1.6, marginBottom: 16 }}>Live score tracking, personal logins, and challenge completion — all coming before we land.</div>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 14 }}>
+        {PLAYERS.map((p) => (
+          <div key={p.id} style={{
+            width: 38, height: 38, borderRadius: "50%", overflow: "hidden",
+            border: p.mystery ? `2px dashed ${p.color}` : `2px solid ${p.color}`,
+            boxShadow: `0 0 8px ${p.color}40`,
+            background: p.mystery ? `linear-gradient(135deg, ${C.purple}, ${C.pink})` : "transparent",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {p.mystery ? (
+              <span style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.white }}>{p.initial || "?"}</span>
+            ) : (
+              <img src={p.avatar} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+            )}
+          </div>
+        ))}
+      </div>
+      <div style={{
+        display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11,
+        color: C.gold, background: `${C.gold}15`, padding: "8px 20px", borderRadius: 14,
+        letterSpacing: 1.5, textTransform: "uppercase",
+      }}>Coming Soon</div>
+    </div>
+  </div>
+);
+
+const AdventureMap = () => {
+  const [selected, setSelected] = useState(null);
+
+  return (
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
+      <div style={{
+        background: "#1a2a3a",
+        borderRadius: 24,
+        padding: "24px 20px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>Punta Cana</div>
+          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.white }}>Adventure Map</div>
+          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>Tap an activity to learn more</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          {ACTIVITIES.map((a) => {
+            const isSelected = selected === a.id;
+            return (
+              <div
+                key={a.id}
+                onClick={() => setSelected(isSelected ? null : a.id)}
+                style={{
+                  background: isSelected
+                    ? `linear-gradient(135deg, ${a.color}, ${a.color}CC)`
+                    : `linear-gradient(135deg, ${a.color}25, ${a.color}15)`,
+                  borderRadius: 16,
+                  padding: isSelected ? "20px 16px" : "14px 10px",
+                  textAlign: isSelected ? "left" : "center",
+                  cursor: "pointer",
+                  border: `2px solid ${isSelected ? a.color : "rgba(255,255,255,0.08)"}`,
+                  transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
+                  gridColumn: isSelected ? "1 / -1" : "auto",
+                }}
+              >
+                {!isSelected && (
+                  <>
+                    <div style={{ fontSize: 24 }}>{a.icon}</div>
+                    <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 10, color: C.white, marginTop: 4 }}>{a.name}</div>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: a.color, margin: "6px auto 0", boxShadow: `0 0 8px ${a.color}` }} />
+                  </>
+                )}
+                {isSelected && (
+                  <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+                    <div style={{ fontSize: 32, lineHeight: 1 }}>{a.icon}</div>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 16, color: C.white, marginBottom: 6 }}>{a.name}</div>
+                      <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.85)", lineHeight: 1.6, marginBottom: 10 }}>{a.bio}</div>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                        <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, background: "rgba(255,255,255,0.2)", color: C.white, padding: "4px 12px", borderRadius: 8 }}>{a.price}</span>
+                        <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, background: "rgba(255,255,255,0.2)", color: C.white, padding: "4px 12px", borderRadius: 8 }}>{a.day}</span>
+                        <a href={a.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, background: a.color, color: C.white, padding: "4px 12px", borderRadius: 8, textDecoration: "none" }}>Learn more →</a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── MAIN APP ───────────────────────────────────────────────────────────────
+export default function HomePage() {
+  const navigate = useNavigate();
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [session, setSession] = useState(() => loadSession());
+  const [loaded, setLoaded] = useState(false);
+  const [activeDay, setActiveDay] = useState(0);
+  const [expandedPlayer, setExpandedPlayer] = useState(null);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.href = FONTS_URL;
+    link.rel = "stylesheet";
+    document.head.appendChild(link);
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-18px) rotate(5deg)}}
+      @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+      @keyframes heroZoom{from{transform:scale(1.1)}to{transform:scale(1)}}
+      @keyframes tapPulse{0%,100%{opacity:0.35}50%{opacity:0.7}}
+      @keyframes ctaShimmer{0%{background-position:0% center}100%{background-position:200% center}}
+      @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+      @keyframes modalScaleIn{from{opacity:0;transform:scale(0.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+      @keyframes mysteryWobble{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+      *{box-sizing:border-box;margin:0;padding:0}
+      html{scroll-behavior:smooth}
+      body{overflow-x:hidden}
+      .no-scrollbar::-webkit-scrollbar{display:none}
+      .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+    `;
+    document.head.appendChild(style);
+    setTimeout(() => setLoaded(true), 400);
+    return () => { document.head.removeChild(link); document.head.removeChild(style); };
+  }, []);
+
+  const scrollToDay = (i) => {
+    setActiveDay(i);
+    if (scrollRef.current?.children[i]) {
+      scrollRef.current.children[i].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  };
+
+  return (
+    <div style={{ fontFamily: "Nunito, sans-serif", background: C.sand, minHeight: "100vh", overflowX: "hidden", lineHeight: 1.6 }}>
+
+      <StickyNav />
+
+      {/* ── HERO ────────────────────────────────────────────────────────── */}
+      <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${IMAGES.heroBeach})`, backgroundSize: "cover", backgroundPosition: "center 30%", animation: loaded ? "heroZoom 1.5s ease-out forwards" : "none" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(26,26,46,0.1) 0%, rgba(26,26,46,0.25) 40%, rgba(26,26,46,0.7) 75%, rgba(26,26,46,0.92) 100%)" }} />
+        <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 24px 60px", maxWidth: 700, width: "100%" }}>
+          <div style={{ display: "inline-block", background: "rgba(255,107,107,0.9)", color: C.white, fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, padding: "6px 20px", borderRadius: 20, letterSpacing: 3, textTransform: "uppercase", marginBottom: 20, opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s ease 0.3s" }}>
+            Royalton CHIC • May 18–29
+          </div>
+          <h1 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(52px, 14vw, 110px)", lineHeight: 0.9, color: C.white, opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s", textShadow: `4px 4px 0 ${C.coral}66` }}>PUNTA</h1>
+          <h1 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(52px, 14vw, 110px)", lineHeight: 0.9, background: `linear-gradient(135deg, ${C.yellow}, ${C.coral}, ${C.turquoise})`, backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s", animation: loaded ? "shimmer 5s linear infinite" : "none" }}>CANA</h1>
+          <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.8)", marginTop: 20, letterSpacing: 0.5, opacity: loaded ? 1 : 0, transition: "all 0.6s ease 0.6s" }}>6 friends. 12 days. 1 island. No mercy.</p>
+          <Countdown loaded={loaded} />
+          <div style={{ marginTop: 32, fontSize: 20, color: "rgba(255,255,255,0.4)", animation: loaded ? "float 3s ease-in-out infinite" : "none", opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 1s" }}>↓</div>
+        </div>
+      </section>
+
+      {/* ── ABOUT THE HOLIDAY ──────────────────────────────────────────── */}
+      <section id="about" style={{ padding: "80px 0 60px", background: C.white }}>
+        <Reveal>
+          <div style={{ textAlign: "center", marginBottom: 40, padding: "0 24px" }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>The Mission Briefing</div>
+            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>About the Holiday</h2>
+          </div>
+        </Reveal>
+
+        {/* Desktop: Hotel left, Need to Know right */}
+        <Reveal delay={0.1}>
+          <div style={{ maxWidth: 960, margin: "0 auto 48px", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 24, alignItems: "start" }}>
+
+            {/* Hotel Highlights */}
+            <div style={{ background: C.sand, borderRadius: 24, padding: "28px 24px", height: "100%" }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>Your Hotel</div>
+              <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(18px, 3vw, 24px)", color: C.dark, marginBottom: 4 }}>{RESORT.name}</div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.textBody, fontWeight: 600, marginBottom: 16 }}>{"⭐".repeat(RESORT.stars)} All-Inclusive · Adults Only</div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.textBody, fontWeight: 600, lineHeight: 1.8, marginBottom: 16 }}>
+                An Autograph Collection resort on Uvero Alto Beach, designed for social trips, group holidays, and non-stop energy. The pool area is the heartbeat — DJs, foam parties, and electro beats from morning to night. The nightclub keeps things going well past midnight. Food is all-inclusive across multiple restaurants, premium drinks are unlimited, and the beach is right there.
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                {RESORT.included.map((item, i) => (
+                  <div key={i} style={{ background: `${C.turquoise}12`, borderRadius: 12, padding: "6px 12px", display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ fontSize: 14 }}>{item.icon}</span>
+                    <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 11, color: C.dark }}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, fontWeight: 600, borderTop: `1px solid ${C.turquoise}20`, paddingTop: 12 }}>
+                Check-in: {RESORT.checkIn} · Check-out: {RESORT.checkOut}
+              </div>
+            </div>
+
+            {/* Need to Know */}
+            <div style={{ background: C.sand, borderRadius: 24, padding: "28px 24px", height: "100%" }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>Need to Know</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {TRIP_INFO.map((item) => (
+                  <div key={item.key} style={{ background: C.white, borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${C.turquoise}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{item.icon}</div>
+                    <div>
+                      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, color: C.textBody, letterSpacing: 0.3, textTransform: "uppercase" }}>{item.key}</div>
+                      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 600, fontSize: 13, color: C.dark, lineHeight: 1.4 }}>{item.value}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
+
+        {/* Adventure Map — full width */}
+        <Reveal delay={0.15}>
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.turquoise, letterSpacing: 3, textTransform: "uppercase" }}>What's Planned</div>
+          </div>
+        </Reveal>
+        <AdventureMap />
+      </section>
+
+      {/* ── PLAYERS ─────────────────────────────────────────────────────── */}
+      <section id="players" style={{ padding: "80px 0 60px", background: C.sand }}>
+        <Reveal>
+          <div style={{ textAlign: "center", marginBottom: 36, padding: "0 24px" }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>The Lineup</div>
+            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>Meet the Players</h2>
+          </div>
+        </Reveal>
+        <div className="no-scrollbar" style={{ display: "flex", gap: 16, overflowX: "auto", padding: "8px 28px 32px", scrollSnapType: "x mandatory", justifyContent: "center" }}>
+          {PLAYERS.map((p, i) => (
+            <ProfileCard
+              key={p.id}
+              player={p}
+              index={i}
+              onOpen={() => setExpandedPlayer(p.id)}
+            />
+          ))}
+        </div>
+        <PresenceChart />
+      </section>
+
+      {/* ── ITINERARY ───────────────────────────────────────────────────── */}
+      <section id="itinerary" style={{ padding: "80px 0 60px", background: C.white }}>
+        <Reveal>
+          <div style={{ textAlign: "center", marginBottom: 32, padding: "0 24px" }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.gold, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>The Squad Phase · 18–25 May</div>
+            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>The Itinerary</h2>
+            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, marginTop: 8, fontWeight: 600 }}>8 days together — tap a day to expand · tap any link to see what we're suggesting</p>
+            <div style={{ marginTop: 14, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: C.gold, background: `${C.gold}18`, padding: "7px 16px", borderRadius: 14, letterSpacing: 1.5, textTransform: "uppercase" }}>💸 Squad-Phase Spend · £445–555pp <span style={{ opacity: 0.6, fontWeight: 800 }}>(Wed–Sun)</span></div>
+          </div>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 4, marginBottom: 20, padding: "0 16px", flexWrap: "wrap" }}>
+            {DAYS.map((d, i) => (
+              <button key={i} onClick={() => scrollToDay(i)} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, padding: "6px 10px", borderRadius: 14, border: "none", cursor: "pointer", background: activeDay === i ? DAY_COLORS[i % DAY_COLORS.length] : `${DAY_COLORS[i % DAY_COLORS.length]}15`, color: activeDay === i ? C.white : DAY_COLORS[i % DAY_COLORS.length], transition: "all 0.3s ease", letterSpacing: 0.3 }}>{d.date.split(" ")[0]}</button>
+            ))}
+          </div>
+        </Reveal>
+        <div ref={scrollRef} className="no-scrollbar" style={{ display: "flex", gap: 16, overflowX: "auto", padding: "8px 28px 24px", scrollSnapType: "x mandatory" }}>
+          {DAYS.map((d, i) => (
+            <Reveal key={i} delay={i * 0.04} style={{ flex: "0 0 auto" }}>
+              <DayCard day={d} dayIndex={i} isActive={activeDay === i} onClick={() => setActiveDay(i)} />
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CHALLENGES ──────────────────────────────────────────────────── */}
+      <section id="challenges" style={{ padding: "80px 0 60px", background: C.sand }}>
+        <Reveal>
+          <div style={{ textAlign: "center", marginBottom: 32, padding: "0 24px" }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Earn Your Bragging Rights</div>
+            <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>Learn the Game</h2>
+            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, fontWeight: 600, maxWidth: 500, margin: "8px auto 0" }}>Earn points by completing challenges. Points tracked daily. Lowest score each day = forfeit. Overall loser at end of trip = final forfeit.</p>
+          </div>
+        </Reveal>
+
+        {/* Leaderboard centre, Negative points + Forfeits flanking */}
+        <Reveal delay={0.1}>
+          <div style={{ maxWidth: 1000, margin: "0 auto 40px", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20, alignItems: "start" }}>
+            {/* Negative points */}
+            <div style={{ background: C.white, borderRadius: 20, padding: "20px 20px" }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 14 }}>Negative Points</div>
+              {NEGATIVE_POINTS.map((n, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: i > 0 ? "1px solid #f0f0f0" : "none" }}>
+                  <span style={{ fontSize: 20, width: 28, textAlign: "center" }}>{n.icon}</span>
+                  <div style={{ flex: 1, fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 13, color: C.dark }}>{n.action}</div>
+                  <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 14, color: C.coral }}>{n.points}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Leaderboard — centre stage */}
+            <Leaderboard />
+
+            {/* Forfeits */}
+            <div style={{ background: C.white, borderRadius: 20, padding: "20px 20px" }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.purple, letterSpacing: 3, textTransform: "uppercase", textAlign: "center", marginBottom: 6 }}>Daily Forfeits</div>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 11, fontWeight: 600, color: C.textBody, textAlign: "center", marginBottom: 14 }}>Lowest scorer picks one at random</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+                {FORFEITS.map((f, i) => (
+                  <div key={i} style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 11, color: C.purple, background: `${C.purple}08`, padding: "6px 12px", borderRadius: 10, border: `1px solid ${C.purple}15` }}>{f}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
+
+        {/* Challenge carousel */}
+        <Reveal delay={0.15}>
+          <div style={{ textAlign: "center", marginBottom: 12, padding: "0 24px" }}>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.gold, letterSpacing: 3, textTransform: "uppercase" }}>Ways to Earn Points</div>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, fontWeight: 600, color: C.textBody, marginTop: 4 }}>Swipe through the challenges</div>
+          </div>
+        </Reveal>
+        <div className="no-scrollbar" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "8px 28px 24px", scrollSnapType: "x mandatory" }}>
+          {CHALLENGES.map((c, i) => <ChallengeCard key={c.id} challenge={c} index={i} />)}
+        </div>
+      </section>
+
+      {/* ── CTA ─────────────────────────────────────────────────────────── */}
+      <section style={{ padding: "80px 24px 80px", background: C.white, textAlign: "center" }}>
+        <Reveal>
+          <div style={{ maxWidth: 480, margin: "0 auto", padding: "44px 32px", borderRadius: 28, background: `linear-gradient(145deg, ${C.dark}, ${C.darkSoft})`, boxShadow: "0 24px 64px rgba(26,26,46,0.25)", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", background: `${C.coral}15` }} />
+            <div style={{ position: "absolute", bottom: -40, left: -40, width: 160, height: 160, borderRadius: "50%", background: `${C.turquoise}10` }} />
+            <div style={{ position: "relative", zIndex: 2 }}>
+              <div style={{ fontSize: 40, marginBottom: 16 }}>🇩🇴</div>
+              <h3 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 24, color: C.white, marginBottom: 12 }}>Are You Ready?</h3>
+              <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: "rgba(255,255,255,0.65)", fontWeight: 600, lineHeight: 1.7 }}>12 days. All-inclusive. Punta Cana.<br />Pack sunscreen and your best excuses for work.</p>
+              <div style={{ marginTop: 24, display: "inline-block", padding: "14px 32px", background: `linear-gradient(135deg, ${C.coral}, ${C.gold}, ${C.coral}, ${C.gold})`, backgroundSize: "300% auto", animation: "ctaShimmer 4s linear infinite", borderRadius: 16, fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 13, color: C.white, letterSpacing: 1, textTransform: "uppercase", boxShadow: `0 8px 24px ${C.coral}44`, cursor: "pointer" }}>Let's Go 🌊</div>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ── FOOTER ──────────────────────────────────────────────────────── */}
+      <footer style={{ textAlign: "center", padding: "16px 24px 24px", fontFamily: "Nunito, sans-serif", fontSize: 11, color: C.textBody, opacity: 0.4, fontWeight: 700, letterSpacing: 1 }}>
+        PUNTA CANA '26 • ROYALTON CHIC • 🌊
+      </footer>
+
+      {/* ── PROFILE MODAL ──────────────────────────────────────────────── */}
+      <ProfileModal
+        player={PLAYERS.find((p) => p.id === expandedPlayer) || null}
+        onClose={() => setExpandedPlayer(null)}
+      />
+
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={({ slug, token }) => {
+          saveSession({ slug, token });
+          setLoginOpen(false);
+          navigate(`/player/${slug}`);
+        }}
+      />
+
+      {session ? (
+        <LoggedInChip slug={session.slug} onLogout={() => setSession(null)} />
+      ) : (
+        <button
+          onClick={() => setLoginOpen(true)}
+          style={{
+            position: "fixed", top: 16, right: 16, zIndex: 900,
+            background: "white", border: "none", borderRadius: 999,
+            padding: "10px 16px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 14,
+            color: C.dark, cursor: "pointer",
+          }}
+        >
+          Player Log In
+        </button>
+      )}
+    </div>
+  );
+}
