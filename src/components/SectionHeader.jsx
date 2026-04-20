@@ -1,22 +1,18 @@
 import { C } from "../data/colors.js";
 
-export default function SectionHeader({ label, title, tagline, accent = C.dark }) {
+export default function SectionHeader({ label, title, tagline, accent = C.coral }) {
   return (
-    <div style={{ textAlign: "center", padding: "40px 20px 16px" }}>
+    <div style={{ textAlign: "center", padding: "56px 20px 12px", maxWidth: 760, margin: "0 auto" }}>
       {label && (
         <div
           style={{
-            display: "inline-block",
             fontFamily: "Nunito, sans-serif",
             fontWeight: 900,
-            fontSize: 10,
-            color: C.white,
-            background: accent,
-            padding: "4px 14px",
-            borderRadius: 10,
-            letterSpacing: 2,
+            fontSize: 13,
+            color: accent,
+            letterSpacing: 3,
             textTransform: "uppercase",
-            marginBottom: 10,
+            marginBottom: 14,
           }}
         >
           {label}
@@ -25,10 +21,10 @@ export default function SectionHeader({ label, title, tagline, accent = C.dark }
       <h2
         style={{
           fontFamily: "'Dela Gothic One', sans-serif",
-          fontSize: "clamp(24px, 6vw, 34px)",
+          fontSize: "clamp(36px, 8vw, 72px)",
           margin: 0,
           color: C.dark,
-          lineHeight: 1.15,
+          lineHeight: 1.05,
         }}
       >
         {title}
@@ -36,10 +32,14 @@ export default function SectionHeader({ label, title, tagline, accent = C.dark }
       {tagline && (
         <div
           style={{
-            marginTop: 6,
+            marginTop: 14,
             fontFamily: "Nunito, sans-serif",
-            fontSize: 14,
+            fontSize: "clamp(15px, 1.6vw, 18px)",
             color: C.textBody,
+            fontWeight: 600,
+            lineHeight: 1.55,
+            maxWidth: 620,
+            margin: "14px auto 0",
           }}
         >
           {tagline}

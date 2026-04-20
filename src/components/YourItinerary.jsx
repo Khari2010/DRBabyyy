@@ -2,13 +2,13 @@ import { daysForPlayer, DAY_ACCENTS } from "../data/itinerary.js";
 import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
 
-function CrewDots({ who, currentName }) {
+function CrewRow({ who, currentName, accent }) {
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 6,
+        gap: 8,
         flexWrap: "wrap",
       }}
     >
@@ -16,31 +16,48 @@ function CrewDots({ who, currentName }) {
         style={{
           fontFamily: "Nunito, sans-serif",
           fontWeight: 900,
-          fontSize: 9,
-          color: C.textBody,
-          letterSpacing: 1.5,
+          fontSize: 10,
+          color: accent,
+          letterSpacing: 2,
           textTransform: "uppercase",
           marginRight: 4,
         }}
       >
-        Crew today
+        Your crew today
       </span>
       {who.map((name) => {
         const p = PLAYERS.find((pl) => pl.name === name);
         const color = p?.color ?? C.textBody;
         const isMe = name === currentName;
         return (
-          <span
+          <div
             key={name}
             title={name}
             style={{
-              width: 14,
-              height: 14,
+              width: isMe ? 30 : 26,
+              height: isMe ? 30 : 26,
               borderRadius: "50%",
+              overflow: "hidden",
               background: color,
-              boxShadow: isMe ? `0 0 0 2px ${C.white}, 0 0 0 4px ${color}` : "none",
+              boxShadow: isMe
+                ? `0 0 0 3px ${C.white}, 0 0 0 5px ${color}, 0 2px 10px ${color}66`
+                : `0 0 0 2px ${C.white}, 0 1px 4px rgba(0,0,0,0.1)`,
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-          />
+          >
+            {p?.avatar ? (
+              <img
+                src={p.avatar}
+                alt={name}
+                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }}
+              />
+            ) : (
+              <span style={{ fontSize: 12 }}>{p?.emoji ?? name[0]}</span>
+            )}
+          </div>
         );
       })}
     </div>
@@ -52,64 +69,47 @@ function DayCard({ day, accent, currentName }) {
     <div
       style={{
         background: C.white,
-        borderRadius: 20,
-        boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+        borderRadius: 24,
+        boxShadow: `0 10px 30px ${accent}18`,
         border: `1px solid ${accent}22`,
         overflow: "hidden",
       }}
     >
-      {/* Header band */}
+      {/* Date strip — coloured band top */}
       <div
         style={{
-          background: `linear-gradient(135deg, ${accent}22, ${accent}08)`,
-          padding: "14px 18px",
+          background: `linear-gradient(135deg, ${accent}, ${accent}DD)`,
+          padding: "14px 20px",
           display: "flex",
-          alignItems: "flex-start",
+          alignItems: "center",
           justifyContent: "space-between",
           gap: 10,
         }}
       >
-        <div style={{ minWidth: 0 }}>
+        <div>
           <div
             style={{
-              display: "inline-block",
               fontFamily: "Nunito, sans-serif",
               fontWeight: 900,
               fontSize: 10,
-              color: C.white,
-              background: accent,
-              padding: "4px 10px",
-              borderRadius: 10,
-              letterSpacing: 1,
+              color: "rgba(255,255,255,0.85)",
+              letterSpacing: 2,
               textTransform: "uppercase",
-              marginBottom: 8,
+              marginBottom: 2,
             }}
           >
-            {day.dow} · {day.date}
+            {day.dow}
           </div>
           <div
             style={{
               fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: 20,
-              color: C.dark,
-              lineHeight: 1.2,
+              fontSize: 22,
+              color: C.white,
+              lineHeight: 1,
             }}
           >
-            {day.title}
+            {day.date}
           </div>
-          {day.tagline && (
-            <div
-              style={{
-                fontFamily: "Nunito, sans-serif",
-                fontStyle: "italic",
-                fontSize: 13,
-                color: C.textBody,
-                marginTop: 2,
-              }}
-            >
-              {day.tagline}
-            </div>
-          )}
         </div>
         {day.cost && (
           <div
@@ -120,9 +120,9 @@ function DayCard({ day, accent, currentName }) {
               fontSize: 11,
               color: accent,
               background: C.white,
-              padding: "5px 10px",
+              padding: "6px 12px",
               borderRadius: 10,
-              border: `1px solid ${accent}33`,
+              boxShadow: `0 4px 12px ${accent}44`,
             }}
           >
             {day.cost}
@@ -130,68 +130,117 @@ function DayCard({ day, accent, currentName }) {
         )}
       </div>
 
-      {/* Items */}
-      <div style={{ padding: "12px 18px 4px" }}>
-        {day.items.map((item, i) => (
+      {/* Title + tagline */}
+      <div style={{ padding: "18px 22px 4px" }}>
+        <div
+          style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: "clamp(20px, 3vw, 24px)",
+            color: C.dark,
+            lineHeight: 1.1,
+            marginBottom: 6,
+          }}
+        >
+          {day.title}
+        </div>
+        {day.tagline && (
           <div
-            key={i}
             style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 10,
-              padding: "8px 0",
-              borderTop: i > 0 ? `1px solid ${C.sandDark}` : "none",
+              fontFamily: "Nunito, sans-serif",
+              fontStyle: "italic",
+              fontSize: 14,
+              color: C.textBody,
+              fontWeight: 600,
+              marginBottom: 14,
             }}
           >
+            {"\u201C"}{day.tagline}{"\u201D"}
+          </div>
+        )}
+
+        {/* Items */}
+        <div>
+          {day.items.map((item, i) => (
             <div
+              key={i}
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: 10,
-                background: `${accent}14`,
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 16,
-                flexShrink: 0,
+                alignItems: "flex-start",
+                gap: 12,
+                padding: "10px 0",
+                borderTop: i > 0 ? `1px solid ${C.sandDark}` : "none",
               }}
             >
-              {item.icon}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  fontFamily: "Nunito, sans-serif",
-                  fontWeight: 900,
-                  fontSize: 12,
-                  color: C.dark,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 12,
+                  background: `${accent}18`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 18,
+                  flexShrink: 0,
                 }}
               >
-                {item.time}
+                {item.icon}
               </div>
-              <div
-                style={{
-                  fontFamily: "Nunito, sans-serif",
-                  fontSize: 13,
-                  color: C.textBody,
-                  lineHeight: 1.4,
-                }}
-              >
-                {item.activity}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: "Nunito, sans-serif",
+                    fontWeight: 900,
+                    fontSize: 10,
+                    color: accent,
+                    textTransform: "uppercase",
+                    letterSpacing: 1,
+                  }}
+                >
+                  {item.time}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "Nunito, sans-serif",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: C.dark,
+                    lineHeight: 1.4,
+                    marginTop: 2,
+                  }}
+                >
+                  {item.activity}
+                </div>
+                {item.note && (
+                  <div
+                    style={{
+                      fontFamily: "Nunito, sans-serif",
+                      fontSize: 11,
+                      color: C.textBody,
+                      fontWeight: 600,
+                      marginTop: 3,
+                      opacity: 0.75,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {item.note}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Crew */}
       <div
         style={{
-          padding: "10px 18px 14px",
+          padding: "14px 22px 16px",
           borderTop: `1px solid ${C.sandDark}`,
+          background: `${accent}08`,
         }}
       >
-        <CrewDots who={day.who} currentName={currentName} />
+        <CrewRow who={day.who} currentName={currentName} accent={accent} />
       </div>
     </div>
   );
@@ -216,34 +265,15 @@ export default function YourItinerary({ player }) {
   }
 
   return (
-    <div
-      style={{
-        position: "relative",
-        paddingLeft: 12,
-      }}
-    >
-      {/* Vertical timeline line */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 12,
-          bottom: 12,
-          width: 2,
-          background: `linear-gradient(180deg, ${player.color}55, ${player.color}11)`,
-          borderRadius: 2,
-        }}
-      />
-      <div style={{ display: "grid", gap: 14, paddingLeft: 12 }}>
-        {days.map((day, i) => (
-          <DayCard
-            key={day.date}
-            day={day}
-            accent={DAY_ACCENTS[i % DAY_ACCENTS.length]}
-            currentName={player.name}
-          />
-        ))}
-      </div>
+    <div style={{ display: "grid", gap: 18 }}>
+      {days.map((day, i) => (
+        <DayCard
+          key={day.date}
+          day={day}
+          accent={DAY_ACCENTS[i % DAY_ACCENTS.length]}
+          currentName={player.name}
+        />
+      ))}
     </div>
   );
 }

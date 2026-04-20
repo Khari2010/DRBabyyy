@@ -21,10 +21,10 @@ function ActivityCard({ activity, myVote, likers, dislikers, onVote }) {
   return (
     <div style={{
       background: C.white,
-      borderRadius: 16,
-      padding: "16px 18px",
-      boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-      border: activity.planned ? "none" : `2px dashed ${C.coral}55`,
+      borderRadius: 20,
+      padding: "20px 22px",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+      border: activity.planned ? `1px solid ${C.turquoise}1A` : `2px dashed ${C.coral}55`,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
         <div style={{

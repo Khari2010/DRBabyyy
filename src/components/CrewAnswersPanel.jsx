@@ -32,7 +32,7 @@ export default function CrewAnswersPanel({ mySlug, allAnswers }) {
                 padding: "6px 14px 6px 6px",
                 fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 13,
                 cursor: "pointer",
-                boxShadow: active ? `0 6px 18px ${p.color}55` : "0 2px 8px rgba(0,0,0,0.08)",
+                boxShadow: active ? `0 10px 28px ${p.color}55` : "0 6px 18px rgba(0,0,0,0.08)",
                 display: "flex", alignItems: "center", gap: 8,
                 transition: "background 160ms ease",
               }}

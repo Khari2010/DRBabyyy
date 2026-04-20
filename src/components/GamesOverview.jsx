@@ -1,62 +1,293 @@
 import { CHALLENGES, NEGATIVE_POINTS, FORFEITS } from "../data/challenges.js";
+import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
 
-// Compute top challenges once at module load — no per-render sort.
+// Top 6 challenges by points
 const TOP_CHALLENGES = [...CHALLENGES].sort((a, b) => b.points - a.points).slice(0, 6);
-const TOP_REWARD = TOP_CHALLENGES[0] ?? null;
-const BIGGEST_PENALTY = [...NEGATIVE_POINTS].sort((a, b) => a.points - b.points)[0] ?? null;
 
-function Stat({ label, value, sublabel, accent }) {
+function NegativePointsPanel() {
   return (
     <div
       style={{
-        flex: 1,
-        minWidth: 110,
         background: C.white,
-        borderRadius: 16,
-        padding: "14px 12px",
-        textAlign: "center",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-        border: `1px solid ${accent}22`,
+        borderRadius: 24,
+        padding: "24px 22px",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+        border: `1px solid ${C.coral}1A`,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <div
         style={{
-          fontFamily: "'Dela Gothic One', sans-serif",
-          fontSize: 22,
-          color: accent,
-          lineHeight: 1,
+          fontFamily: "Nunito, sans-serif",
+          fontWeight: 900,
+          fontSize: 11,
+          color: C.coral,
+          letterSpacing: 3,
+          textTransform: "uppercase",
+          marginBottom: 8,
         }}
       >
-        {value}
+        Negative Points
       </div>
+      <div
+        style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: 22,
+          color: C.dark,
+          marginBottom: 16,
+          lineHeight: 1.1,
+        }}
+      >
+        Don't be that one
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {NEGATIVE_POINTS.map((n, i) => (
+          <div
+            key={n.action}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 0",
+              borderTop: i > 0 ? `1px solid ${C.sandDark}` : "none",
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 12,
+                background: `${C.coral}15`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 18,
+                flexShrink: 0,
+              }}
+            >
+              {n.icon}
+            </div>
+            <div
+              style={{
+                flex: 1,
+                fontFamily: "Nunito, sans-serif",
+                fontWeight: 700,
+                fontSize: 13,
+                color: C.dark,
+                lineHeight: 1.3,
+              }}
+            >
+              {n.action}
+            </div>
+            <div
+              style={{
+                fontFamily: "'Dela Gothic One', sans-serif",
+                fontSize: 16,
+                color: C.coral,
+                flexShrink: 0,
+              }}
+            >
+              {n.points}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LeaderboardPanel() {
+  return (
+    <div
+      style={{
+        background: `linear-gradient(145deg, ${C.dark}, ${C.darkSoft})`,
+        borderRadius: 24,
+        padding: "30px 26px",
+        textAlign: "center",
+        position: "relative",
+        overflow: "hidden",
+        boxShadow: "0 16px 40px rgba(26,26,46,0.25)",
+      }}
+    >
+      <div style={{
+        position: "absolute", top: -30, right: -30,
+        width: 120, height: 120, borderRadius: "50%",
+        background: `${C.gold}12`, pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", bottom: -40, left: -40,
+        width: 140, height: 140, borderRadius: "50%",
+        background: `${C.coral}08`, pointerEvents: "none",
+      }} />
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ fontSize: 44, marginBottom: 12 }}>🏆</div>
+        <div
+          style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: 24,
+            color: C.white,
+            marginBottom: 10,
+            lineHeight: 1.1,
+          }}
+        >
+          Leaderboard
+        </div>
+        <div
+          style={{
+            fontFamily: "Nunito, sans-serif",
+            fontSize: 12,
+            color: "rgba(255,255,255,0.55)",
+            fontWeight: 600,
+            lineHeight: 1.6,
+            marginBottom: 20,
+          }}
+        >
+          Live score tracking, daily rankings, and receipts for every challenge. Coming before we land.
+        </div>
+
+        {/* 3+3 grid of player avatars */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 12,
+            justifyItems: "center",
+            margin: "0 auto 20px",
+            maxWidth: 220,
+          }}
+        >
+          {PLAYERS.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: p.mystery ? `2px dashed ${p.color}` : `2px solid ${p.color}`,
+                boxShadow: `0 0 12px ${p.color}55`,
+                background: p.mystery
+                  ? `linear-gradient(135deg, ${C.purple}, ${C.pink})`
+                  : C.sand,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {p.mystery ? (
+                <span
+                  style={{
+                    fontFamily: "'Dela Gothic One', sans-serif",
+                    fontSize: 22,
+                    color: C.white,
+                  }}
+                >
+                  {p.initial || "?"}
+                </span>
+              ) : p.avatar ? (
+                <img
+                  src={p.avatar}
+                  alt={p.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }}
+                />
+              ) : (
+                <span style={{ fontSize: 22 }}>{p.emoji}</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Coming Soon pill */}
+        <div
+          style={{
+            display: "inline-block",
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 900,
+            fontSize: 11,
+            color: C.gold,
+            background: `${C.gold}1A`,
+            padding: "8px 20px",
+            borderRadius: 14,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+          }}
+        >
+          Coming Soon
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ForfeitsPanel() {
+  return (
+    <div
+      style={{
+        background: `${C.purple}12`,
+        borderRadius: 24,
+        padding: "24px 22px",
+        border: `1px solid ${C.purple}22`,
+        boxShadow: `0 10px 30px ${C.purple}15`,
+      }}
+    >
       <div
         style={{
           fontFamily: "Nunito, sans-serif",
           fontWeight: 900,
-          fontSize: 9,
-          color: C.textBody,
-          letterSpacing: 1.5,
+          fontSize: 11,
+          color: C.coral,
+          letterSpacing: 3,
           textTransform: "uppercase",
-          marginTop: 6,
+          marginBottom: 8,
         }}
       >
-        {label}
+        Daily Forfeits
       </div>
-      {sublabel && (
-        <div
-          style={{
-            fontFamily: "Nunito, sans-serif",
-            fontWeight: 700,
-            fontSize: 11,
-            color: C.dark,
-            marginTop: 4,
-            lineHeight: 1.3,
-          }}
-        >
-          {sublabel}
-        </div>
-      )}
+      <div
+        style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: 22,
+          color: C.dark,
+          marginBottom: 10,
+          lineHeight: 1.1,
+        }}
+      >
+        Lowest pays up
+      </div>
+      <div
+        style={{
+          fontFamily: "Nunito, sans-serif",
+          fontSize: 12,
+          color: C.textBody,
+          fontWeight: 600,
+          marginBottom: 16,
+          lineHeight: 1.5,
+        }}
+      >
+        End of each day, the lowest scorer pulls one at random.
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {FORFEITS.map((f) => (
+          <span
+            key={f}
+            style={{
+              fontFamily: "Nunito, sans-serif",
+              fontWeight: 700,
+              fontSize: 11,
+              color: C.purple,
+              background: C.white,
+              padding: "6px 12px",
+              borderRadius: 999,
+              border: `1px solid ${C.purple}33`,
+              boxShadow: `0 2px 6px ${C.purple}12`,
+            }}
+          >
+            {f}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -66,26 +297,36 @@ function ChallengeCard({ c, accent }) {
     <div
       style={{
         flex: "0 0 auto",
-        width: 160,
+        width: 180,
         background: C.white,
-        borderRadius: 16,
-        padding: "14px 12px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+        borderRadius: 20,
+        padding: "20px 16px",
+        boxShadow: `0 8px 24px ${accent}15`,
         border: `1px solid ${accent}22`,
         scrollSnapAlign: "start",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        cursor: "default",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-4px)";
+        e.currentTarget.style.boxShadow = `0 16px 32px ${accent}30`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = `0 8px 24px ${accent}15`;
       }}
     >
       <div
         style={{
-          width: 44,
-          height: 44,
-          borderRadius: 14,
+          width: 52,
+          height: 52,
+          borderRadius: 16,
           background: `${accent}18`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 22,
-          marginBottom: 10,
+          fontSize: 26,
+          marginBottom: 14,
         }}
       >
         {c.icon}
@@ -94,28 +335,42 @@ function ChallengeCard({ c, accent }) {
         style={{
           fontFamily: "Nunito, sans-serif",
           fontWeight: 900,
-          fontSize: 13,
+          fontSize: 14,
           color: C.dark,
           lineHeight: 1.25,
-          minHeight: 32,
+          minHeight: 36,
+          marginBottom: 12,
         }}
       >
         {c.title}
       </div>
       <div
         style={{
-          marginTop: 10,
           display: "inline-block",
           fontFamily: "'Dela Gothic One', sans-serif",
-          fontSize: 13,
+          fontSize: 14,
           color: C.white,
           background: accent,
-          padding: "4px 10px",
-          borderRadius: 10,
+          padding: "5px 12px",
+          borderRadius: 12,
+          boxShadow: `0 4px 12px ${accent}44`,
         }}
       >
         +{c.points}
       </div>
+      {c.bonus && (
+        <div
+          style={{
+            marginTop: 8,
+            fontFamily: "Nunito, sans-serif",
+            fontSize: 10,
+            fontWeight: 800,
+            color: C.green,
+          }}
+        >
+          {c.bonus}
+        </div>
+      )}
     </div>
   );
 }
@@ -124,165 +379,71 @@ export default function GamesOverview({ player }) {
   const accent = player.color;
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <p
+    <div style={{ display: "grid", gap: 24 }}>
+      {/* 3-panel row — Learn the Game layout */}
+      <div
         style={{
-          fontFamily: "Nunito, sans-serif",
-          fontSize: 14,
-          color: C.textBody,
-          margin: 0,
-          fontWeight: 600,
-          lineHeight: 1.5,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: 16,
+          alignItems: "stretch",
         }}
       >
-        The squad's challenge system — earn points, chase forfeits.
-      </p>
-
-      {/* Stats row */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Stat
-          label="Challenges"
-          value={CHALLENGES.length}
-          accent={accent}
-        />
-        {TOP_REWARD && (
-          <Stat
-            label="Top Reward"
-            value={`${TOP_REWARD.points}`}
-            sublabel={TOP_REWARD.title}
-            accent={C.green}
-          />
-        )}
-        {BIGGEST_PENALTY && (
-          <Stat
-            label="Biggest Penalty"
-            value={`${BIGGEST_PENALTY.points}`}
-            sublabel={BIGGEST_PENALTY.action}
-            accent={C.coralDeep}
-          />
-        )}
+        <NegativePointsPanel />
+        <LeaderboardPanel />
+        <ForfeitsPanel />
       </div>
 
-      {/* Top challenges carousel */}
+      {/* Ways to Earn Points */}
       <div>
-        <div
-          style={{
-            fontFamily: "Nunito, sans-serif",
-            fontWeight: 900,
-            fontSize: 10,
-            color: accent,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            marginBottom: 8,
-          }}
-        >
-          High-Stakes Challenges
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <div
+            style={{
+              fontFamily: "Nunito, sans-serif",
+              fontWeight: 900,
+              fontSize: 11,
+              color: C.gold,
+              letterSpacing: 3,
+              textTransform: "uppercase",
+              marginBottom: 6,
+            }}
+          >
+            Ways to Earn Points
+          </div>
+          <div
+            style={{
+              fontFamily: "'Dela Gothic One', sans-serif",
+              fontSize: "clamp(22px, 4vw, 28px)",
+              color: C.dark,
+              lineHeight: 1.1,
+            }}
+          >
+            Top challenges
+          </div>
+          <div
+            style={{
+              fontFamily: "Nunito, sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              color: C.textBody,
+              marginTop: 4,
+            }}
+          >
+            Swipe through — the bigger the points, the wilder the ask.
+          </div>
         </div>
         <div
           className="no-scrollbar"
           style={{
             display: "flex",
-            gap: 10,
+            gap: 14,
             overflowX: "auto",
-            paddingBottom: 6,
+            padding: "10px 4px 16px",
             scrollSnapType: "x mandatory",
           }}
         >
           {TOP_CHALLENGES.map((c) => (
             <ChallengeCard key={c.id} c={c} accent={accent} />
-          ))}
-        </div>
-      </div>
-
-      {/* Negative points */}
-      <div
-        style={{
-          background: `${C.coralDeep}08`,
-          border: `1px solid ${C.coralDeep}22`,
-          borderRadius: 16,
-          padding: "14px 14px",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "Nunito, sans-serif",
-            fontWeight: 900,
-            fontSize: 10,
-            color: C.coralDeep,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            marginBottom: 8,
-          }}
-        >
-          Watch Out
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {NEGATIVE_POINTS.map((n) => (
-            <span
-              key={n.action}
-              style={{
-                fontFamily: "Nunito, sans-serif",
-                fontWeight: 800,
-                fontSize: 11,
-                color: C.coralDeep,
-                background: C.white,
-                padding: "6px 10px",
-                borderRadius: 10,
-                border: `1px solid ${C.coralDeep}33`,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span>{n.icon}</span>
-              <span>{n.action}</span>
-              <span style={{ color: C.coralDeep, fontFamily: "'Dela Gothic One', sans-serif" }}>
-                {n.points}
-              </span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Forfeits */}
-      <div
-        style={{
-          background: `${C.purple}08`,
-          border: `1px solid ${C.purple}22`,
-          borderRadius: 16,
-          padding: "14px 14px",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "Nunito, sans-serif",
-            fontWeight: 900,
-            fontSize: 10,
-            color: C.purple,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            marginBottom: 8,
-          }}
-        >
-          Forfeits
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {FORFEITS.map((f) => (
-            <span
-              key={f}
-              style={{
-                fontFamily: "Nunito, sans-serif",
-                fontWeight: 700,
-                fontSize: 11,
-                color: C.purple,
-                background: C.white,
-                padding: "5px 10px",
-                borderRadius: 999,
-                border: `1px solid ${C.purple}33`,
-              }}
-            >
-              {f}
-            </span>
           ))}
         </div>
       </div>

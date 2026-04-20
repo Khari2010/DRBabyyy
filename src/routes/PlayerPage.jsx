@@ -19,10 +19,10 @@ import TripEssentials from "../components/TripEssentials.jsx";
 import GamesOverview from "../components/GamesOverview.jsx";
 
 const SECTION_WRAPPER = {
-  maxWidth: 720,
+  maxWidth: 960,
   margin: "0 auto",
   padding: "0 20px",
-  marginBottom: 24,
+  marginBottom: 40,
 };
 
 export default function PlayerPage() {
@@ -173,7 +173,7 @@ export default function PlayerPage() {
         label="Your Trip"
         title="Countdown"
         tagline="How long till wheels up?"
-        accent={player.color}
+        accent={C.turquoise}
       />
       <section style={SECTION_WRAPPER}>
         <YourCountdown player={player} />
@@ -184,7 +184,7 @@ export default function PlayerPage() {
         label="Your Trip"
         title="Your flights"
         tagline="Outbound and return details"
-        accent={player.color}
+        accent={C.sky}
       />
       <section style={SECTION_WRAPPER}>
         {myFlights.length === 0 ? (
@@ -242,7 +242,7 @@ export default function PlayerPage() {
         label="Your Trip"
         title="Your stay"
         tagline="Your days in the sun, and who else is around"
-        accent={player.color}
+        accent={C.purple}
       />
       <section style={SECTION_WRAPPER}>
         <YourStay player={player} />
@@ -253,7 +253,7 @@ export default function PlayerPage() {
         label="Home Base"
         title="Where we're staying"
         tagline="5-star, all-inclusive, adults-only"
-        accent={player.color}
+        accent={C.gold}
       />
       <section style={SECTION_WRAPPER}>
         <YourResort player={player} />
@@ -264,7 +264,7 @@ export default function PlayerPage() {
         label="Your Days"
         title="Day by day"
         tagline="The plan for every day you're out here"
-        accent={player.color}
+        accent={C.coral}
       />
       <section style={SECTION_WRAPPER}>
         <YourItinerary player={player} />
@@ -275,7 +275,7 @@ export default function PlayerPage() {
         label="Good to Know"
         title="Trip essentials"
         tagline="The practical stuff before you land"
-        accent={player.color}
+        accent={C.green}
       />
       <section style={SECTION_WRAPPER}>
         <TripEssentials />
@@ -286,7 +286,7 @@ export default function PlayerPage() {
         label="Over to You"
         title="Pre-trip questions"
         tagline="Answer each one — the crew will see these on their own pages"
-        accent={player.color}
+        accent={C.pink}
       />
       <section style={SECTION_WRAPPER}>
         <div style={{ display: "grid", gap: 10 }}>
@@ -307,7 +307,7 @@ export default function PlayerPage() {
         label="The Plan"
         title="Adventures"
         tagline="Like what you're into. Dislike what you'd skip. Votes shape the trip."
-        accent={player.color}
+        accent={C.coralDeep}
       />
       <section style={SECTION_WRAPPER}>
         <AdventuresPanel mySlug={slug} allVotes={allVotes} onVote={castVote} />
@@ -318,7 +318,7 @@ export default function PlayerPage() {
         label="The Game"
         title="Challenges & forfeits"
         tagline="Points, penalties, forfeits — the whole system"
-        accent={player.color}
+        accent={C.gold}
       />
       <section style={SECTION_WRAPPER}>
         <GamesOverview player={player} />
@@ -329,7 +329,7 @@ export default function PlayerPage() {
         label="The Crew"
         title="What they said"
         tagline="Tap a player to see their pre-trip answers"
-        accent={player.color}
+        accent={C.blue}
       />
       <section style={SECTION_WRAPPER}>
         <CrewAnswersPanel mySlug={slug} allAnswers={allAnswers} />
