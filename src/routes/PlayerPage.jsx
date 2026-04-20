@@ -8,6 +8,7 @@ import { flightsForPlayer } from "../data/flights.js";
 import { C } from "../data/colors.js";
 import QuestionBlock from "../components/QuestionBlock.jsx";
 import { QUESTIONS } from "../data/questions.js";
+import CrewAnswersPanel from "../components/CrewAnswersPanel.jsx";
 
 export default function PlayerPage() {
   const { slug } = useParams();
@@ -166,6 +167,8 @@ export default function PlayerPage() {
           ))}
         </div>
       </section>
+
+      <CrewAnswersPanel mySlug={slug} allAnswers={allAnswers} />
     </div>
   );
 }
