@@ -382,7 +382,15 @@ export default function GamesOverview({ player }) {
   const accent = player.color;
 
   return (
-    <div style={{ display: "grid", gap: 24 }}>
+    <div
+      style={{
+        display: "grid",
+        gap: 24,
+        width: "100%",
+        margin: "0 auto",
+        textAlign: "left",
+      }}
+    >
       <style>{`
         .games-no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
@@ -393,6 +401,8 @@ export default function GamesOverview({ player }) {
           gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
           gap: 16,
           alignItems: "stretch",
+          justifyContent: "center",
+          width: "100%",
         }}
       >
         <NegativePointsPanel />
@@ -401,7 +411,7 @@ export default function GamesOverview({ player }) {
       </div>
 
       {/* Ways to Earn Points */}
-      <div>
+      <div style={{ width: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 16 }}>
           <div
             style={{
@@ -449,6 +459,7 @@ export default function GamesOverview({ player }) {
             scrollSnapType: "x mandatory",
             scrollbarWidth: "none",
             msOverflowStyle: "none",
+            justifyContent: "flex-start",
           }}
         >
           {TOP_CHALLENGES.map((c) => (

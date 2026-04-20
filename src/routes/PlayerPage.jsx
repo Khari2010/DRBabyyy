@@ -6,17 +6,12 @@ import { loadSession, clearSession } from "../lib/session.js";
 import { playerBySlug, V1_LOGIN_SLUGS } from "../data/players.js";
 import { flightsForPlayer } from "../data/flights.js";
 import { C } from "../data/colors.js";
-import QuestionBlock from "../components/QuestionBlock.jsx";
-import { QUESTIONS } from "../data/questions.js";
-import CrewAnswersPanel from "../components/CrewAnswersPanel.jsx";
 import AdventuresPanel from "../components/AdventuresPanel.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
-import YourCountdown from "../components/YourCountdown.jsx";
-import YourStay from "../components/YourStay.jsx";
-import YourResort from "../components/YourResort.jsx";
-import YourItinerary from "../components/YourItinerary.jsx";
-import TripEssentials from "../components/TripEssentials.jsx";
 import GamesOverview from "../components/GamesOverview.jsx";
+import AboutYourHoliday from "../components/AboutYourHoliday.jsx";
+import YourItineraryCarousel from "../components/YourItineraryCarousel.jsx";
+import TheCrew from "../components/TheCrew.jsx";
 
 const SECTION_WRAPPER = {
   maxWidth: 960,
@@ -173,144 +168,13 @@ export default function PlayerPage() {
         </p>
       </section>
 
-      {/* Countdown */}
-      <SectionHeader
-        label="Your Trip"
-        title="Countdown"
-        tagline="How long till wheels up?"
-        accent={C.turquoise}
-      />
-      <section style={SECTION_WRAPPER}>
-        <YourCountdown player={player} />
-      </section>
+      {/* About Your Holiday — dashboard */}
+      <AboutYourHoliday player={player} myFlights={myFlights} />
 
-      {/* Flights */}
-      <SectionHeader
-        label="Your Trip"
-        title="Your flights"
-        tagline="Outbound and return details"
-        accent={C.sky}
-      />
-      <section style={SECTION_WRAPPER}>
-        {myFlights.length === 0 ? (
-          <p style={{ color: C.textBody }}>No flights on file.</p>
-        ) : (
-          <div style={{ display: "grid", gap: 10 }}>
-            {myFlights.map((f) => (
-              <div
-                key={f.id}
-                style={{
-                  background: `${player.color}0C`,
-                  borderRadius: 16, padding: "16px 18px",
-                  border: `1px solid ${player.color}22`,
-                }}
-              >
-                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
-                  <span style={{
-                    fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10,
-                    color: C.white, background: f.type === "Outbound" ? C.turquoise : C.coral,
-                    padding: "3px 10px", borderRadius: 10, letterSpacing: 0.5, textTransform: "uppercase",
-                  }}>
-                    {f.type}
-                  </span>
-                  <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.dark }}>
-                    {f.date}
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 22, fontWeight: 900, color: C.dark }}>{f.from.code}</div>
-                    <div style={{ fontSize: 11, color: C.textBody }}>{f.from.city}</div>
-                  </div>
-                  <div style={{ flex: 1, textAlign: "center" }}>
-                    <div style={{ fontSize: 11, color: C.textBody, marginBottom: 4 }}>
-                      {f.duration}{f.stops ? ` · via ${f.stopCity}` : ""}
-                    </div>
-                    <div style={{ height: 2, background: `linear-gradient(90deg, ${player.color}44, ${player.color}, ${player.color}44)`, borderRadius: 2 }} />
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 22, fontWeight: 900, color: C.dark }}>{f.to.code}</div>
-                    <div style={{ fontSize: 11, color: C.textBody }}>{f.to.city}</div>
-                  </div>
-                </div>
-                <div style={{ fontSize: 11, color: C.textBody, marginTop: 10, fontWeight: 600 }}>
-                  {f.depart} → {f.arrive} · {f.flight} · {f.aircraft}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Stay */}
-      <SectionHeader
-        label="Your Trip"
-        title="Your stay"
-        tagline="Your days in the sun, and who else is around"
-        accent={C.purple}
-      />
-      <section style={SECTION_WRAPPER}>
-        <YourStay player={player} />
-      </section>
-
-      {/* Resort */}
-      <SectionHeader
-        label="Home Base"
-        title="Where we're staying"
-        tagline="5-star, all-inclusive, adults-only"
-        accent={C.gold}
-      />
-      <section style={SECTION_WRAPPER}>
-        <YourResort player={player} />
-      </section>
-
-      {/* Itinerary */}
-      <SectionHeader
-        label="Your Days"
-        title="Day by day"
-        tagline="The plan for every day you're out here"
-        accent={C.coral}
-      />
-      <section style={SECTION_WRAPPER}>
-        <YourItinerary player={player} />
-      </section>
-
-      {/* Trip essentials */}
-      <SectionHeader
-        label="Good to Know"
-        title="Trip essentials"
-        tagline="The practical stuff before you land"
-        accent={C.green}
-      />
-      <section style={SECTION_WRAPPER}>
-        <TripEssentials />
-      </section>
-
-      {/* Questions */}
-      <SectionHeader
-        label="Over to You"
-        title="Pre-trip questions"
-        tagline="Answer each one — the crew will see these on their own pages"
-        accent={C.pink}
-      />
-      <section style={SECTION_WRAPPER}>
-        <div style={{ display: "grid", gap: 10 }}>
-          {QUESTIONS.map((q) => (
-            <QuestionBlock
-              key={q.id}
-              prompt={q.prompt}
-              answer={myAnswers[q.id]}
-              color={player.color}
-              onSave={(text) => saveAnswer(q.id, text)}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Adventures */}
+      {/* Adventure Map */}
       <SectionHeader
         label="The Plan"
-        title="Adventures"
+        title="Adventure Map"
         tagline="Like what you're into. Dislike what you'd skip. Votes shape the trip."
         accent={C.coralDeep}
       />
@@ -318,7 +182,18 @@ export default function PlayerPage() {
         <AdventuresPanel mySlug={slug} allVotes={allVotes} onVote={castVote} />
       </section>
 
-      {/* Games */}
+      {/* Itinerary carousel */}
+      <SectionHeader
+        label="Your Days"
+        title="Day by day"
+        tagline="Swipe through — tap a day to see the full plan"
+        accent={C.coral}
+      />
+      <section style={SECTION_WRAPPER}>
+        <YourItineraryCarousel player={player} />
+      </section>
+
+      {/* The Game */}
       <SectionHeader
         label="The Game"
         title="Challenges & forfeits"
@@ -329,15 +204,20 @@ export default function PlayerPage() {
         <GamesOverview player={player} />
       </section>
 
-      {/* Crew answers */}
+      {/* The Crew */}
       <SectionHeader
         label="The Crew"
-        title="What they said"
-        tagline="Tap a player to see their pre-trip answers"
+        title="Your answers & theirs"
+        tagline="Share your pre-trip take, peek at what the squad said"
         accent={C.blue}
       />
       <section style={SECTION_WRAPPER}>
-        <CrewAnswersPanel mySlug={slug} allAnswers={allAnswers} />
+        <TheCrew
+          player={player}
+          myAnswers={myAnswers}
+          allAnswers={allAnswers}
+          onSaveAnswer={saveAnswer}
+        />
       </section>
     </div>
   );

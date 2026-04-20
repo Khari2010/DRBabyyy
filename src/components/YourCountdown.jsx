@@ -54,78 +54,60 @@ export default function YourCountdown({ player }) {
 
   const cardStyle = {
     position: "relative",
-    maxWidth: "min(620px, 100%)",
-    margin: "0 auto",
     background: `linear-gradient(135deg, ${player.color}22, ${C.sand})`,
     border: `1px solid ${player.color}33`,
-    borderRadius: 28,
-    padding: "clamp(32px, 7vw, 48px) clamp(20px, 5vw, 32px)",
+    borderRadius: 20,
+    padding: "clamp(18px, 4vw, 24px) clamp(16px, 4vw, 22px)",
     textAlign: "center",
-    boxShadow: `0 24px 60px ${player.color}22, inset 0 0 60px ${player.color}0A`,
-    overflow: "hidden",
+    boxShadow: `0 10px 28px ${player.color}1A`,
     boxSizing: "border-box",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
   };
-
-  const DecorativeBlobs = () => (
-    <>
-      <div style={{
-        position: "absolute", top: -40, right: -40,
-        width: 160, height: 160, borderRadius: "50%",
-        background: `${player.color}18`, pointerEvents: "none",
-      }} />
-      <div style={{
-        position: "absolute", bottom: -50, left: -50,
-        width: 180, height: 180, borderRadius: "50%",
-        background: `${player.color}10`, pointerEvents: "none",
-      }} />
-    </>
-  );
 
   if (state.kind === "before") {
     const { days } = state;
     const bigNum = days === 0 ? "TODAY" : String(days);
     const labelText =
-      days === 0 ? "You fly today" : days === 1 ? "DAY TO GO" : "DAYS TO GO";
+      days === 0 ? "you fly today" : days === 1 ? "day to go" : "days to go";
     return (
       <div style={cardStyle}>
-        <DecorativeBlobs />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <div
-            style={{
-              fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: days === 0 ? "clamp(56px, 14vw, 120px)" : "clamp(80px, 18vw, 160px)",
-              color: player.color,
-              lineHeight: 0.95,
-              textShadow: `0 8px 40px ${player.color}44`,
-              letterSpacing: -2,
-            }}
-          >
-            {bigNum}
-          </div>
-          <div
-            style={{
-              marginTop: 18,
-              fontFamily: "Nunito, sans-serif",
-              fontWeight: 900,
-              fontSize: 12,
-              letterSpacing: 4,
-              color: player.color,
-              textTransform: "uppercase",
-            }}
-          >
-            {labelText}
-          </div>
-          <div
-            style={{
-              marginTop: 14,
-              fontFamily: "Nunito, sans-serif",
-              fontSize: 15,
-              color: C.textBody,
-              fontWeight: 600,
-            }}
-          >
-            until you land in Punta Cana 🌴
-          </div>
+        <div
+          style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: days === 0 ? "clamp(32px, 7vw, 52px)" : "clamp(44px, 8vw, 72px)",
+            color: player.color,
+            lineHeight: 0.95,
+            letterSpacing: -1,
+          }}
+        >
+          {bigNum}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 900,
+            fontSize: 10,
+            letterSpacing: 2.5,
+            color: player.color,
+            textTransform: "uppercase",
+          }}
+        >
+          {labelText}
+        </div>
+        <div
+          style={{
+            marginTop: 6,
+            fontFamily: "Nunito, sans-serif",
+            fontSize: 12,
+            color: C.textBody,
+            fontWeight: 600,
+          }}
+        >
+          until you land 🌴
         </div>
       </div>
     );
@@ -134,30 +116,27 @@ export default function YourCountdown({ player }) {
   if (state.kind === "during") {
     return (
       <div style={cardStyle}>
-        <DecorativeBlobs />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: "clamp(80px, 18vw, 140px)", lineHeight: 1, marginBottom: 12 }}>🌴</div>
-          <div
-            style={{
-              fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: "clamp(28px, 6vw, 40px)",
-              color: C.dark,
-              lineHeight: 1.1,
-            }}
-          >
-            You're in Punta Cana right now
-          </div>
-          <div
-            style={{
-              marginTop: 14,
-              fontFamily: "Nunito, sans-serif",
-              fontSize: 15,
-              color: C.textBody,
-              fontWeight: 600,
-            }}
-          >
-            Soak it up — you earned this.
-          </div>
+        <div style={{ fontSize: "clamp(36px, 8vw, 52px)", lineHeight: 1, marginBottom: 6 }}>🌴</div>
+        <div
+          style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: "clamp(18px, 3.5vw, 24px)",
+            color: C.dark,
+            lineHeight: 1.1,
+          }}
+        >
+          You're in Punta Cana
+        </div>
+        <div
+          style={{
+            marginTop: 6,
+            fontFamily: "Nunito, sans-serif",
+            fontSize: 12,
+            color: C.textBody,
+            fontWeight: 600,
+          }}
+        >
+          Soak it up — you earned this.
         </div>
       </div>
     );
@@ -166,30 +145,27 @@ export default function YourCountdown({ player }) {
   if (state.kind === "after") {
     return (
       <div style={cardStyle}>
-        <DecorativeBlobs />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: "clamp(72px, 16vw, 120px)", lineHeight: 1, marginBottom: 12 }}>💛</div>
-          <div
-            style={{
-              fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: "clamp(28px, 6vw, 40px)",
-              color: C.dark,
-              lineHeight: 1.1,
-            }}
-          >
-            Hope you had a blast
-          </div>
-          <div
-            style={{
-              marginTop: 14,
-              fontFamily: "Nunito, sans-serif",
-              fontSize: 15,
-              color: C.textBody,
-              fontWeight: 600,
-            }}
-          >
-            Until next time.
-          </div>
+        <div style={{ fontSize: "clamp(32px, 7vw, 48px)", lineHeight: 1, marginBottom: 6 }}>💛</div>
+        <div
+          style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: "clamp(18px, 3.5vw, 24px)",
+            color: C.dark,
+            lineHeight: 1.1,
+          }}
+        >
+          Hope you had a blast
+        </div>
+        <div
+          style={{
+            marginTop: 6,
+            fontFamily: "Nunito, sans-serif",
+            fontSize: 12,
+            color: C.textBody,
+            fontWeight: 600,
+          }}
+        >
+          Until next time.
         </div>
       </div>
     );
@@ -197,8 +173,7 @@ export default function YourCountdown({ player }) {
 
   return (
     <div style={cardStyle}>
-      <DecorativeBlobs />
-      <div style={{ position: "relative", zIndex: 1, fontFamily: "Nunito, sans-serif", color: C.textBody, fontWeight: 600 }}>
+      <div style={{ fontFamily: "Nunito, sans-serif", color: C.textBody, fontWeight: 600, fontSize: 13 }}>
         Your flight details aren't locked in yet.
       </div>
     </div>

@@ -8,8 +8,8 @@ export default function TripEssentials() {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-        gap: 14,
+        gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+        gap: 10,
       }}
     >
       {TRIP_INFO.map((item, i) => {
@@ -20,12 +20,12 @@ export default function TripEssentials() {
             style={{
               background: `${tint}14`,
               border: `1px solid ${tint}28`,
-              borderRadius: 20,
-              padding: "22px 18px",
-              boxShadow: `0 6px 20px ${tint}15`,
+              borderRadius: 16,
+              padding: "14px 14px",
+              boxShadow: `0 4px 14px ${tint}12`,
               display: "flex",
               flexDirection: "column",
-              gap: 10,
+              gap: 8,
               position: "relative",
               overflow: "hidden",
             }}
@@ -35,8 +35,8 @@ export default function TripEssentials() {
                 position: "absolute",
                 top: -20,
                 right: -20,
-                width: 70,
-                height: 70,
+                width: 60,
+                height: 60,
                 borderRadius: "50%",
                 background: `${tint}18`,
                 pointerEvents: "none",
@@ -44,15 +44,15 @@ export default function TripEssentials() {
             />
             <div
               style={{
-                width: 48,
-                height: 48,
-                borderRadius: 14,
+                width: 38,
+                height: 38,
+                borderRadius: 12,
                 background: C.white,
-                boxShadow: `0 4px 12px ${tint}33`,
+                boxShadow: `0 4px 10px ${tint}2A`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 26,
+                fontSize: 20,
                 lineHeight: 1,
                 position: "relative",
                 zIndex: 1,

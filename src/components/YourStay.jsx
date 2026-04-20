@@ -151,7 +151,7 @@ function PresenceRow({ p, isYou }) {
   );
 }
 
-export default function YourStay({ player }) {
+export default function YourStay({ player, compact = false }) {
   const mine = PRESENCE.find((p) => p.name === player.name);
 
   // Put the logged-in player's row first.
@@ -165,6 +165,145 @@ export default function YourStay({ player }) {
   const overlapping = mine
     ? PRESENCE.filter((p) => p.name !== player.name && overlaps(mine, p))
     : [];
+
+  if (compact) {
+    return (
+      <div
+        style={{
+          background: `linear-gradient(135deg, ${player.color}14, ${C.sand})`,
+          border: `1px solid ${player.color}33`,
+          borderRadius: 20,
+          padding: "clamp(18px, 4vw, 22px)",
+          boxShadow: `0 10px 28px ${player.color}1A`,
+          boxSizing: "border-box",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          textAlign: "center",
+        }}
+      >
+        {mine ? (
+          <>
+            <div
+              style={{
+                fontFamily: "Nunito, sans-serif",
+                fontWeight: 900,
+                fontSize: 10,
+                color: player.color,
+                letterSpacing: 2.5,
+                textTransform: "uppercase",
+                marginBottom: 6,
+              }}
+            >
+              Your stay
+            </div>
+            <div
+              style={{
+                fontFamily: "'Dela Gothic One', sans-serif",
+                fontSize: "clamp(18px, 4vw, 24px)",
+                color: C.dark,
+                lineHeight: 1.15,
+              }}
+            >
+              {mine.start} May → {mine.end} May
+            </div>
+            <div
+              style={{
+                fontFamily: "Nunito, sans-serif",
+                fontSize: 12,
+                color: C.textBody,
+                fontWeight: 700,
+                marginTop: 4,
+              }}
+            >
+              <span style={{ color: player.color, fontWeight: 900 }}>{nights} night{nights === 1 ? "" : "s"}</span> in the sun
+            </div>
+
+            {/* Mini presence strip — just the logged-in player's bar */}
+            <div
+              style={{
+                marginTop: 12,
+                background: C.white,
+                borderRadius: 12,
+                padding: "8px 10px",
+                boxShadow: `0 4px 14px ${player.color}14`,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    boxShadow: `0 0 0 2px ${player.color}`,
+                    flexShrink: 0,
+                    background: C.sand,
+                  }}
+                >
+                  {player.avatar ? (
+                    <img
+                      src={player.avatar}
+                      alt={player.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }}
+                    />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>
+                      {player.emoji ?? player.name[0]}
+                    </div>
+                  )}
+                </div>
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    position: "relative",
+                    height: 14,
+                    background: `${C.dark}08`,
+                    borderRadius: 999,
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      bottom: 0,
+                      left: `${((mine.start - TRIP_START_DAY) / (TOTAL_DAYS - 1)) * 100}%`,
+                      width: `${Math.max((((mine.end - TRIP_START_DAY) / (TOTAL_DAYS - 1)) * 100) - (((mine.start - TRIP_START_DAY) / (TOTAL_DAYS - 1)) * 100), 0)}%`,
+                      background: player.color,
+                      borderRadius: 999,
+                      boxShadow: `0 2px 10px ${player.color}66`,
+                    }}
+                  />
+                </div>
+              </div>
+              {overlap.count > 1 && (
+                <div
+                  style={{
+                    fontFamily: "Nunito, sans-serif",
+                    fontSize: 11,
+                    color: C.textBody,
+                    fontWeight: 600,
+                    marginTop: 6,
+                  }}
+                >
+                  Squad overlaps days{" "}
+                  <span style={{ color: player.color, fontWeight: 900 }}>
+                    {overlap.start}–{overlap.end}
+                  </span>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div style={{ fontFamily: "Nunito, sans-serif", color: C.textBody, fontWeight: 600, fontSize: 13 }}>
+            Dates coming soon.
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div

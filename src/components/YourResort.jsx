@@ -3,7 +3,114 @@ import { C } from "../data/colors.js";
 
 const ACCENT = C.gold;
 
-export default function YourResort() {
+const AMENITY_TINTS = [C.gold, C.coral, C.turquoise, C.purple, C.green, C.sky];
+
+export default function YourResort({ compact = false }) {
+  if (compact) {
+    return (
+      <div
+        style={{
+          background: C.white,
+          borderRadius: 20,
+          overflow: "hidden",
+          boxShadow: "0 10px 28px rgba(0,0,0,0.06)",
+          border: `1px solid ${ACCENT}22`,
+        }}
+      >
+        {/* Top accent stripe */}
+        <div style={{ height: 4, background: `linear-gradient(90deg, ${ACCENT}, ${C.coral}, ${ACCENT})` }} />
+
+        <div
+          style={{
+            padding: "clamp(16px, 4vw, 22px)",
+            background: `linear-gradient(145deg, ${ACCENT}10, ${C.white})`,
+          }}
+        >
+          {/* Headline row */}
+          <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: 8, marginBottom: 4 }}>
+            <div
+              style={{
+                fontFamily: "'Dela Gothic One', sans-serif",
+                fontSize: "clamp(18px, 3vw, 22px)",
+                color: C.dark,
+                lineHeight: 1.15,
+              }}
+            >
+              {RESORT.name}
+            </div>
+            <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, letterSpacing: 1 }}>
+              {"⭐".repeat(RESORT.stars)}
+            </div>
+          </div>
+
+          <div
+            style={{
+              fontFamily: "Nunito, sans-serif",
+              fontSize: 12,
+              color: C.textBody,
+              fontWeight: 600,
+              lineHeight: 1.5,
+              marginBottom: 12,
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 6,
+            }}
+          >
+            <span>📍</span>
+            <span>{RESORT.address}</span>
+          </div>
+
+          {/* Amenity pills — inline */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+            {RESORT.included.map((item, i) => {
+              const tint = AMENITY_TINTS[i % AMENITY_TINTS.length];
+              return (
+                <span
+                  key={item.label}
+                  style={{
+                    background: `${tint}15`,
+                    border: `1px solid ${tint}28`,
+                    borderRadius: 999,
+                    padding: "5px 10px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    fontFamily: "Nunito, sans-serif",
+                    fontWeight: 800,
+                    fontSize: 11,
+                    color: C.dark,
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>{item.icon}</span>
+                  {item.label}
+                </span>
+              );
+            })}
+          </div>
+
+          {/* Footer row */}
+          <div
+            style={{
+              borderTop: `1px solid ${ACCENT}22`,
+              paddingTop: 10,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 14,
+              fontFamily: "Nunito, sans-serif",
+              fontSize: 11,
+              color: C.textBody,
+              fontWeight: 700,
+            }}
+          >
+            <span>🔑 <span style={{ color: C.dark }}>Check-in</span> {RESORT.checkIn}</span>
+            <span>👋 <span style={{ color: C.dark }}>Check-out</span> {RESORT.checkOut}</span>
+            <span>📞 <span style={{ color: C.dark }}>{RESORT.phone}</span></span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
