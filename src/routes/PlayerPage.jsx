@@ -23,6 +23,8 @@ export default function PlayerPage() {
     session && slugMatches ? { token: session.token } : "skip",
   );
   const logoutMutation = useMutation(api.auth.logout);
+  const allAnswers = useQuery(api.answers.listAll) ?? [];
+  const saveAnswerMutation = useMutation(api.answers.save);
 
   useEffect(() => {
     if (!isKnownSlug) {
@@ -48,9 +50,6 @@ export default function PlayerPage() {
   if (!player) return null;
 
   const myFlights = flightsForPlayer(player.name);
-
-  const allAnswers = useQuery(api.answers.listAll) ?? [];
-  const saveAnswerMutation = useMutation(api.answers.save);
 
   const myAnswers = Object.fromEntries(
     allAnswers
