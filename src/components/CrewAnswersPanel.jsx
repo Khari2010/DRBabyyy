@@ -4,6 +4,8 @@ import { QUESTIONS } from "../data/questions.js";
 import QuestionBlock from "./QuestionBlock.jsx";
 import { C } from "../data/colors.js";
 
+// Home-style pill with an inline avatar (28px, 2px colour ring, no extra
+// shadow) — matches the "small avatar" treatment spec.
 export default function CrewAnswersPanel({ mySlug, allAnswers }) {
   const [expandedSlug, setExpandedSlug] = useState(null);
 
@@ -13,7 +15,9 @@ export default function CrewAnswersPanel({ mySlug, allAnswers }) {
 
   const answersFor = (slug) =>
     Object.fromEntries(
-      allAnswers.filter((a) => a.playerSlug === slug).map((a) => [a.questionId, a.text]),
+      allAnswers
+        .filter((a) => a.playerSlug === slug)
+        .map((a) => [a.questionId, a.text]),
     );
 
   return (
@@ -28,28 +32,58 @@ export default function CrewAnswersPanel({ mySlug, allAnswers }) {
               style={{
                 background: active ? p.color : C.white,
                 color: active ? C.white : C.dark,
-                border: "none", borderRadius: 999,
-                padding: "6px 14px 6px 6px",
-                fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 13,
+                border: "none",
+                borderRadius: 999,
+                padding: "5px 14px 5px 5px",
+                fontFamily: "Nunito, sans-serif",
+                fontWeight: 800,
+                fontSize: 13,
                 cursor: "pointer",
-                boxShadow: active ? `0 10px 28px ${p.color}55` : "0 6px 18px rgba(0,0,0,0.08)",
-                display: "flex", alignItems: "center", gap: 8,
-                transition: "background 160ms ease",
+                boxShadow: active
+                  ? `0 10px 28px ${p.color}55`
+                  : "0 2px 12px rgba(0,0,0,0.04)",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                transition: "all 200ms ease",
+                letterSpacing: 0.2,
               }}
             >
-              <span style={{
-                width: 32, height: 32, borderRadius: "50%", overflow: "hidden",
-                background: C.sand, flexShrink: 0,
-                boxShadow: `0 0 0 2px ${active ? C.white : p.color}`,
-              }}>
+              <span
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  background: C.sand,
+                  flexShrink: 0,
+                  boxShadow: `0 0 0 2px ${active ? C.white : p.color}`,
+                }}
+              >
                 {p.avatar ? (
                   <img
                     src={p.avatar}
                     alt={p.name}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center 15%",
+                    }}
                   />
                 ) : (
-                  <span style={{ fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>{p.emoji}</span>
+                  <span
+                    style={{
+                      fontSize: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
+                    {p.emoji}
+                  </span>
                 )}
               </span>
               {p.name}
@@ -62,7 +96,7 @@ export default function CrewAnswersPanel({ mySlug, allAnswers }) {
         const p = crew.find((c) => c.slug === expandedSlug);
         const answers = answersFor(expandedSlug);
         return (
-          <div style={{ marginTop: 18, display: "grid", gap: 10, minWidth: 0 }}>
+          <div style={{ marginTop: 18, display: "grid", gap: 12, minWidth: 0 }}>
             {QUESTIONS.map((q) => (
               <QuestionBlock
                 key={q.id}

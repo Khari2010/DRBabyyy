@@ -27,8 +27,8 @@ export default function QuestionBlock({ prompt, answer, readOnly, color, onSave 
       style={{
         background: C.white,
         borderRadius: 20,
-        padding: "clamp(18px, 4vw, 22px)",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+        padding: "20px 20px",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
         border: `1px solid ${(color ?? C.dark)}14`,
         boxSizing: "border-box",
       }}

@@ -1,21 +1,35 @@
 import { C } from "../data/colors.js";
 
-export default function SectionHeader({ label, title, tagline, accent = C.coral, onDark = false }) {
+// Matches the home-page eyebrow + title pattern pixel-for-pixel.
+export default function SectionHeader({
+  label,
+  title,
+  tagline,
+  accent,
+  onDark = false,
+  compact = false,
+}) {
   const titleColor = onDark ? C.white : C.dark;
   const taglineColor = onDark ? "rgba(255,255,255,0.7)" : C.textBody;
 
   return (
-    <div style={{ textAlign: "center", padding: "clamp(28px, 8vw, 56px) clamp(16px, 4vw, 20px) clamp(10px, 3vw, 16px)", maxWidth: 760, margin: "0 auto" }}>
+    <div
+      style={{
+        textAlign: "center",
+        marginBottom: compact ? 24 : 40,
+        padding: "0 24px",
+      }}
+    >
       {label && (
         <div
           style={{
             fontFamily: "Nunito, sans-serif",
             fontWeight: 900,
-            fontSize: 13,
-            color: accent,
+            fontSize: 11,
+            color: accent || C.turquoise,
             letterSpacing: 3,
             textTransform: "uppercase",
-            marginBottom: 14,
+            marginBottom: 8,
           }}
         >
           {label}
@@ -24,10 +38,12 @@ export default function SectionHeader({ label, title, tagline, accent = C.coral,
       <h2
         style={{
           fontFamily: "'Dela Gothic One', sans-serif",
-          fontSize: "clamp(28px, 8vw, 72px)",
-          margin: 0,
+          fontSize: compact
+            ? "clamp(22px, 5vw, 32px)"
+            : "clamp(28px, 7vw, 48px)",
           color: titleColor,
-          lineHeight: 1.05,
+          margin: 0,
+          lineHeight: 1.1,
         }}
       >
         {title}
@@ -35,14 +51,12 @@ export default function SectionHeader({ label, title, tagline, accent = C.coral,
       {tagline && (
         <div
           style={{
-            marginTop: 14,
             fontFamily: "Nunito, sans-serif",
-            fontSize: "clamp(15px, 1.6vw, 18px)",
+            fontSize: 15,
             color: taglineColor,
-            fontWeight: 600,
-            lineHeight: 1.55,
+            marginTop: 10,
             maxWidth: 620,
-            margin: "14px auto 0",
+            margin: "10px auto 0",
           }}
         >
           {tagline}
