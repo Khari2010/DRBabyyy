@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { C } from "../data/colors.js";
 import { MEMBERS, FULL_GROUP, PLAYERS } from "../data/players.js";
 import { FLIGHTS } from "../data/flights.js";
+import LoginModal from "../components/LoginModal.jsx";
+import LoggedInChip from "../components/LoggedInChip.jsx";
+import { saveSession, loadSession } from "../lib/session.js";
 
 // ─── FONTS ──────────────────────────────────────────────────────────────────
 const FONTS_URL =
@@ -735,6 +739,9 @@ const AdventureMap = () => {
 
 // ─── MAIN APP ───────────────────────────────────────────────────────────────
 export default function HomePage() {
+  const navigate = useNavigate();
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [session, setSession] = useState(() => loadSession());
   const [loaded, setLoaded] = useState(false);
   const [activeDay, setActiveDay] = useState(0);
   const [expandedPlayer, setExpandedPlayer] = useState(null);
@@ -981,6 +988,20 @@ export default function HomePage() {
         player={PLAYERS.find((p) => p.id === expandedPlayer) || null}
         onClose={() => setExpandedPlayer(null)}
       />
+
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={({ slug, token }) => {
+          saveSession({ slug, token });
+          setLoginOpen(false);
+          navigate(`/player/${slug}`);
+        }}
+      />
+
+      {session && (
+        <LoggedInChip slug={session.slug} onLogout={() => setSession(null)} />
+      )}
     </div>
   );
 }
