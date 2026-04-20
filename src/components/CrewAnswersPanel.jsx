@@ -17,13 +17,7 @@ export default function CrewAnswersPanel({ mySlug, allAnswers }) {
     );
 
   return (
-    <section style={{ padding: "24px 20px 60px", maxWidth: 720, margin: "0 auto" }}>
-      <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.dark, marginBottom: 6 }}>
-        The crew's answers
-      </h2>
-      <p style={{ color: C.textBody, fontSize: 14, marginBottom: 14 }}>
-        Tap a player to see what they said.
-      </p>
+    <div>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         {crew.map((p) => {
           const active = expandedSlug === p.slug;
@@ -81,6 +75,6 @@ export default function CrewAnswersPanel({ mySlug, allAnswers }) {
           </div>
         );
       })()}
-    </section>
+    </div>
   );
 }

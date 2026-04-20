@@ -127,15 +127,8 @@ export default function AdventuresPanel({ mySlug, allVotes, onVote }) {
     });
 
   return (
-    <section style={{ padding: "24px 20px 8px", maxWidth: 720, margin: "0 auto" }}>
-      <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.dark, marginBottom: 6 }}>
-        Adventures
-      </h2>
-      <p style={{ color: C.textBody, fontSize: 14, marginBottom: 14 }}>
-        Like the ones you're into. Dislike the ones you'd rather skip. Votes shape what we actually do.
-      </p>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "16px 0 10px" }}>
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 10px" }}>
         <span style={{
           fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, letterSpacing: 1.5,
           textTransform: "uppercase", color: C.white, background: C.turquoise,
@@ -162,6 +155,6 @@ export default function AdventuresPanel({ mySlug, allVotes, onVote }) {
       <div style={{ display: "grid", gap: 10 }}>
         {render(UNPLANNED_ACTIVITIES)}
       </div>
-    </section>
+    </div>
   );
 }

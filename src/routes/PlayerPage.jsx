@@ -10,6 +10,20 @@ import QuestionBlock from "../components/QuestionBlock.jsx";
 import { QUESTIONS } from "../data/questions.js";
 import CrewAnswersPanel from "../components/CrewAnswersPanel.jsx";
 import AdventuresPanel from "../components/AdventuresPanel.jsx";
+import SectionHeader from "../components/SectionHeader.jsx";
+import YourCountdown from "../components/YourCountdown.jsx";
+import YourStay from "../components/YourStay.jsx";
+import YourResort from "../components/YourResort.jsx";
+import YourItinerary from "../components/YourItinerary.jsx";
+import TripEssentials from "../components/TripEssentials.jsx";
+import GamesOverview from "../components/GamesOverview.jsx";
+
+const SECTION_WRAPPER = {
+  maxWidth: 720,
+  margin: "0 auto",
+  padding: "0 20px",
+  marginBottom: 24,
+};
 
 export default function PlayerPage() {
   const { slug } = useParams();
@@ -84,7 +98,7 @@ export default function PlayerPage() {
 
   return (
     <div style={{ background: C.sand, minHeight: "100vh", paddingBottom: 80, fontFamily: "Nunito, sans-serif" }}>
-      {/* Logout chip — mirrors LoggedInChip style on the home page */}
+      {/* Logout chip */}
       <div style={{
         position: "fixed", top: 16, right: 16, zIndex: 900,
         background: C.white, borderRadius: 999, padding: "6px 10px 6px 14px",
@@ -107,7 +121,7 @@ export default function PlayerPage() {
         </button>
       </div>
 
-      {/* Hero — centered avatar with color-tinted background */}
+      {/* Hero */}
       <section style={{
         padding: "64px 20px 48px", textAlign: "center",
         background: `linear-gradient(180deg, ${player.color}33 0%, ${C.sand} 100%)`,
@@ -154,11 +168,25 @@ export default function PlayerPage() {
         </p>
       </section>
 
-      {/* Flights — homepage-style tinted cards */}
-      <section style={{ padding: "24px 20px 8px", maxWidth: 720, margin: "0 auto" }}>
-        <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.dark, marginBottom: 14 }}>
-          Your flights
-        </h2>
+      {/* Countdown */}
+      <SectionHeader
+        label="Your Trip"
+        title="Countdown"
+        tagline="How long till wheels up?"
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
+        <YourCountdown player={player} />
+      </section>
+
+      {/* Flights */}
+      <SectionHeader
+        label="Your Trip"
+        title="Your flights"
+        tagline="Outbound and return details"
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
         {myFlights.length === 0 ? (
           <p style={{ color: C.textBody }}>No flights on file.</p>
         ) : (
@@ -209,14 +237,58 @@ export default function PlayerPage() {
         )}
       </section>
 
+      {/* Stay */}
+      <SectionHeader
+        label="Your Trip"
+        title="Your stay"
+        tagline="Your days in the sun, and who else is around"
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
+        <YourStay player={player} />
+      </section>
+
+      {/* Resort */}
+      <SectionHeader
+        label="Home Base"
+        title="Where we're staying"
+        tagline="5-star, all-inclusive, adults-only"
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
+        <YourResort player={player} />
+      </section>
+
+      {/* Itinerary */}
+      <SectionHeader
+        label="Your Days"
+        title="Day by day"
+        tagline="The plan for every day you're out here"
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
+        <YourItinerary player={player} />
+      </section>
+
+      {/* Trip essentials */}
+      <SectionHeader
+        label="Good to Know"
+        title="Trip essentials"
+        tagline="The practical stuff before you land"
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
+        <TripEssentials />
+      </section>
+
       {/* Questions */}
-      <section style={{ padding: "24px 20px 8px", maxWidth: 720, margin: "0 auto" }}>
-        <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.dark, marginBottom: 6 }}>
-          Pre-trip questions
-        </h2>
-        <p style={{ color: C.textBody, fontSize: 14, marginBottom: 14 }}>
-          Answer each one. Your crew will see these on their own pages.
-        </p>
+      <SectionHeader
+        label="Over to You"
+        title="Pre-trip questions"
+        tagline="Answer each one — the crew will see these on their own pages"
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
         <div style={{ display: "grid", gap: 10 }}>
           {QUESTIONS.map((q) => (
             <QuestionBlock
@@ -230,9 +302,38 @@ export default function PlayerPage() {
         </div>
       </section>
 
-      <AdventuresPanel mySlug={slug} allVotes={allVotes} onVote={castVote} />
+      {/* Adventures */}
+      <SectionHeader
+        label="The Plan"
+        title="Adventures"
+        tagline="Like what you're into. Dislike what you'd skip. Votes shape the trip."
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
+        <AdventuresPanel mySlug={slug} allVotes={allVotes} onVote={castVote} />
+      </section>
 
-      <CrewAnswersPanel mySlug={slug} allAnswers={allAnswers} />
+      {/* Games */}
+      <SectionHeader
+        label="The Game"
+        title="Challenges & forfeits"
+        tagline="Points, penalties, forfeits — the whole system"
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
+        <GamesOverview player={player} />
+      </section>
+
+      {/* Crew answers */}
+      <SectionHeader
+        label="The Crew"
+        title="What they said"
+        tagline="Tap a player to see their pre-trip answers"
+        accent={player.color}
+      />
+      <section style={SECTION_WRAPPER}>
+        <CrewAnswersPanel mySlug={slug} allAnswers={allAnswers} />
+      </section>
     </div>
   );
 }
