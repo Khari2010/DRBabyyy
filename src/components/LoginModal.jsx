@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAction } from "convex/react";
+import { useAction, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { PLAYERS, V1_LOGIN_SLUGS } from "../data/players.js";
 import { C } from "../data/colors.js";
@@ -16,6 +16,7 @@ export default function LoginModal({ open, onClose, onSuccess }) {
 
   const setPasscodeAction = useAction(api.auth.setPasscode);
   const loginAction = useAction(api.auth.login);
+  const convex = useConvex();
 
   if (!open) return null;
 
@@ -24,18 +25,10 @@ export default function LoginModal({ open, onClose, onSuccess }) {
     setError("");
     setBusy(true);
     try {
-      // Probe: attempt a login with a sentinel passcode. If the player hasn't
-      // set one yet, Convex throws "passcode not set" and we branch to first-time.
-      // Otherwise we show the returning flow.
-      await loginAction({ slug: player.slug, passcode: "__probe__" });
-      setStep("returning");
-    } catch (err) {
-      const msg = String(err?.message ?? err);
-      if (/not set/i.test(msg)) {
-        setStep("first-time");
-      } else {
-        setStep("returning");
-      }
+      const has = await convex.query(api.auth.hasPasscode, { slug: player.slug });
+      setStep(has ? "returning" : "first-time");
+    } catch {
+      setStep("first-time");
     } finally {
       setBusy(false);
     }

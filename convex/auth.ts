@@ -12,6 +12,18 @@ function generateToken(): string {
     .replace(/=+$/, "");
 }
 
+export const hasPasscode = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .unique();
+    if (!player) return false;
+    return player.passcodeHash !== null;
+  },
+});
+
 export const _getPlayerBySlug = internalQuery({
   args: { slug: v.string() },
   handler: async (ctx, { slug }) => {
