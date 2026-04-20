@@ -1,6 +1,9 @@
 import { C } from "../data/colors.js";
 
-export default function SectionHeader({ label, title, tagline, accent = C.coral }) {
+export default function SectionHeader({ label, title, tagline, accent = C.coral, onDark = false }) {
+  const titleColor = onDark ? C.white : C.dark;
+  const taglineColor = onDark ? "rgba(255,255,255,0.7)" : C.textBody;
+
   return (
     <div style={{ textAlign: "center", padding: "clamp(28px, 8vw, 56px) clamp(16px, 4vw, 20px) clamp(10px, 3vw, 16px)", maxWidth: 760, margin: "0 auto" }}>
       {label && (
@@ -23,7 +26,7 @@ export default function SectionHeader({ label, title, tagline, accent = C.coral 
           fontFamily: "'Dela Gothic One', sans-serif",
           fontSize: "clamp(28px, 8vw, 72px)",
           margin: 0,
-          color: C.dark,
+          color: titleColor,
           lineHeight: 1.05,
         }}
       >
@@ -35,7 +38,7 @@ export default function SectionHeader({ label, title, tagline, accent = C.coral 
             marginTop: 14,
             fontFamily: "Nunito, sans-serif",
             fontSize: "clamp(15px, 1.6vw, 18px)",
-            color: C.textBody,
+            color: taglineColor,
             fontWeight: 600,
             lineHeight: 1.55,
             maxWidth: 620,

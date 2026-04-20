@@ -11,14 +11,13 @@ export default function AboutYourHoliday({ player, myFlights }) {
         maxWidth: 960,
         margin: "0 auto",
         padding: "0 clamp(16px, 4vw, 20px)",
-        marginBottom: 40,
         boxSizing: "border-box",
         width: "100%",
       }}
     >
       <div
         style={{
-          background: C.white,
+          background: C.sand,
           borderRadius: 24,
           boxShadow: "0 18px 48px rgba(0,0,0,0.06)",
           padding: "clamp(20px, 5vw, 32px)",

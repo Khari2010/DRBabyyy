@@ -10,14 +10,13 @@ import AdventuresPanel from "../components/AdventuresPanel.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
 import GamesOverview from "../components/GamesOverview.jsx";
 import AboutYourHoliday from "../components/AboutYourHoliday.jsx";
-import YourItineraryCarousel from "../components/YourItineraryCarousel.jsx";
+import YourItineraryHome from "../components/YourItineraryHome.jsx";
 import TheCrew from "../components/TheCrew.jsx";
 
-const SECTION_WRAPPER = {
+const INNER_WRAPPER = {
   maxWidth: 960,
   margin: "0 auto",
   padding: "0 clamp(16px, 4vw, 20px)",
-  marginBottom: 40,
   boxSizing: "border-box",
   width: "100%",
 };
@@ -94,7 +93,7 @@ export default function PlayerPage() {
   };
 
   return (
-    <div style={{ background: C.sand, minHeight: "100vh", paddingBottom: 80, fontFamily: "Nunito, sans-serif", overflowX: "hidden" }}>
+    <div style={{ background: C.sand, minHeight: "100vh", fontFamily: "Nunito, sans-serif", overflowX: "hidden" }}>
       {/* Logout chip */}
       <div style={{
         position: "fixed", top: 16, right: 16, zIndex: 900,
@@ -120,7 +119,7 @@ export default function PlayerPage() {
         </button>
       </div>
 
-      {/* Hero */}
+      {/* Hero (keeps the player colour gradient → sand) */}
       <section style={{
         padding: "clamp(56px, 12vw, 72px) clamp(16px, 4vw, 24px) clamp(32px, 8vw, 48px)",
         textAlign: "center",
@@ -168,57 +167,68 @@ export default function PlayerPage() {
         </p>
       </section>
 
-      {/* About Your Holiday — dashboard */}
-      <AboutYourHoliday player={player} myFlights={myFlights} />
+      {/* About Your Holiday — WHITE band */}
+      <div style={{ background: C.white, padding: "80px 0" }}>
+        <AboutYourHoliday player={player} myFlights={myFlights} />
+      </div>
 
-      {/* Adventure Map */}
-      <SectionHeader
-        label="The Plan"
-        title="Adventure Map"
-        tagline="Like what you're into. Dislike what you'd skip. Votes shape the trip."
-        accent={C.coralDeep}
-      />
-      <section style={SECTION_WRAPPER}>
-        <AdventuresPanel mySlug={slug} allVotes={allVotes} onVote={castVote} />
-      </section>
-
-      {/* Itinerary carousel */}
-      <SectionHeader
-        label="Your Days"
-        title="Day by day"
-        tagline="Swipe through — tap a day to see the full plan"
-        accent={C.coral}
-      />
-      <section style={SECTION_WRAPPER}>
-        <YourItineraryCarousel player={player} />
-      </section>
-
-      {/* The Game */}
-      <SectionHeader
-        label="The Game"
-        title="Challenges & forfeits"
-        tagline="Points, penalties, forfeits — the whole system"
-        accent={C.gold}
-      />
-      <section style={SECTION_WRAPPER}>
-        <GamesOverview player={player} />
-      </section>
-
-      {/* The Crew */}
-      <SectionHeader
-        label="The Crew"
-        title="Your answers & theirs"
-        tagline="Share your pre-trip take, peek at what the squad said"
-        accent={C.blue}
-      />
-      <section style={SECTION_WRAPPER}>
-        <TheCrew
-          player={player}
-          myAnswers={myAnswers}
-          allAnswers={allAnswers}
-          onSaveAnswer={saveAnswer}
+      {/* Adventure Map — SAND band */}
+      <div style={{ background: C.sand, padding: "60px 0" }}>
+        <SectionHeader
+          label="The Plan"
+          title="Adventure Map"
+          tagline="Like what you're into. Dislike what you'd skip. Votes shape the trip."
+          accent={C.coralDeep}
         />
-      </section>
+        <section style={INNER_WRAPPER}>
+          <AdventuresPanel mySlug={slug} allVotes={allVotes} onVote={castVote} />
+        </section>
+      </div>
+
+      {/* Itinerary — WHITE band, home-style */}
+      <div style={{ background: C.white, padding: "80px 0" }}>
+        <SectionHeader
+          label="Your Days"
+          title="Day by day"
+          tagline="Your days lit up, the rest dimmed — tap any day to see the full plan."
+          accent={C.coral}
+        />
+        <section style={INNER_WRAPPER}>
+          <YourItineraryHome player={player} />
+        </section>
+      </div>
+
+      {/* The Game — DARK band for contrast */}
+      <div style={{ background: C.dark, padding: "80px 0" }}>
+        <SectionHeader
+          label="The Game"
+          title="Challenges & forfeits"
+          tagline="Points, penalties, forfeits — the whole system"
+          accent={C.gold}
+          onDark
+        />
+        <section style={INNER_WRAPPER}>
+          <GamesOverview player={player} />
+        </section>
+      </div>
+
+      {/* The Crew — WHITE band (alternates off the dark above) */}
+      <div style={{ background: C.white, padding: "80px 0" }}>
+        <SectionHeader
+          label="The Crew"
+          title="Your answers & theirs"
+          tagline="Share your pre-trip take, peek at what the squad said"
+          accent={C.blue}
+        />
+        <section style={INNER_WRAPPER}>
+          <TheCrew
+            player={player}
+            myAnswers={myAnswers}
+            allAnswers={allAnswers}
+            onSaveAnswer={saveAnswer}
+          />
+        </section>
+      </div>
     </div>
   );
 }
