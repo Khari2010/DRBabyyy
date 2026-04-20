@@ -999,8 +999,21 @@ export default function HomePage() {
         }}
       />
 
-      {session && (
+      {session ? (
         <LoggedInChip slug={session.slug} onLogout={() => setSession(null)} />
+      ) : (
+        <button
+          onClick={() => setLoginOpen(true)}
+          style={{
+            position: "fixed", top: 16, right: 16, zIndex: 900,
+            background: "white", border: "none", borderRadius: 999,
+            padding: "10px 16px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 14,
+            color: C.dark, cursor: "pointer",
+          }}
+        >
+          Player Log In
+        </button>
       )}
     </div>
   );
