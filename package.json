@@ -9,8 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "convex": "^1.35.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.14.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
