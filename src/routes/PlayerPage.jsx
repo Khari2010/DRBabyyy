@@ -9,6 +9,7 @@ import { C } from "../data/colors.js";
 import QuestionBlock from "../components/QuestionBlock.jsx";
 import { QUESTIONS } from "../data/questions.js";
 import CrewAnswersPanel from "../components/CrewAnswersPanel.jsx";
+import AdventuresPanel from "../components/AdventuresPanel.jsx";
 
 export default function PlayerPage() {
   const { slug } = useParams();
@@ -25,6 +26,8 @@ export default function PlayerPage() {
   const logoutMutation = useMutation(api.auth.logout);
   const allAnswers = useQuery(api.answers.listAll) ?? [];
   const saveAnswerMutation = useMutation(api.answers.save);
+  const allVotes = useQuery(api.activityVotes.listAll) ?? [];
+  const castVoteMutation = useMutation(api.activityVotes.castVote);
 
   useEffect(() => {
     if (!isKnownSlug) {
@@ -63,6 +66,10 @@ export default function PlayerPage() {
 
   const saveAnswer = async (questionId, text) => {
     await saveAnswerMutation({ token: session.token, questionId, text });
+  };
+
+  const castVote = async (activityId, vote) => {
+    await castVoteMutation({ token: session.token, activityId, vote });
   };
 
   const handleLogout = async () => {
@@ -222,6 +229,8 @@ export default function PlayerPage() {
           ))}
         </div>
       </section>
+
+      <AdventuresPanel mySlug={slug} allVotes={allVotes} onVote={castVote} />
 
       <CrewAnswersPanel mySlug={slug} allAnswers={allAnswers} />
     </div>

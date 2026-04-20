@@ -21,4 +21,13 @@ export default defineSchema({
     token: v.string(),
     createdAt: v.number(),
   }).index("by_token", ["token"]),
+
+  activityVotes: defineTable({
+    playerSlug: v.string(),
+    activityId: v.string(),
+    vote: v.union(v.literal("like"), v.literal("dislike")),
+    updatedAt: v.number(),
+  })
+    .index("by_activity", ["activityId"])
+    .index("by_player_and_activity", ["playerSlug", "activityId"]),
 });
