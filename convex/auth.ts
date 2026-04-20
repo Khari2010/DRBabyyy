@@ -57,3 +57,30 @@ export const setPasscode = action({
     return { token };
   },
 });
+
+export const _createSession = internalMutation({
+  args: { slug: v.string(), token: v.string() },
+  handler: async (ctx, { slug, token }) => {
+    await ctx.db.insert("sessions", {
+      playerSlug: slug,
+      token,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+export const login = action({
+  args: { slug: v.string(), passcode: v.string() },
+  handler: async (ctx, { slug, passcode }) => {
+    const player = await ctx.runQuery(internal.auth._getPlayerBySlug, { slug });
+    if (!player) throw new Error("unknown player");
+    if (player.passcodeHash === null) throw new Error("passcode not set");
+
+    const ok = await bcrypt.compare(passcode, player.passcodeHash);
+    if (!ok) throw new Error("invalid passcode");
+
+    const token = generateToken();
+    await ctx.runMutation(internal.auth._createSession, { slug, token });
+    return { token };
+  },
+});

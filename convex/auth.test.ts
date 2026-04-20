@@ -2,6 +2,7 @@ import { convexTest } from "convex-test";
 import { describe, it, expect } from "vitest";
 import { api, internal } from "./_generated/api";
 import schema from "./schema";
+import bcrypt from "bcryptjs";
 
 describe("auth.setPasscode", () => {
   it("sets a passcode for a player with no existing hash and returns a session token", async () => {
@@ -49,6 +50,61 @@ describe("auth.setPasscode", () => {
     const t = convexTest(schema);
     await expect(
       t.action(api.auth.setPasscode, { slug: "nobody", passcode: "1234" }),
+    ).rejects.toThrow(/unknown player/i);
+  });
+});
+
+describe("auth.login", () => {
+  it("returns a new session token on correct passcode", async () => {
+    const t = convexTest(schema);
+    const existingHash = await bcrypt.hash("1234", 10);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "kyanna", passcodeHash: existingHash });
+    });
+
+    const result = await t.action(api.auth.login, {
+      slug: "kyanna",
+      passcode: "1234",
+    });
+
+    expect(result.token).toMatch(/^[A-Za-z0-9_-]{32,}$/);
+
+    await t.run(async (ctx) => {
+      const session = await ctx.db
+        .query("sessions")
+        .withIndex("by_token", (q) => q.eq("token", result.token))
+        .unique();
+      expect(session?.playerSlug).toBe("kyanna");
+    });
+  });
+
+  it("rejects wrong passcode", async () => {
+    const t = convexTest(schema);
+    const hash = await bcrypt.hash("1234", 10);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "miles", passcodeHash: hash });
+    });
+
+    await expect(
+      t.action(api.auth.login, { slug: "miles", passcode: "9999" }),
+    ).rejects.toThrow(/invalid/i);
+  });
+
+  it("rejects login if no passcode is set", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "camara", passcodeHash: null });
+    });
+
+    await expect(
+      t.action(api.auth.login, { slug: "camara", passcode: "1234" }),
+    ).rejects.toThrow(/not set/i);
+  });
+
+  it("rejects login for unknown slug", async () => {
+    const t = convexTest(schema);
+    await expect(
+      t.action(api.auth.login, { slug: "nobody", passcode: "1234" }),
     ).rejects.toThrow(/unknown player/i);
   });
 });
