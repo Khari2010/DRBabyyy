@@ -42,7 +42,11 @@ export default function PlayerPage() {
   }, [isKnownSlug, session, slugMatches, serverSession, navigate]);
 
   if (!isKnownSlug || !session || !slugMatches || serverSession === undefined) {
-    return <div style={{ padding: 40 }}>Loading…</div>;
+    return (
+      <div style={{ background: C.sand, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Nunito, sans-serif", color: C.textBody }}>
+        Loading…
+      </div>
+    );
   }
   if (serverSession === null) return null;
 
@@ -72,72 +76,124 @@ export default function PlayerPage() {
   };
 
   return (
-    <div style={{ background: C.sand, minHeight: "100vh", paddingBottom: 80 }}>
-      {/* Logout chip */}
-      <div style={{ position: "fixed", top: 16, right: 16, zIndex: 900 }}>
+    <div style={{ background: C.sand, minHeight: "100vh", paddingBottom: 80, fontFamily: "Nunito, sans-serif" }}>
+      {/* Logout chip — mirrors LoggedInChip style on the home page */}
+      <div style={{
+        position: "fixed", top: 16, right: 16, zIndex: 900,
+        background: C.white, borderRadius: 999, padding: "6px 10px 6px 14px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        display: "flex", alignItems: "center", gap: 10,
+        fontFamily: "Nunito, sans-serif", fontWeight: 800,
+      }}>
+        <button
+          onClick={() => navigate("/")}
+          style={{ background: "transparent", border: "none", color: C.textBody, cursor: "pointer", fontWeight: 800, fontSize: 13 }}
+        >
+          ← Home
+        </button>
+        <span style={{ width: 1, height: 18, background: C.sandDark }} />
         <button
           onClick={handleLogout}
-          style={{
-            background: "white", border: "none", padding: "8px 14px",
-            borderRadius: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            fontFamily: "Nunito, sans-serif", fontWeight: 800, cursor: "pointer",
-          }}
+          style={{ background: "transparent", border: "none", color: C.textBody, cursor: "pointer", fontWeight: 800, fontSize: 13 }}
         >
           Log out
         </button>
       </div>
 
-      {/* Hero */}
-      <section style={{ padding: "60px 20px 40px", textAlign: "center", background: player.color, color: "white" }}>
-        <div style={{ fontSize: 96, marginBottom: 12 }}>{player.emoji}</div>
-        <h1 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(32px, 8vw, 64px)", margin: 0 }}>
-          {player.name}
-        </h1>
-        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 20, fontWeight: 800, marginTop: 4, opacity: 0.9 }}>
+      {/* Hero — centered avatar with color-tinted background */}
+      <section style={{
+        padding: "64px 20px 48px", textAlign: "center",
+        background: `linear-gradient(180deg, ${player.color}33 0%, ${C.sand} 100%)`,
+      }}>
+        <div style={{
+          width: 150, height: 150, borderRadius: "50%", overflow: "hidden",
+          margin: "0 auto 18px", background: C.white,
+          boxShadow: `0 12px 36px ${player.color}55, 0 0 0 6px ${C.white}`,
+        }}>
+          {player.avatar ? (
+            <img
+              src={player.avatar}
+              alt={player.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }}
+            />
+          ) : (
+            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 80 }}>
+              {player.emoji}
+            </div>
+          )}
+        </div>
+        <div style={{
+          display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800,
+          fontSize: 11, color: C.white, background: player.color,
+          padding: "5px 16px", borderRadius: 16, letterSpacing: 1.5,
+          textTransform: "uppercase", marginBottom: 12,
+        }}>
           {player.title}
         </div>
-        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, marginTop: 8, opacity: 0.85 }}>
+        <h1 style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: "clamp(32px, 8vw, 56px)", margin: "0 0 6px", color: C.dark,
+        }}>
+          {player.name}
+        </h1>
+        <div style={{ fontSize: 14, color: C.textBody, fontWeight: 600, marginBottom: 16 }}>
           {player.role}
         </div>
-        <p style={{ fontFamily: "Nunito, sans-serif", maxWidth: 560, margin: "20px auto 0", lineHeight: 1.6 }}>
+        <p style={{
+          maxWidth: 560, margin: "0 auto", lineHeight: 1.7,
+          color: C.textBody, fontSize: 15, fontWeight: 500,
+        }}>
           {player.bio}
         </p>
       </section>
 
-      {/* Flights */}
-      <section style={{ padding: "40px 20px", maxWidth: 720, margin: "0 auto" }}>
-        <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.dark }}>
+      {/* Flights — homepage-style tinted cards */}
+      <section style={{ padding: "24px 20px 8px", maxWidth: 720, margin: "0 auto" }}>
+        <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.dark, marginBottom: 14 }}>
           Your flights
         </h2>
         {myFlights.length === 0 ? (
           <p style={{ color: C.textBody }}>No flights on file.</p>
         ) : (
-          <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
+          <div style={{ display: "grid", gap: 10 }}>
             {myFlights.map((f) => (
               <div
                 key={f.id}
                 style={{
-                  background: "white", borderRadius: 16, padding: 20,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  background: `${player.color}0C`,
+                  borderRadius: 16, padding: "16px 18px",
+                  border: `1px solid ${player.color}22`,
                 }}
               >
-                <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, color: player.color, textTransform: "uppercase", letterSpacing: 1, fontSize: 12 }}>
-                  {f.type} · {f.date}
+                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+                  <span style={{
+                    fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10,
+                    color: C.white, background: f.type === "Outbound" ? C.turquoise : C.coral,
+                    padding: "3px 10px", borderRadius: 10, letterSpacing: 0.5, textTransform: "uppercase",
+                  }}>
+                    {f.type}
+                  </span>
+                  <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.dark }}>
+                    {f.date}
+                  </span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div>
-                    <div style={{ fontSize: 22, fontWeight: 900 }}>{f.from.code}</div>
-                    <div style={{ fontSize: 12, color: C.textBody }}>{f.from.city}</div>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: C.dark }}>{f.from.code}</div>
+                    <div style={{ fontSize: 11, color: C.textBody }}>{f.from.city}</div>
                   </div>
-                  <div style={{ flex: 1, textAlign: "center", color: C.textBody, fontSize: 12 }}>
-                    → {f.duration}{f.stops ? ` · via ${f.stopCity}` : ""}
+                  <div style={{ flex: 1, textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: C.textBody, marginBottom: 4 }}>
+                      {f.duration}{f.stops ? ` · via ${f.stopCity}` : ""}
+                    </div>
+                    <div style={{ height: 2, background: `linear-gradient(90deg, ${player.color}44, ${player.color}, ${player.color}44)`, borderRadius: 2 }} />
                   </div>
-                  <div>
-                    <div style={{ fontSize: 22, fontWeight: 900 }}>{f.to.code}</div>
-                    <div style={{ fontSize: 12, color: C.textBody }}>{f.to.city}</div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: C.dark }}>{f.to.code}</div>
+                    <div style={{ fontSize: 11, color: C.textBody }}>{f.to.city}</div>
                   </div>
                 </div>
-                <div style={{ fontSize: 12, color: C.textBody, marginTop: 8 }}>
+                <div style={{ fontSize: 11, color: C.textBody, marginTop: 10, fontWeight: 600 }}>
                   {f.depart} → {f.arrive} · {f.flight} · {f.aircraft}
                 </div>
               </div>
@@ -147,14 +203,14 @@ export default function PlayerPage() {
       </section>
 
       {/* Questions */}
-      <section style={{ padding: "20px 20px 40px", maxWidth: 720, margin: "0 auto" }}>
-        <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.dark }}>
+      <section style={{ padding: "24px 20px 8px", maxWidth: 720, margin: "0 auto" }}>
+        <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.dark, marginBottom: 6 }}>
           Pre-trip questions
         </h2>
-        <p style={{ color: C.textBody, fontFamily: "Nunito, sans-serif" }}>
+        <p style={{ color: C.textBody, fontSize: 14, marginBottom: 14 }}>
           Answer each one. Your crew will see these on their own pages.
         </p>
-        <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
+        <div style={{ display: "grid", gap: 10 }}>
           {QUESTIONS.map((q) => (
             <QuestionBlock
               key={q.id}
