@@ -108,3 +108,53 @@ describe("auth.login", () => {
     ).rejects.toThrow(/unknown player/i);
   });
 });
+
+describe("auth.getSession", () => {
+  it("returns playerSlug for a valid token", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("sessions", {
+        playerSlug: "kai",
+        token: "valid-token",
+        createdAt: Date.now(),
+      });
+    });
+
+    const result = await t.query(api.auth.getSession, { token: "valid-token" });
+    expect(result).toEqual({ playerSlug: "kai" });
+  });
+
+  it("returns null for an unknown token", async () => {
+    const t = convexTest(schema);
+    const result = await t.query(api.auth.getSession, { token: "missing" });
+    expect(result).toBeNull();
+  });
+});
+
+describe("auth.logout", () => {
+  it("deletes the matching session", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("sessions", {
+        playerSlug: "candice",
+        token: "gone",
+        createdAt: Date.now(),
+      });
+    });
+
+    await t.mutation(api.auth.logout, { token: "gone" });
+
+    await t.run(async (ctx) => {
+      const rows = await ctx.db
+        .query("sessions")
+        .withIndex("by_token", (q) => q.eq("token", "gone"))
+        .collect();
+      expect(rows).toHaveLength(0);
+    });
+  });
+
+  it("is a no-op for unknown tokens", async () => {
+    const t = convexTest(schema);
+    await t.mutation(api.auth.logout, { token: "nonexistent" });
+  });
+});

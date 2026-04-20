@@ -84,3 +84,28 @@ export const login = action({
     return { token };
   },
 });
+
+export const getSession = query({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (!session) return null;
+    return { playerSlug: session.playerSlug };
+  },
+});
+
+export const logout = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (session) {
+      await ctx.db.delete(session._id);
+    }
+  },
+});
