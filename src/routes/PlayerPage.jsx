@@ -6,6 +6,8 @@ import { loadSession, clearSession } from "../lib/session.js";
 import { playerBySlug, V1_LOGIN_SLUGS } from "../data/players.js";
 import { flightsForPlayer } from "../data/flights.js";
 import { C } from "../data/colors.js";
+import QuestionBlock from "../components/QuestionBlock.jsx";
+import { QUESTIONS } from "../data/questions.js";
 
 export default function PlayerPage() {
   const { slug } = useParams();
@@ -45,6 +47,19 @@ export default function PlayerPage() {
   if (!player) return null;
 
   const myFlights = flightsForPlayer(player.name);
+
+  const allAnswers = useQuery(api.answers.listAll) ?? [];
+  const saveAnswerMutation = useMutation(api.answers.save);
+
+  const myAnswers = Object.fromEntries(
+    allAnswers
+      .filter((a) => a.playerSlug === slug)
+      .map((a) => [a.questionId, a.text]),
+  );
+
+  const saveAnswer = async (questionId, text) => {
+    await saveAnswerMutation({ token: session.token, questionId, text });
+  };
 
   const handleLogout = async () => {
     try {
@@ -129,6 +144,27 @@ export default function PlayerPage() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Questions */}
+      <section style={{ padding: "20px 20px 40px", maxWidth: 720, margin: "0 auto" }}>
+        <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 28, color: C.dark }}>
+          Pre-trip questions
+        </h2>
+        <p style={{ color: C.textBody, fontFamily: "Nunito, sans-serif" }}>
+          Answer each one. Your crew will see these on their own pages.
+        </p>
+        <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
+          {QUESTIONS.map((q) => (
+            <QuestionBlock
+              key={q.id}
+              prompt={q.prompt}
+              answer={myAnswers[q.id]}
+              color={player.color}
+              onSave={(text) => saveAnswer(q.id, text)}
+            />
+          ))}
+        </div>
       </section>
     </div>
   );
