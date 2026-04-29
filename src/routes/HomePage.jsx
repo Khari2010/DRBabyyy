@@ -13,11 +13,11 @@ const FONTS_URL =
 
 // ─── IMAGES ─────────────────────────────────────────────────────────────────
 const IMAGES = {
-  heroBeach: "/images/group/hero-beach.jpg",
-  heroTown: "/images/group/hero-town.jpg",
-  heroMarket: "/images/group/hero-market.jpg",
-  heroScenic: "/images/group/hero-scenic.jpg",
-  heroColonial: "/images/group/hero-colonial.jpg",
+  heroBeach: "/images/group/hero-beach.webp",
+  heroTown: "/images/group/hero-town.webp",
+  heroMarket: "/images/group/hero-market.webp",
+  heroScenic: "/images/group/hero-scenic.webp",
+  heroColonial: "/images/group/hero-colonial.webp",
   venueRestaurants: "/images/venues/restaurants.webp",
   venueExcursions: "/images/venues/excursions.webp",
   venueNightlife: "/images/venues/nightlife.webp",
@@ -317,7 +317,7 @@ const ProfileCard = ({ player, index, onOpen }) => (
             lineHeight: 1,
           }}>{player.initial || "?"}</span>
         ) : (
-          <img src={player.avatar} alt={player.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+          <img src={player.avatar} alt={player.name} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
         )}
       </div>
       {/* Card body — starts below avatar overlap */}
@@ -421,7 +421,7 @@ const ProfileModal = ({ player, onClose }) => {
               </div>
             </>
           ) : (
-            <img src={player.avatar} alt={player.name} style={{
+            <img src={player.avatar} alt={player.name} loading="lazy" decoding="async" style={{
               position: "absolute", inset: 0, width: "100%", height: "100%",
               objectFit: "cover", objectPosition: "center 10%",
             }} />
@@ -660,7 +660,7 @@ const Leaderboard = () => (
             {p.mystery ? (
               <span style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.white }}>{p.initial || "?"}</span>
             ) : (
-              <img src={p.avatar} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
+              <img src={p.avatar} alt={p.name} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }} />
             )}
           </div>
         ))}

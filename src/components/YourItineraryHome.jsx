@@ -19,11 +19,11 @@ const DAY_COLORS = [
   C.coral,
 ];
 const IMAGES = {
-  heroBeach: "/images/group/hero-beach.jpg",
-  heroTown: "/images/group/hero-town.jpg",
-  heroMarket: "/images/group/hero-market.jpg",
-  heroScenic: "/images/group/hero-scenic.jpg",
-  heroColonial: "/images/group/hero-colonial.jpg",
+  heroBeach: "/images/group/hero-beach.webp",
+  heroTown: "/images/group/hero-town.webp",
+  heroMarket: "/images/group/hero-market.webp",
+  heroScenic: "/images/group/hero-scenic.webp",
+  heroColonial: "/images/group/hero-colonial.webp",
 };
 const DAY_IMAGES = [
   "heroBeach",
