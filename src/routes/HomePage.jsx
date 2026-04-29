@@ -31,6 +31,7 @@ const PRESENCE = [
   { name: "Kyanna", start: 18, end: 25, color: C.purple },
   { name: "Camara", start: 20, end: 26, color: C.green },
   { name: "Miles", start: 20, end: 25, color: C.cyan },
+  { name: "Ebony", start: 17, end: 24, color: C.pink },
 ];
 
 const RESORT = {
@@ -498,7 +499,8 @@ const ProfileModal = ({ player, onClose }) => {
 };
 
 const PresenceChart = () => {
-  const totalDays = 12; // 18 to 29
+  const startDay = 17;
+  const totalDays = 13; // 17 to 29
   return (
     <Reveal delay={0.15}>
       <div style={{ padding: "0 24px", marginTop: 8 }}>
@@ -507,7 +509,7 @@ const PresenceChart = () => {
           {/* Date axis */}
           <div style={{ display: "flex", alignItems: "center", marginBottom: 12, paddingLeft: 72 }}>
             {Array.from({ length: totalDays }, (_, i) => (
-              <div key={i} style={{ flex: 1, textAlign: "center", fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 800, color: C.textBody, opacity: 0.5 }}>{18 + i}</div>
+              <div key={i} style={{ flex: 1, textAlign: "center", fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 800, color: C.textBody, opacity: 0.5 }}>{startDay + i}</div>
             ))}
           </div>
           {/* Rows */}
@@ -516,9 +518,9 @@ const PresenceChart = () => {
               <div style={{ width: 68, fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.dark, flexShrink: 0, paddingRight: 4 }}>{p.name}</div>
               <div style={{ flex: 1, display: "flex", gap: 2, height: 22 }}>
                 {Array.from({ length: totalDays }, (_, i) => {
-                  const day = 18 + i;
+                  const day = startDay + i;
                   const present = day >= p.start && day <= p.end;
-                  const allOverlap = day >= 20 && day <= 25;
+                  const allOverlap = day >= 20 && day <= 24;
                   return (
                     <div key={i} style={{
                       flex: 1, borderRadius: 4,
@@ -547,7 +549,7 @@ const PresenceChart = () => {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <div style={{ width: 10, height: 10, borderRadius: 2, background: C.gold, opacity: 1 }} />
-              <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 700, color: C.textBody }}>Full squad (20-25)</span>
+              <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 700, color: C.textBody }}>Full squad (20-24)</span>
             </div>
           </div>
         </div>
