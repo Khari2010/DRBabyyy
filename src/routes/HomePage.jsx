@@ -791,7 +791,7 @@ export default function HomePage() {
 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
       <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${IMAGES.heroColonial})`, backgroundSize: "cover", backgroundPosition: "center 30%", animation: loaded ? "heroZoom 1.5s ease-out forwards" : "none" }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${IMAGES.heroGroup})`, backgroundSize: "cover", backgroundPosition: "center 30%", animation: loaded ? "heroZoom 1.5s ease-out forwards" : "none" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(26,26,46,0.1) 0%, rgba(26,26,46,0.25) 40%, rgba(26,26,46,0.7) 75%, rgba(26,26,46,0.92) 100%)" }} />
         <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 24px 60px", maxWidth: 700, width: "100%" }}>
           <div style={{ display: "inline-block", background: "rgba(255,107,107,0.9)", color: C.white, fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, padding: "6px 20px", borderRadius: 20, letterSpacing: 3, textTransform: "uppercase", marginBottom: 20, opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s ease 0.3s" }}>
@@ -868,13 +868,6 @@ export default function HomePage() {
 
       {/* ── PLAYERS ─────────────────────────────────────────────────────── */}
       <section id="players" style={{ padding: "80px 0 60px", background: C.sand }}>
-        <Reveal>
-          <div style={{ maxWidth: 1100, margin: "0 auto 28px", padding: "0 24px" }}>
-            <div style={{ borderRadius: 28, overflow: "hidden", boxShadow: "0 16px 48px rgba(0,0,0,0.12)", aspectRatio: "16 / 9", background: C.white }}>
-              <img src={IMAGES.heroGroup} alt="The whole crew in Punta Cana" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-            </div>
-          </div>
-        </Reveal>
         <Reveal>
           <div style={{ textAlign: "center", marginBottom: 36, padding: "0 24px" }}>
             <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>The Lineup</div>
