@@ -18,6 +18,7 @@ const IMAGES = {
   heroMarket: "/images/group/hero-market.webp",
   heroScenic: "/images/group/hero-scenic.webp",
   heroColonial: "/images/group/hero-colonial.webp",
+  heroGroup: "/images/group/hero-group.webp",
   venueRestaurants: "/images/venues/restaurants.webp",
   venueExcursions: "/images/venues/excursions.webp",
   venueNightlife: "/images/venues/nightlife.webp",
@@ -867,6 +868,13 @@ export default function HomePage() {
 
       {/* ── PLAYERS ─────────────────────────────────────────────────────── */}
       <section id="players" style={{ padding: "80px 0 60px", background: C.sand }}>
+        <Reveal>
+          <div style={{ maxWidth: 1100, margin: "0 auto 28px", padding: "0 24px" }}>
+            <div style={{ borderRadius: 28, overflow: "hidden", boxShadow: "0 16px 48px rgba(0,0,0,0.12)", aspectRatio: "16 / 9", background: C.white }}>
+              <img src={IMAGES.heroGroup} alt="The whole crew in Punta Cana" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            </div>
+          </div>
+        </Reveal>
         <Reveal>
           <div style={{ textAlign: "center", marginBottom: 36, padding: "0 24px" }}>
             <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>The Lineup</div>
