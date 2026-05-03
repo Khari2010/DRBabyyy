@@ -790,10 +790,10 @@ export default function HomePage() {
       <StickyNav />
 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
-      <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", overflow: "hidden" }}>
+      <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${IMAGES.heroGroup})`, backgroundSize: "cover", backgroundPosition: "center 30%", animation: loaded ? "heroZoom 1.5s ease-out forwards" : "none" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(26,26,46,0.1) 0%, rgba(26,26,46,0.25) 40%, rgba(26,26,46,0.7) 75%, rgba(26,26,46,0.92) 100%)" }} />
-        <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 24px 60px", maxWidth: 700, width: "100%" }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(26,26,46,0.55) 0%, rgba(26,26,46,0.35) 35%, rgba(26,26,46,0.15) 60%, rgba(26,26,46,0.5) 100%)" }} />
+        <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "clamp(64px, 10vh, 110px) 24px 0", maxWidth: 700, width: "100%" }}>
           <div style={{ display: "inline-block", background: "rgba(255,107,107,0.9)", color: C.white, fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, padding: "6px 20px", borderRadius: 20, letterSpacing: 3, textTransform: "uppercase", marginBottom: 20, opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s ease 0.3s" }}>
             Royalton CHIC • May 18–29
           </div>
