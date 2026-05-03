@@ -181,6 +181,24 @@ export default function PlayerPage() {
         </button>
         <span style={{ width: 1, height: 18, background: C.sandDark }} />
         <button
+          onClick={() => navigate("/games")}
+          style={{
+            background: C.gold,
+            color: C.white,
+            border: "none",
+            borderRadius: 999,
+            cursor: "pointer",
+            fontWeight: 800,
+            fontSize: 13,
+            padding: "6px 12px",
+            minHeight: 32,
+            letterSpacing: 0.5,
+          }}
+        >
+          🎮 Games
+        </button>
+        <span style={{ width: 1, height: 18, background: C.sandDark }} />
+        <button
           onClick={handleLogout}
           style={{
             background: "transparent",

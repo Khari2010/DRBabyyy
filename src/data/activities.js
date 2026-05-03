@@ -8,7 +8,7 @@ export const ACTIVITIES = [
   { id: "altos", name: "Altos de Chavón", icon: "🌇", blurb: "Replica 16th-century Mediterranean village above the Chavón River. Cobblestone streets, galleries, golden-hour views.", planned: true, day: "23 May" },
   { id: "coco-bongo", name: "Coco Bongo", icon: "🎭", blurb: "Punta Cana's wildest nightlife — confetti, tribute acts, acrobats from 8pm, full club until 3am. Open bar.", planned: true, day: "23 May" },
   { id: "jellyfish", name: "Jellyfish Restaurant", icon: "🪼", blurb: "Beachfront restaurant on Bavaro Beach — fresh seafood, sunsets, upscale but laid-back.", planned: true, day: "24 May" },
-  { id: "sky-dinner", name: "Dinner in the Sky", icon: "🎈", blurb: "Table suspended 50m in the air by a crane. Sunset cocktails, panoramic views, surreal.", planned: true, day: "24 May" },
+  { id: "sky-dinner", name: "Dinner in the Sky", icon: "🎈", blurb: "Table suspended 50m in the air by a crane. Sunset cocktails, panoramic views, surreal.", planned: true, day: "23 May" },
 
   { id: "hoyo-azul", name: "Hoyo Azul cenote", icon: "🏊", blurb: "Freshwater cenote swim at Scape Park — deep turquoise pool surrounded by cliff jungle.", planned: false },
   { id: "dolphin-swim", name: "Dolphin swim", icon: "🐬", blurb: "Swim with dolphins at Dolphin Island Park.", planned: false },
@@ -16,6 +16,8 @@ export const ACTIVITIES = [
   { id: "zipline", name: "Zipline canopy tour", icon: "🪂", blurb: "Scape Park zipline course — treetop descents through jungle.", planned: false },
   { id: "macao-surf", name: "Macao Beach surf lesson", icon: "🏄", blurb: "Beginner-friendly surf lesson at Macao Beach — one of the area's best breaks.", planned: false },
   { id: "atv-buggy", name: "ATV buggy tour", icon: "🚙", blurb: "Off-road jungle and beach buggy tour.", planned: false },
+  { id: "waterpark", name: "Splash water park", icon: "🌊", blurb: "Caribbean water park — slides, lazy river, wave pool. Half-day chaos for the squad.", planned: false },
+  { id: "scuba-doo", name: "Scuba Doo (underwater scooter)", icon: "🤿", blurb: "Underwater scooter ride along the reef — guided, no diving experience needed.", planned: false },
 ];
 
 export const PLANNED_ACTIVITIES = ACTIVITIES.filter((a) => a.planned);

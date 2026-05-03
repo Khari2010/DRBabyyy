@@ -1,4 +1,5 @@
-import { CHALLENGES, NEGATIVE_POINTS, FORFEITS } from "../data/challenges.js";
+import { CHALLENGES, NEGATIVE_POINTS } from "../data/challenges.js";
+import { FORFEITS } from "../data/forfeits.js";
 import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
 import Reveal from "./Reveal.jsx";
@@ -252,7 +253,7 @@ function ForfeitsPanel() {
       >
         {FORFEITS.map((f) => (
           <div
-            key={f}
+            key={f.id}
             style={{
               fontFamily: "Nunito, sans-serif",
               fontWeight: 700,
@@ -264,7 +265,7 @@ function ForfeitsPanel() {
               border: `1px solid ${C.purple}15`,
             }}
           >
-            {f}
+            {f.label}
           </div>
         ))}
       </div>

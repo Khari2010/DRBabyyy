@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./routes/HomePage.jsx";
 import PlayerPage from "./routes/PlayerPage.jsx";
+import GamesPage from "./routes/GamesPage.jsx";
 import StyleGuide from "./routes/StyleGuide.jsx";
 
 export default function App() {
@@ -9,6 +10,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/player/:slug" element={<PlayerPage />} />
+        <Route path="/games" element={<GamesPage />} />
         <Route path="/styleguide" element={<StyleGuide />} />
       </Routes>
     </BrowserRouter>

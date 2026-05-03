@@ -11,6 +11,7 @@ import {
   SECTION_ACCENTS,
 } from "../data/design.js";
 import { PLAYERS } from "../data/players.js";
+import { FORFEITS } from "../data/forfeits.js";
 import SectionHeader from "../components/SectionHeader.jsx";
 import Reveal from "../components/Reveal.jsx";
 import Countdown from "../components/Countdown.jsx";
@@ -18,6 +19,7 @@ import Card from "../components/primitives/Card.jsx";
 import Avatar from "../components/primitives/Avatar.jsx";
 import Pill from "../components/primitives/Pill.jsx";
 import SectionBand from "../components/primitives/SectionBand.jsx";
+import WheelOfFortune from "../components/games/WheelOfFortune.jsx";
 
 // Loads the same fonts + reset styles the home + player pages rely on so
 // the styleguide renders accurately when opened in isolation.
@@ -506,6 +508,107 @@ export default function StyleGuide() {
         </Reveal>
       </SectionBand>
 
+      {/* Games dashboard primitives */}
+      <SectionBand bg="sand">
+        <Reveal>
+          <SectionHeader
+            label="Games dashboard"
+            title="Wheel & game-locked patterns"
+            tagline="Lives behind /games. Login-gated. Wheel result + checklist row + leaderboard row."
+            accent={C.coralDeep}
+          />
+        </Reveal>
+
+        <Sub>Wheel of Forfeits</Sub>
+        <Reveal delay={0.05}>
+          <Card>
+            <WheelOfFortune />
+          </Card>
+        </Reveal>
+
+        <Sub>Forfeit chip</Sub>
+        <Reveal delay={0.05}>
+          <Card>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                gap: 12,
+              }}
+            >
+              {FORFEITS.slice(0, 4).map((f) => (
+                <div
+                  key={f.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "12px 14px",
+                    borderRadius: RADIUS.md,
+                    background: C.white,
+                    border: `1px solid ${f.color}25`,
+                    boxShadow: SHADOW.card,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      background: f.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 18,
+                      flexShrink: 0,
+                      boxShadow: `0 4px 12px ${f.color}40`,
+                    }}
+                  >
+                    {f.icon}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "Nunito, sans-serif",
+                      fontWeight: 800,
+                      fontSize: 13,
+                      color: C.dark,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {f.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Caption>Coloured circle + label, tinted hairline border in the slice colour.</Caption>
+          </Card>
+        </Reveal>
+
+        <Sub>Scavenger checklist row</Sub>
+        <Reveal delay={0.05}>
+          <Card>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <ChecklistRowDemo accent={C.coralDeep} icon="🥥" label="Coconut still on the tree" checked={false} />
+              <ChecklistRowDemo accent={C.coralDeep} icon="🥭" label="Fresh mango from a stand" checked />
+              <ChecklistRowDemo accent={C.coralDeep} icon="🍶" label="Bottle of Mamajuana" checked={false} />
+            </div>
+            <Caption>Tap target is the whole row. Tinted background + slice colour border when checked.</Caption>
+          </Card>
+        </Reveal>
+
+        <Sub>Leaderboard row</Sub>
+        <Reveal delay={0.05}>
+          <Card>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <LeaderRowDemo rank={1} player={PLAYERS[0]} score="—" leader />
+              <LeaderRowDemo rank={2} player={PLAYERS[1]} score="—" />
+              <LeaderRowDemo rank={3} player={PLAYERS[2]} score="—" />
+            </div>
+            <Caption>Rank #1 gets the gold tint. Score column right-aligned, em-dash until live.</Caption>
+          </Card>
+        </Reveal>
+      </SectionBand>
+
       {/* Footer pointer */}
       <SectionBand bg="white" pad={SECTION.padCompact}>
         <Reveal>
@@ -517,6 +620,118 @@ export default function StyleGuide() {
           </div>
         </Reveal>
       </SectionBand>
+    </div>
+  );
+}
+
+function ChecklistRowDemo({ accent, icon, label, checked }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "8px 10px",
+        borderRadius: RADIUS.sm,
+        background: checked ? `${accent}10` : "transparent",
+        border: `1px solid ${checked ? accent : "transparent"}`,
+        fontFamily: "Nunito, sans-serif",
+      }}
+    >
+      <div
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: 6,
+          border: `2px solid ${checked ? accent : C.sandDark}`,
+          background: checked ? accent : "transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          color: C.white,
+          fontSize: 14,
+          fontWeight: 900,
+        }}
+      >
+        {checked ? "✓" : ""}
+      </div>
+      <span style={{ fontSize: 16 }}>{icon}</span>
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 700,
+          color: C.dark,
+          textDecoration: checked ? "line-through" : "none",
+          opacity: checked ? 0.6 : 1,
+          flex: 1,
+        }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function LeaderRowDemo({ rank, player, score, leader = false }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        padding: "10px 14px",
+        borderRadius: RADIUS.md,
+        background: leader ? `${C.gold}10` : C.sand,
+        border: leader ? `1px solid ${C.gold}40` : "1px solid transparent",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: 18,
+          color: leader ? C.gold : C.textBody,
+          width: 24,
+          textAlign: "center",
+          opacity: leader ? 1 : 0.5,
+        }}
+      >
+        {rank}
+      </div>
+      <Avatar player={player} size="md" />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: 16,
+            color: C.dark,
+            lineHeight: 1.1,
+          }}
+        >
+          {player.name}
+        </div>
+        <div
+          style={{
+            fontFamily: "Nunito, sans-serif",
+            fontSize: 11,
+            color: C.textBody,
+            fontWeight: 700,
+            opacity: 0.7,
+          }}
+        >
+          {player.title}
+        </div>
+      </div>
+      <div
+        style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: 22,
+          color: leader ? C.gold : C.textBody,
+          opacity: leader ? 1 : 0.4,
+        }}
+      >
+        {score}
+      </div>
     </div>
   );
 }
