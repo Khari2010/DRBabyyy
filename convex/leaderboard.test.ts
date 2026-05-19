@@ -66,3 +66,27 @@ describe("leaderboard.getRecentActivity", () => {
     expect(recent[0].createdAt).toBeGreaterThan(recent[2].createdAt);
   });
 });
+
+describe("leaderboard.getRecentActivity with token", () => {
+  it("annotates entries with myReaction", async () => {
+    const t = convexTest(schema);
+    let entryId: any;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "kai", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "kai", token: "tok-kai", createdAt: Date.now() });
+      entryId = await ctx.db.insert("entries", { type: "challenge", subjectSlug: "khari", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+      await ctx.db.insert("entryReactions", { entryId, playerSlug: "kai", reaction: "vouch", at: Date.now() });
+    });
+    const rows = await t.query(api.leaderboard.getRecentActivity, { limit: 10, token: "tok-kai" });
+    expect(rows[0].myReaction).toBe("vouch");
+  });
+
+  it("returns null myReaction when no token provided", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "khari", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    const rows = await t.query(api.leaderboard.getRecentActivity, { limit: 10 });
+    expect(rows[0].myReaction).toBeNull();
+  });
+});

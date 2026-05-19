@@ -41,9 +41,30 @@ export const getHoliday = query({
 });
 
 export const getRecentActivity = query({
-  args: { limit: v.number() },
-  handler: async (ctx, { limit }) => {
+  args: { limit: v.number(), token: v.optional(v.string()) },
+  handler: async (ctx, { limit, token }) => {
     const all = await ctx.db.query("entries").collect();
-    return all.sort((a, b) => b.createdAt - a.createdAt).slice(0, limit);
+    const sorted = all.sort((a, b) => b.createdAt - a.createdAt).slice(0, limit);
+
+    let mySlug: string | null = null;
+    if (token) {
+      const session = await ctx.db
+        .query("sessions")
+        .withIndex("by_token", (q) => q.eq("token", token))
+        .unique();
+      mySlug = session?.playerSlug ?? null;
+    }
+
+    return await Promise.all(sorted.map(async (e) => {
+      let myReaction: "vouch" | "dispute" | null = null;
+      if (mySlug) {
+        const reaction = await ctx.db
+          .query("entryReactions")
+          .withIndex("by_entry_and_player", (q) => q.eq("entryId", e._id).eq("playerSlug", mySlug!))
+          .unique();
+        myReaction = reaction?.reaction ?? null;
+      }
+      return { ...e, myReaction };
+    }));
   },
 });
