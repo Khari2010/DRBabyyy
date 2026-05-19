@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, requireAdmin, getGameState } from "./helpers";
 
@@ -85,5 +85,43 @@ export const trigger = mutation({
       triggeredBySlug: playerSlug,
       triggeredAt: now,
     });
+  },
+});
+
+export const recordForfeit = mutation({
+  args: {
+    token: v.string(),
+    rolloverId: v.id("rollovers"),
+    forfeitId: v.string(),
+    forfeitLabel: v.string(),
+  },
+  handler: async (ctx, { token, rolloverId, forfeitId, forfeitLabel }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+    const row = await ctx.db.get(rolloverId);
+    if (!row) throw new Error("unknown rollover");
+    if (row.forfeitId) throw new Error("forfeit already recorded");
+    await ctx.db.patch(rolloverId, {
+      forfeitId,
+      forfeitLabel,
+      spunAt: Date.now(),
+    });
+  },
+});
+
+export const get = query({
+  args: { dayNumber: v.number() },
+  handler: async (ctx, { dayNumber }) => {
+    return await ctx.db
+      .query("rollovers")
+      .withIndex("by_day_number", (q) => q.eq("dayNumber", dayNumber))
+      .unique();
+  },
+});
+
+export const listAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("rollovers").collect();
   },
 });

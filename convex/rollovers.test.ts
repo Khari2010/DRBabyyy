@@ -65,3 +65,67 @@ describe("rollovers.trigger", () => {
       .rejects.toThrow(/invalid session/);
   });
 });
+
+describe("rollovers.recordForfeit", () => {
+  it("records the forfeit on a rollover row", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    const day1 = await t.run((ctx) =>
+      ctx.db.query("rollovers").filter((q) => q.eq(q.field("dayNumber"), 1)).first());
+    await t.mutation(api.rollovers.recordForfeit, {
+      token: "tok-khari",
+      rolloverId: day1!._id,
+      forfeitId: "cold-shower",
+      forfeitLabel: "Cold shower (1 min)",
+    });
+    const after = await t.run((ctx) => ctx.db.get(day1!._id));
+    expect(after?.forfeitId).toBe("cold-shower");
+    expect(after?.forfeitLabel).toBe("Cold shower (1 min)");
+  });
+
+  it("rejects re-spin (forfeitId already set)", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    const day1 = await t.run((ctx) =>
+      ctx.db.query("rollovers").filter((q) => q.eq(q.field("dayNumber"), 1)).first());
+    await t.mutation(api.rollovers.recordForfeit, {
+      token: "tok-khari", rolloverId: day1!._id, forfeitId: "wax", forfeitLabel: "Wax",
+    });
+    await expect(t.mutation(api.rollovers.recordForfeit, {
+      token: "tok-khari", rolloverId: day1!._id, forfeitId: "chili", forfeitLabel: "Chili",
+    })).rejects.toThrow(/forfeit already recorded/);
+  });
+
+  it("rejects non-admin", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    const day1 = await t.run((ctx) =>
+      ctx.db.query("rollovers").filter((q) => q.eq(q.field("dayNumber"), 1)).first());
+    await expect(t.mutation(api.rollovers.recordForfeit, {
+      token: "tok-camara", rolloverId: day1!._id, forfeitId: "x", forfeitLabel: "X",
+    })).rejects.toThrow(/admin only/);
+  });
+});
+
+describe("rollovers.get", () => {
+  it("returns the rollover row for the given dayNumber", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    const r = await t.query(api.rollovers.get, { dayNumber: 1 });
+    expect(r?.dayNumber).toBe(1);
+  });
+
+  it("returns null for unknown day", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    const r = await t.query(api.rollovers.get, { dayNumber: 99 });
+    expect(r).toBeNull();
+  });
+});
