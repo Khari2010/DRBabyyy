@@ -76,6 +76,7 @@ export default function LeaderboardPage() {
   const history = allRollovers
     .filter((r) => r.loserSlug && r.forfeitId)
     .sort((a, b) => b.dayNumber - a.dayNumber);
+  const loggedIn = !!session;
   const handleFoul = session?.slug ? setFoulTarget : null;
   const activity = useQuery(
     api.leaderboard.getRecentActivity,
@@ -93,7 +94,16 @@ export default function LeaderboardPage() {
         {gamesLive ? `Day ${currentDayNumber}` : "Games not live yet"}
       </div>
 
-      {pendingReveal && lastClosed && (
+      {!loggedIn && (
+        <div style={{
+          padding: 12, background: C.sand, borderRadius: 8,
+          fontSize: 13, color: C.textBody, marginBottom: 12, textAlign: "center",
+        }}>
+          Log in to see activity, vouches, and forfeit history.
+        </div>
+      )}
+
+      {loggedIn && pendingReveal && lastClosed && (
         <RevealFlow rollover={lastClosed} />
       )}
 
@@ -134,14 +144,16 @@ export default function LeaderboardPage() {
         )}
       </div>
 
-      <section style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 18 }}>Recent activity</h2>
-        <div style={{ background: C.white, borderRadius: 12, overflow: "hidden" }}>
-          {activity.length === 0
-            ? <div style={{ padding: 20, textAlign: "center", color: C.textBody }}>Nothing yet</div>
-            : activity.map((e) => <EntryRow key={e._id} entry={e} />)}
-        </div>
-      </section>
+      {loggedIn && (
+        <section style={{ marginTop: 24 }}>
+          <h2 style={{ fontSize: 18 }}>Recent activity</h2>
+          <div style={{ background: C.white, borderRadius: 12, overflow: "hidden" }}>
+            {activity.length === 0
+              ? <div style={{ padding: 20, textAlign: "center", color: C.textBody }}>Nothing yet</div>
+              : activity.map((e) => <EntryRow key={e._id} entry={e} />)}
+          </div>
+        </section>
+      )}
 
       {foulTarget && (
         <FoulModal
@@ -151,7 +163,7 @@ export default function LeaderboardPage() {
         />
       )}
 
-      {history.length > 0 && (
+      {loggedIn && history.length > 0 && (
         <section style={{ marginTop: 24 }}>
           <h2 style={{ fontSize: 18 }}>Punishment history</h2>
           <div style={{ background: C.white, borderRadius: 12, overflow: "hidden" }}>
