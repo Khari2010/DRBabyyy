@@ -168,4 +168,14 @@ export default defineSchema({
     vote: v.union(v.literal("yes"), v.literal("no")),
     at: v.number(),
   }).index("by_suggestion_and_voter", ["suggestionId", "voterSlug"]),
+
+  itemRsvps: defineTable({
+    dayDate: v.string(),
+    itemKey: v.string(),
+    playerSlug: v.string(),
+    status: v.union(v.literal("in"), v.literal("out")),
+    updatedAt: v.number(),
+  })
+    .index("by_day_and_item", ["dayDate", "itemKey"])
+    .index("by_player_day_item", ["playerSlug", "dayDate", "itemKey"]),
 });
