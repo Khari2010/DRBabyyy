@@ -3,7 +3,63 @@ import { QUESTIONS } from "../data/questions.js";
 import QuestionBlock from "./QuestionBlock.jsx";
 import CrewAnswersPanel from "./CrewAnswersPanel.jsx";
 
+// Coming-soon placeholder. The full questionnaire UI below is kept for future
+// revival when we re-enable answers + crew browsing.
 export default function TheCrew({ player, myAnswers, allAnswers, onSaveAnswer }) {
+  return (
+    <div
+      style={{
+        padding: "32px 24px",
+        textAlign: "center",
+        background: C.white,
+        borderRadius: 20,
+        border: `1px dashed ${C.sandDark}`,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div style={{ fontSize: 32, marginBottom: 8 }}>🛠️</div>
+      <div
+        style={{
+          fontFamily: "Nunito, sans-serif",
+          fontWeight: 900,
+          fontSize: 11,
+          color: player.color,
+          letterSpacing: 3,
+          textTransform: "uppercase",
+          marginBottom: 8,
+        }}
+      >
+        Coming soon
+      </div>
+      <div
+        style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: "clamp(20px, 5vw, 26px)",
+          color: C.dark,
+          lineHeight: 1.2,
+          marginBottom: 8,
+        }}
+      >
+        Crew Q&amp;A
+      </div>
+      <div
+        style={{
+          fontFamily: "Nunito, sans-serif",
+          fontSize: 14,
+          color: C.textBody,
+          lineHeight: 1.5,
+          maxWidth: 380,
+          margin: "0 auto",
+        }}
+      >
+        Pre-trip questionnaire + tap-a-player to read their answers. Building this back in after the trip.
+      </div>
+    </div>
+  );
+}
+
+// Kept for future revival.
+function _PreservedFullTheCrew({ player, myAnswers, allAnswers, onSaveAnswer }) {
   return (
     <div
       style={{
@@ -80,7 +136,7 @@ export default function TheCrew({ player, myAnswers, allAnswers, onSaveAnswer })
         >
           Tap a player to see their pre-trip answers.
         </div>
-        {false /* questionnaire hidden — kept for future revival */ && <CrewAnswersPanel mySlug={player.slug} allAnswers={allAnswers} />}
+        <CrewAnswersPanel mySlug={player.slug} allAnswers={allAnswers} />
       </div>
     </div>
   );
