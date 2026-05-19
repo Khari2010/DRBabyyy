@@ -263,6 +263,7 @@ export default function PlayerPage() {
         </Reveal>
         <Reveal delay={0.05}>
           <LockscreenGenerator
+            defaultCollapsed
             holidayName={holidayMap[slug]}
             legalName={player.name}
             avatarUrl={player.avatar}

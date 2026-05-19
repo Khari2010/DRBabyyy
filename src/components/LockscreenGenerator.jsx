@@ -26,7 +26,48 @@ function fitFontSize(ctx, text, fontTemplate, startSize, maxWidth, minSize = 48)
   return minSize;
 }
 
-function drawLockscreen(ctx, holidayName) {
+function drawCircularAvatar(ctx, img, cx, cy, radius, accent) {
+  // Soft white halo to lift the portrait off the gradient
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius + 22, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  ctx.fill();
+  ctx.restore();
+
+  // Clip and draw the image as a square covering the circle bounds
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.clip();
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const target = radius * 2;
+  // object-fit: cover — scale so the shorter side matches, then center-crop.
+  const scale = Math.max(target / iw, target / ih);
+  const drawW = iw * scale;
+  const drawH = ih * scale;
+  ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
+  ctx.restore();
+
+  // White inner ring (sits flush against the photo)
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = "rgba(255,255,255,0.95)";
+  ctx.stroke();
+
+  // Accent outer ring — picks up each player's signature color
+  if (accent) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius + 14, 0, Math.PI * 2);
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = accent;
+    ctx.stroke();
+  }
+}
+
+function drawLockscreen(ctx, holidayName, avatarImg, accent) {
   ctx.clearRect(0, 0, W, H);
 
   // ── Background gradient: sky → cream ────────────────────────────────────
@@ -39,13 +80,15 @@ function drawLockscreen(ctx, holidayName) {
   ctx.fillRect(0, 0, W, H);
 
   // ── Date pill ───────────────────────────────────────────────────────────
+  // Positioned below the iOS clock digits (which end around y≈600 on a
+  // 1290×2796 wallpaper) so the pill never sits underneath the time.
   const pillText = "PUNTA CANA  ·  MAY 18 – 29";
   ctx.font = "800 44px Nunito, sans-serif";
   const textWidth = ctx.measureText(pillText).width;
   const pillW = textWidth + 110;
   const pillH = 96;
   const pillX = (W - pillW) / 2;
-  const pillY = 560;
+  const pillY = 700;
   ctx.fillStyle = C.coral;
   roundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
   ctx.fill();
@@ -53,6 +96,11 @@ function drawLockscreen(ctx, holidayName) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(pillText, W / 2, pillY + pillH / 2);
+
+  // ── Player portrait (optional) ─────────────────────────────────────────
+  if (avatarImg) {
+    drawCircularAvatar(ctx, avatarImg, W / 2, 1060, 200, accent);
+  }
 
   // ── FLOW STATE — auto-fit so both lines stay within side margins ────────
   const flowFontTemplate = "400 {size}px 'Dela Gothic One', system-ui, sans-serif";
@@ -66,8 +114,8 @@ function drawLockscreen(ctx, holidayName) {
   ctx.textBaseline = "alphabetic";
   const lineGap = flowSize * 0.92;
   const blockHeight = lineGap + flowSize;
-  // Vertically center the FLOW STATE block around 52% of the canvas.
-  const flowCenter = H * 0.52;
+  // Shifted down to make space for the portrait above the title block.
+  const flowCenter = H * 0.58;
   const flowY1 = flowCenter - blockHeight / 2 + flowSize * 0.82;
   const flowY2 = flowY1 + lineGap;
   const shadowOffset = Math.round(flowSize * 0.055);
@@ -116,10 +164,30 @@ function drawLockscreen(ctx, holidayName) {
   ctx.fillText("18°28'N    68°22'W", W - 120, footerY);
 }
 
-export default function LockscreenGenerator({ holidayName, legalName, accent = C.coral }) {
+function loadImage(src) {
+  return new Promise((resolve) => {
+    if (!src) {
+      resolve(null);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+export default function LockscreenGenerator({
+  holidayName,
+  legalName,
+  avatarUrl,
+  accent = C.coral,
+  defaultCollapsed = false,
+}) {
   const canvasRef = useRef(null);
   const [ready, setReady] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const nameForDraw = (holidayName && holidayName.trim()) || legalName || "DR CREW";
 
   useEffect(() => {
@@ -130,25 +198,22 @@ export default function LockscreenGenerator({ holidayName, legalName, accent = C
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      try {
-        await Promise.all([
-          document.fonts.load("400 320px 'Dela Gothic One'"),
-          document.fonts.load("400 110px 'Dela Gothic One'"),
-          document.fonts.load("800 44px Nunito"),
-          document.fonts.load("700 32px Nunito"),
-        ]);
-      } catch {
-        /* fonts may not be loadable in test env — fall through */
-      }
+      const [, , , , avatarImg] = await Promise.all([
+        document.fonts.load("400 320px 'Dela Gothic One'").catch(() => null),
+        document.fonts.load("400 110px 'Dela Gothic One'").catch(() => null),
+        document.fonts.load("800 44px Nunito").catch(() => null),
+        document.fonts.load("700 32px Nunito").catch(() => null),
+        loadImage(avatarUrl),
+      ]);
       if (cancelled) return;
-      drawLockscreen(ctx, nameForDraw);
+      drawLockscreen(ctx, nameForDraw, avatarImg, accent);
       setReady(true);
     };
     run();
     return () => {
       cancelled = true;
     };
-  }, [nameForDraw]);
+  }, [nameForDraw, avatarUrl, accent]);
 
   const handleDownload = async () => {
     const canvas = canvasRef.current;
@@ -172,6 +237,31 @@ export default function LockscreenGenerator({ holidayName, legalName, accent = C
       setDownloading(false);
     }
   };
+
+  if (collapsed) {
+    return (
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "8px 12px", background: C.sand, borderRadius: 8,
+        fontFamily: "Nunito, sans-serif", fontSize: 13,
+      }}>
+        <span style={{ flex: 1 }}>
+          📱 iPhone lockscreen
+        </span>
+        <button
+          type="button"
+          onClick={() => setCollapsed(false)}
+          style={{
+            padding: "4px 10px", borderRadius: 6,
+            background: "transparent", border: `1px solid ${C.dark}`, color: C.dark,
+            fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, cursor: "pointer",
+          }}
+        >
+          Generate
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
