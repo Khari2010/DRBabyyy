@@ -5,19 +5,23 @@ import { C } from "../data/colors.js";
 
 const MAX_LENGTH = 24;
 
-export default function HolidayNameEditor({ token, legalName, accent = C.coral }) {
+export default function HolidayNameEditor({ token, legalName, accent = C.coral, defaultCollapsed = false }) {
   const current = useQuery(api.players.myHolidayName, token ? { token } : "skip");
   const setMutation = useMutation(api.players.setMyHolidayName);
   const clearMutation = useMutation(api.players.clearMyHolidayName);
 
   const [value, setValue] = useState("");
   const [status, setStatus] = useState({ kind: "idle", message: "" });
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (current !== undefined && current !== null) {
       setValue(current);
+      if (defaultCollapsed && current) {
+        setCollapsed(true);
+      }
     }
-  }, [current]);
+  }, [current, defaultCollapsed]);
 
   const hasUnsavedChange = (current ?? "") !== value.trim();
   const trimmedLength = value.trim().length;
@@ -28,6 +32,7 @@ export default function HolidayNameEditor({ token, legalName, accent = C.coral }
       const result = await setMutation({ token, holidayName: value });
       setValue(result.holidayName);
       setStatus({ kind: "saved", message: "Saved." });
+      if (defaultCollapsed) setCollapsed(true);
     } catch (e) {
       setStatus({ kind: "error", message: e?.message ?? "Couldn't save." });
     }
@@ -43,6 +48,46 @@ export default function HolidayNameEditor({ token, legalName, accent = C.coral }
       setStatus({ kind: "error", message: e?.message ?? "Couldn't clear." });
     }
   };
+
+  if (collapsed) {
+    return (
+      <div
+        style={{
+          maxWidth: 560,
+          margin: "0 auto",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 12px",
+          background: C.sand,
+          borderRadius: 8,
+          fontFamily: "Nunito, sans-serif",
+          fontSize: 13,
+        }}
+      >
+        <span style={{ flex: 1, fontWeight: 500, color: C.textBody }}>
+          Holiday name: <strong>{current}</strong>
+        </span>
+        <button
+          type="button"
+          onClick={() => setCollapsed(false)}
+          style={{
+            padding: "4px 10px",
+            borderRadius: 6,
+            background: "transparent",
+            border: `1px solid ${C.dark}`,
+            color: C.dark,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 800,
+            fontSize: 11,
+            cursor: "pointer",
+          }}
+        >
+          Edit
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div

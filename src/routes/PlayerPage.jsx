@@ -328,6 +328,7 @@ export default function PlayerPage() {
             token={session.token}
             legalName={player.name}
             accent={player.color}
+            defaultCollapsed
           />
         </Reveal>
         <Reveal delay={0.05}>
