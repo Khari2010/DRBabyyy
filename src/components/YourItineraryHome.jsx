@@ -49,6 +49,44 @@ function parseDayDate(s) {
   return new Date(2026, months[monStr] ?? 4, Number(dayStr));
 }
 
+const BUCKETS = [
+  { key: "morning", label: "Morning" },
+  { key: "afternoon", label: "Afternoon" },
+  { key: "evening", label: "Evening" },
+  { key: "late", label: "Late" },
+  { key: "anytime", label: "Anytime" },
+];
+
+function bucketForTime(time) {
+  if (!time) return "anytime";
+  const t = String(time).trim();
+  const lower = t.toLowerCase();
+  if (lower === "am") return "morning";
+  if (lower === "day" || lower === "pm") return "afternoon";
+  if (lower === "eve" || lower === "evening") return "evening";
+  if (lower === "late" || lower === "night") return "late";
+  const m = t.match(/^(\d{1,2}):(\d{2})/);
+  if (m) {
+    const h = parseInt(m[1], 10);
+    if (h >= 23) return "late";
+    if (h >= 18) return "evening";
+    if (h >= 12) return "afternoon";
+    return "morning";
+  }
+  return "anytime";
+}
+
+function groupItemsByBucket(items) {
+  if (!Array.isArray(items)) return {};
+  const map = {};
+  for (const it of items) {
+    const b = bucketForTime(it.time);
+    if (!map[b]) map[b] = [];
+    map[b].push(it);
+  }
+  return map;
+}
+
 // Build a contextual note for a day the player isn't present for, using flights.
 function presenceNoteFor(player, day) {
   const flights = flightsForPlayer(player.name);
@@ -512,30 +550,50 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
 
       {/* Items */}
       <div style={{ padding: "clamp(16px, 4vw, 22px)" }}>
-        {day.items && day.items.length > 0 ? (
-          <ul style={{
-            listStyle: "none", padding: 0, margin: 0,
-            display: "flex", flexDirection: "column", gap: 10,
-          }}>
-            {day.items.map((it, i) => (
-              <li key={i} style={{
-                display: "flex", alignItems: "baseline", gap: 8,
-                fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.dark,
-              }}>
-                {it.time && (
-                  <span style={{
-                    fontWeight: 800, color: C.textBody, minWidth: 56, fontSize: 12,
-                    textTransform: "uppercase", letterSpacing: 0.5,
-                  }}>{it.time}</span>
-                )}
-                <span>
-                  {it.icon ? `${it.icon} ` : ""}{it.activity}
-                  {it.note && <span style={{ color: C.textBody }}> — {it.note}</span>}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        {day.items && day.items.length > 0 && (() => {
+          const grouped = groupItemsByBucket(day.items);
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {BUCKETS.map((bucket) => {
+                const bucketItems = grouped[bucket.key] ?? [];
+                if (bucketItems.length === 0) return null;
+                return (
+                  <div key={bucket.key}>
+                    <div style={{
+                      fontFamily: "Nunito, sans-serif", fontWeight: 900,
+                      fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
+                      color: C.textBody, marginBottom: 6,
+                    }}>
+                      {bucket.label}
+                    </div>
+                    <ul style={{
+                      listStyle: "none", padding: 0, margin: 0,
+                      display: "flex", flexDirection: "column", gap: 8,
+                    }}>
+                      {bucketItems.map((it, i) => (
+                        <li key={i} style={{
+                          display: "flex", alignItems: "baseline", gap: 8,
+                          fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.dark,
+                        }}>
+                          {it.time && (
+                            <span style={{
+                              fontWeight: 800, color: C.textBody, minWidth: 56, fontSize: 12,
+                              textTransform: "uppercase", letterSpacing: 0.5,
+                            }}>{it.time}</span>
+                          )}
+                          <span>
+                            {it.icon ? `${it.icon} ` : ""}{it.activity}
+                            {it.note && <span style={{ color: C.textBody }}> — {it.note}</span>}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
         {(!day.items || day.items.length < 2) && (
           <div style={{
             marginTop: 12, padding: "8px 12px",
