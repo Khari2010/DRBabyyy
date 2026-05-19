@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useState } from "react";
 import { DAYS } from "../data/itinerary.js";
 import { currentTripDayIndex } from "../lib/drTime.js";
 import { flightsForPlayer } from "../data/flights.js";
@@ -65,6 +65,76 @@ function presenceNoteFor(player, day) {
   return null;
 }
 
+function CollapsedDayRow({ day, isPresent, isToday, playerColor, onClick }) {
+  const accentColor = isPresent ? playerColor : C.textBody;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        position: "relative",
+        width: "100%",
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "12px 14px",
+        borderRadius: 14,
+        border: `1px solid ${C.sandDark}`,
+        background: isToday ? `${C.coralDeep}08` : C.white,
+        cursor: "pointer",
+        textAlign: "left",
+        opacity: isPresent ? 1 : 0.6,
+      }}
+    >
+      {isToday && (
+        <span style={{
+          position: "absolute", top: -8, left: 12,
+          background: C.coralDeep, color: C.white,
+          fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 9,
+          padding: "2px 8px", borderRadius: 999, letterSpacing: 1,
+        }}>
+          TODAY
+        </span>
+      )}
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "center",
+        minWidth: 44,
+      }}>
+        <div style={{
+          fontFamily: "Nunito, sans-serif", fontWeight: 900,
+          fontSize: 10, letterSpacing: 0.8, color: accentColor,
+          textTransform: "uppercase",
+        }}>{day.dow}</div>
+        <div style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: 22, color: C.dark, lineHeight: 1,
+        }}>{day.date.split(" ")[0]}</div>
+      </div>
+      <div style={{ width: 1, height: 28, background: C.sandDark }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: 16, color: C.dark, lineHeight: 1.1,
+          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+        }}>{day.title}</div>
+        {day.tagline && (
+          <div style={{
+            fontFamily: "Nunito, sans-serif", fontSize: 12,
+            color: C.textBody, marginTop: 2,
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          }}>{day.tagline}</div>
+        )}
+      </div>
+      {isPresent && (
+        <span style={{
+          width: 8, height: 8, borderRadius: "50%",
+          background: playerColor, marginRight: 4,
+          flexShrink: 0,
+        }} />
+      )}
+      <span style={{ color: C.textBody, fontFamily: "Nunito, sans-serif", flexShrink: 0 }}>▾</span>
+    </button>
+  );
+}
+
 function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick, isToday }) {
   const [hovered, setHovered] = useState(false);
   const color = DAY_COLORS[dayIndex % DAY_COLORS.length];
@@ -97,20 +167,18 @@ function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick, isT
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        flex: "0 0 auto",
-        width: 280,
+        width: "100%",
         minHeight: 180,
         borderRadius: 24,
         overflow: "hidden",
         cursor: "pointer",
         position: "relative",
         transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
-        transform: isActive ? "scale(1.03)" : hovered ? "scale(1.0)" : "scale(0.96)",
+        transform: isActive ? "scale(1.01)" : hovered ? "scale(1.0)" : "scale(0.99)",
         boxShadow: baseShadow + presentBoost,
         background: C.white,
         border: `3px solid ${borderColor}`,
         userSelect: "none",
-        scrollSnapAlign: "center",
         opacity: isPresent ? 1 : 0.45,
         filter: isPresent ? "none" : "grayscale(0.6)",
       }}
@@ -292,7 +360,7 @@ function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick, isT
             marginBottom: 4,
           }}
         >
-          {"\u201C"}{day.tagline}{"\u201D"}
+          {"“"}{day.tagline}{"”"}
         </div>
         <div
           style={{
@@ -316,7 +384,7 @@ function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick, isT
             letterSpacing: 0.5,
           }}
         >
-          {isActive ? "Showing plan ▲" : "Tap for plan ▼"}
+          {isActive ? "Tap to collapse ▲" : "Tap for plan ▼"}
         </div>
       </div>
     </div>
@@ -331,13 +399,12 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
   return (
     <div
       style={{
-        maxWidth: 640,
-        margin: "0 auto",
         background: C.white,
         borderRadius: 24,
         overflow: "hidden",
         boxShadow: `0 16px 48px ${accent}1F`,
         border: `1px solid ${accent}22`,
+        marginTop: 8,
       }}
     >
       {/* Header band */}
@@ -381,7 +448,7 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
               marginTop: 6,
             }}
           >
-            {"\u201C"}{day.tagline}{"\u201D"}
+            {"“"}{day.tagline}{"”"}
           </div>
         )}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
@@ -487,61 +554,20 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
 export default function YourItineraryHome({ player }) {
   const todayIdx = currentTripDayIndex(DAYS);
   const [activeDay, setActiveDay] = useState(() => todayIdx);
-  const scrollRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const updateArrows = () => {
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      setCanScrollLeft(el.scrollLeft > 4);
-      setCanScrollRight(el.scrollLeft < maxScroll - 4);
-    };
-    updateArrows();
-    el.addEventListener("scroll", updateArrows, { passive: true });
-    window.addEventListener("resize", updateArrows);
-    return () => {
-      el.removeEventListener("scroll", updateArrows);
-      window.removeEventListener("resize", updateArrows);
-    };
-  }, []);
 
   const scrollToDay = (i) => {
     setActiveDay(i);
-    const el = scrollRef.current;
-    if (el?.children[i]) {
-      el.children[i].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-    }
+    // Wait for React to render the newly expanded row, then scroll it into view.
+    setTimeout(() => {
+      const el = document.querySelector(`[data-day-row="${i}"]`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
-
-  const scrollByCard = (dir) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const firstCard = el.querySelector("[data-day-card]");
-    const cardWidth = firstCard?.getBoundingClientRect().width ?? 280;
-    el.scrollBy({ left: dir * (cardWidth + 16), behavior: "smooth" });
-  };
-
-  const activeDayData = DAYS[activeDay];
-  const activeIsPresent = activeDayData.who.includes(player.name);
-  const presenceNote = !activeIsPresent ? presenceNoteFor(player, activeDayData) : null;
 
   return (
     <div style={{ position: "relative" }}>
-      <style>{`
-        .itinerary-home-scroll::-webkit-scrollbar { display: none; }
-        .itinerary-home-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .itinerary-home-arrow { display: none; }
-        @media (min-width: 720px) {
-          .itinerary-home-arrow { display: flex !important; align-items: center; justify-content: center; }
-        }
-      `}</style>
-
       {/* Selector chip row */}
       <div
-        className="itinerary-home-scroll"
         style={{
           display: "flex",
           justifyContent: "center",
@@ -627,97 +653,44 @@ export default function YourItineraryHome({ player }) {
         })}
       </div>
 
-      {/* Desktop arrows */}
-      {canScrollLeft && (
-        <button
-          aria-label="Previous day"
-          onClick={() => scrollByCard(-1)}
-          className="itinerary-home-arrow"
-          style={{
-            position: "absolute",
-            left: 4,
-            top: "54%",
-            transform: "translateY(-50%)",
-            zIndex: 2,
-            width: 38,
-            height: 38,
-            borderRadius: "50%",
-            background: C.white,
-            border: "none",
-            boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
-            cursor: "pointer",
-            fontFamily: "Nunito, sans-serif",
-            fontWeight: 900,
-            fontSize: 18,
-            color: C.dark,
-          }}
-        >
-          ‹
-        </button>
-      )}
-      {canScrollRight && (
-        <button
-          aria-label="Next day"
-          onClick={() => scrollByCard(1)}
-          className="itinerary-home-arrow"
-          style={{
-            position: "absolute",
-            right: 4,
-            top: "54%",
-            transform: "translateY(-50%)",
-            zIndex: 2,
-            width: 38,
-            height: 38,
-            borderRadius: "50%",
-            background: C.white,
-            border: "none",
-            boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
-            cursor: "pointer",
-            fontFamily: "Nunito, sans-serif",
-            fontWeight: 900,
-            fontSize: 18,
-            color: C.dark,
-          }}
-        >
-          ›
-        </button>
-      )}
-
-      {/* Carousel */}
-      <div
-        ref={scrollRef}
-        className="itinerary-home-scroll"
-        style={{
-          display: "flex",
-          gap: 16,
-          overflowX: "auto",
-          padding: "8px 28px 24px",
-          scrollSnapType: "x mandatory",
-          WebkitOverflowScrolling: "touch",
-        }}
-      >
-        {DAYS.map((d, i) => (
-          <DayCard
-            key={d.date}
-            day={d}
-            dayIndex={i}
-            isActive={activeDay === i}
-            isPresent={d.who.includes(player.name)}
-            playerColor={player.color}
-            onClick={() => scrollToDay(i)}
-            isToday={i === todayIdx}
-          />
-        ))}
-      </div>
-
-      {/* Details panel */}
-      <div style={{ padding: "12px 12px 0" }}>
-        <DayDetails
-          day={activeDayData}
-          dayIndex={activeDay}
-          player={player}
-          presenceNote={presenceNote}
-        />
+      {/* Vertical accordion list */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 16px" }}>
+        {DAYS.map((d, i) => {
+          const isActive = activeDay === i;
+          const present = d.who.includes(player.name);
+          return (
+            <div key={d.date} data-day-row={i}>
+              {isActive ? (
+                <DayCard
+                  day={d}
+                  dayIndex={i}
+                  isActive={true}
+                  isPresent={present}
+                  isToday={i === todayIdx}
+                  playerColor={player.color}
+                  onClick={() => setActiveDay(activeDay === i ? -1 : i)}
+                />
+              ) : (
+                <CollapsedDayRow
+                  day={d}
+                  dayIndex={i}
+                  isPresent={present}
+                  isToday={i === todayIdx}
+                  playerColor={player.color}
+                  onClick={() => scrollToDay(i)}
+                />
+              )}
+              {isActive && (
+                <DayDetails
+                  day={d}
+                  dayIndex={i}
+                  player={player}
+                  presenceNote={!present ? presenceNoteFor(player, d) : null}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
