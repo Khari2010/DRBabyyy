@@ -429,10 +429,16 @@ function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick, isT
   );
 }
 
+function heroImgForDay(dayIndex) {
+  const key = DAY_IMAGES[dayIndex % DAY_IMAGES.length];
+  return IMAGES[key];
+}
+
 function DayDetails({ day, dayIndex, player, presenceNote }) {
   const color = DAY_COLORS[dayIndex % DAY_COLORS.length];
   const isPresent = day.who.includes(player.name);
   const accent = isPresent ? player.color : color;
+  const heroSrc = heroImgForDay(dayIndex);
 
   return (
     <div
@@ -445,6 +451,24 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
         marginTop: 8,
       }}
     >
+      {/* Hero image */}
+      {heroSrc && (
+        <div style={{ position: "relative", width: "100%", height: 140, overflow: "hidden" }}>
+          <img
+            src={heroSrc}
+            alt=""
+            style={{
+              width: "100%", height: "100%", objectFit: "cover",
+              objectPosition: "center 55%", display: "block",
+            }}
+          />
+          <div style={{
+            position: "absolute", inset: 0,
+            background: `linear-gradient(180deg, transparent 30%, ${accent}aa 100%)`,
+          }} />
+        </div>
+      )}
+
       {/* Header band */}
       <div
         style={{
