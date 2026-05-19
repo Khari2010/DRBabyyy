@@ -5,6 +5,7 @@ import { useSession } from "../lib/useSession.js";
 import { useGameState } from "../lib/useGameState.js";
 import { C } from "../data/colors.js";
 import BottomNav from "../components/BottomNav.jsx";
+import ProposedRow from "../components/ProposedRow.jsx";
 
 export default function AdminPage() {
   const session = useSession();
@@ -15,6 +16,10 @@ export default function AdminPage() {
   const trigger = useMutation(api.rollovers.trigger);
   const undoLast = useMutation(api.rollovers.undoLast);
   const resetGame = useMutation(api.admin.resetGame);
+
+  const allSuggestions = useQuery(api.suggestions.list, {}) ?? [];
+  const proposed = allSuggestions.filter((s) => s.status === "proposed");
+  const voting = allSuggestions.filter((s) => s.status === "voting");
 
   if (!token) {
     return <div style={{ padding: 24 }}>Please log in first.</div>;
@@ -75,6 +80,25 @@ export default function AdminPage() {
             ? `Trigger rollover → Day ${state.currentDayNumber + 1}`
             : "Start the games"}
         </button>
+      </section>
+
+      <section style={{ padding: 16, background: C.white, borderRadius: 12, marginBottom: 16 }}>
+        <h3 style={{ marginTop: 0 }}>Suggestions awaiting draft ({proposed.length})</h3>
+        {proposed.length === 0 ? (
+          <div style={{ fontSize: 13, color: C.textBody }}>No new suggestions.</div>
+        ) : (
+          proposed.map((s) => <ProposedRow key={s._id} suggestion={s} isAdmin={true} />)
+        )}
+        {voting.length > 0 && (
+          <>
+            <h3 style={{ marginTop: 16 }}>Currently voting ({voting.length})</h3>
+            {voting.map((s) => (
+              <div key={s._id} style={{ padding: 8, fontSize: 13 }}>
+                {s.title} — {s.points} pts · 👍 {s.yesCount} 👎 {s.noCount}
+              </div>
+            ))}
+          </>
+        )}
       </section>
 
       <section style={{ padding: 16, background: C.white, borderRadius: 12 }}>

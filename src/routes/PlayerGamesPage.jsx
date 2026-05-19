@@ -9,6 +9,8 @@ import { useGameState } from "../lib/useGameState.js";
 import { C } from "../data/colors.js";
 import BottomNav from "../components/BottomNav.jsx";
 import ChallengesSection from "../components/ChallengesSection.jsx";
+import ProposeForm from "../components/ProposeForm.jsx";
+import VotingRow from "../components/VotingRow.jsx";
 
 function daysRemaining() {
   // Today is during the trip. TRIP_END_DAY is the day number in May (e.g. 29).
@@ -89,6 +91,11 @@ export default function PlayerGamesPage() {
   const holidayRow = holiday.find((r) => r.slug === slug);
   const rank = holiday.findIndex((r) => r.slug === slug);
 
+  const allSuggestions = useQuery(api.suggestions.list, {}) ?? [];
+  const myVoting = allSuggestions.filter((s) => s.status === "voting" && s.proposerSlug !== slug);
+  const myProposed = allSuggestions.filter((s) => s.status === "proposed" && s.proposerSlug === slug);
+  const recentApproved = allSuggestions.filter((s) => s.status === "approved").slice(-3);
+
   return (
     <main style={{ minHeight: "100vh", background: C.sand }}>
       <DashboardHeader
@@ -101,6 +108,38 @@ export default function PlayerGamesPage() {
       <div style={{ padding: "0 16px" }}>
         <ChallengesSection />
       </div>
+
+      <section style={{ margin: "24px 0", padding: "0 16px" }}>
+        <h2 style={{ fontSize: 18 }}>Suggest a challenge</h2>
+        <ProposeForm />
+
+        {myProposed.length > 0 && (
+          <div style={{ marginTop: 12, padding: 10, background: C.white, borderRadius: 8 }}>
+            <div style={{ fontSize: 12, color: C.textBody, marginBottom: 4 }}>Your pending suggestions</div>
+            {myProposed.map((s) => (
+              <div key={s._id} style={{ fontSize: 13, padding: "4px 0" }}>
+                ⏳ {s.title} — awaiting admin
+              </div>
+            ))}
+          </div>
+        )}
+
+        {myVoting.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <h3 style={{ fontSize: 16, marginBottom: 8 }}>Vote on the crew's ideas</h3>
+            <div style={{ background: C.white, borderRadius: 12, overflow: "hidden" }}>
+              {myVoting.map((s) => <VotingRow key={s._id} suggestion={s} />)}
+            </div>
+          </div>
+        )}
+
+        {recentApproved.length > 0 && (
+          <div style={{ marginTop: 16, fontSize: 12, color: C.textBody }}>
+            Recently approved: {recentApproved.map((s) => s.title).join(" · ")}
+          </div>
+        )}
+      </section>
+
       <BottomNav />
     </main>
   );
