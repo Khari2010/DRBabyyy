@@ -168,3 +168,85 @@ describe("suggestions.vote", () => {
       .rejects.toThrow(/cannot vote/);
   });
 });
+
+describe("suggestions.reject", () => {
+  it("admin can reject a proposed suggestion", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "justin");
+    await seedPlayer(t, "khari", true);
+    await t.mutation(api.suggestions.create, { token: "tok-justin", title: "X" });
+    const s = await t.run((ctx) => ctx.db.query("suggestions").first());
+    await t.mutation(api.suggestions.reject, { token: "tok-khari", suggestionId: s!._id });
+    const after = await t.run((ctx) => ctx.db.get(s!._id));
+    expect(after?.status).toBe("rejected");
+  });
+
+  it("non-admin cannot reject", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "justin");
+    await seedPlayer(t, "camara");
+    await t.mutation(api.suggestions.create, { token: "tok-justin", title: "X" });
+    const s = await t.run((ctx) => ctx.db.query("suggestions").first());
+    await expect(t.mutation(api.suggestions.reject, { token: "tok-camara", suggestionId: s!._id }))
+      .rejects.toThrow(/admin only/);
+  });
+
+  it("cannot reject already-resolved suggestion", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "khari", true);
+    let sid: any;
+    await t.run(async (ctx) => {
+      sid = await ctx.db.insert("suggestions", {
+        proposerSlug: "x", title: "X", status: "approved",
+        yesCount: 5, noCount: 0, createdAt: Date.now(),
+      });
+    });
+    await expect(t.mutation(api.suggestions.reject, { token: "tok-khari", suggestionId: sid }))
+      .rejects.toThrow(/already resolved/);
+  });
+});
+
+describe("suggestions.list", () => {
+  it("returns all suggestions", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("suggestions", { proposerSlug: "a", title: "P", status: "proposed", yesCount: 0, noCount: 0, createdAt: Date.now() });
+      await ctx.db.insert("suggestions", { proposerSlug: "b", title: "V", status: "voting", yesCount: 1, noCount: 0, createdAt: Date.now() });
+    });
+    const all = await t.query(api.suggestions.list, {});
+    expect(all.length).toBe(2);
+  });
+});
+
+describe("suggestions.myVote", () => {
+  it("returns vote for token holder", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    let sid: any;
+    await t.run(async (ctx) => {
+      sid = await ctx.db.insert("suggestions", {
+        proposerSlug: "other", title: "X", status: "voting",
+        yesCount: 0, noCount: 0, createdAt: Date.now(),
+      });
+      await ctx.db.insert("suggestionVotes", {
+        suggestionId: sid, voterSlug: "kai", vote: "yes", at: Date.now(),
+      });
+    });
+    const v = await t.query(api.suggestions.myVote, { token: "tok-kai", suggestionId: sid });
+    expect(v).toBe("yes");
+  });
+
+  it("returns null when no vote cast", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    let sid: any;
+    await t.run(async (ctx) => {
+      sid = await ctx.db.insert("suggestions", {
+        proposerSlug: "other", title: "X", status: "voting",
+        yesCount: 0, noCount: 0, createdAt: Date.now(),
+      });
+    });
+    const v = await t.query(api.suggestions.myVote, { token: "tok-kai", suggestionId: sid });
+    expect(v).toBeNull();
+  });
+});

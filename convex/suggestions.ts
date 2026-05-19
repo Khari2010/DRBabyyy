@@ -114,3 +114,40 @@ export const vote = mutation({
     await ctx.db.patch(suggestionId, patch);
   },
 });
+
+export const reject = mutation({
+  args: { token: v.string(), suggestionId: v.id("suggestions") },
+  handler: async (ctx, { token, suggestionId }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+    const s = await ctx.db.get(suggestionId);
+    if (!s) throw new Error("unknown suggestion");
+    if (s.status === "approved" || s.status === "rejected") {
+      throw new Error("already resolved");
+    }
+    await ctx.db.patch(suggestionId, { status: "rejected", resolvedAt: Date.now() });
+  },
+});
+
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("suggestions").collect();
+  },
+});
+
+export const myVote = query({
+  args: { token: v.string(), suggestionId: v.id("suggestions") },
+  handler: async (ctx, { token, suggestionId }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (!session) return null;
+    const vote = await ctx.db
+      .query("suggestionVotes")
+      .withIndex("by_suggestion_and_voter", (q) => q.eq("suggestionId", suggestionId).eq("voterSlug", session.playerSlug))
+      .unique();
+    return vote?.vote ?? null;
+  },
+});
