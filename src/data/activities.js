@@ -3,10 +3,10 @@
 // `planned: false` = unplanned candidate the crew can upvote to push onto the plan.
 // Ids must be stable — they key the vote rows in Convex.
 export const ACTIVITIES = [
-  { id: "saona", name: "Saona Island", icon: "🏝️", blurb: "Full-day catamaran + speedboat to palm-lined white sand, turquoise natural pools, open bar, beachside BBQ. A 10-hour adventure.", planned: true, day: "21 May" },
-  { id: "party-boat", name: "Caribbean Party Boat", icon: "🚤", blurb: "3-hour floating party catamaran: DJ, unlimited drinks, Caribbean food, VIP stop at a natural pool.", planned: true, day: "22 May" },
+  { id: "saona", name: "Saona Island", icon: "🏝️", blurb: "Full-day catamaran + speedboat to palm-lined white sand, turquoise natural pools, open bar, beachside BBQ. A 10-hour adventure.", planned: true, day: "21 May", link: "https://www.getyourguide.com/punta-cana-l411/punta-cana-all-inclusive-trip-to-saona-island-paradise-t255497/" },
+  { id: "party-boat", name: "Caribbean Party Boat", icon: "🚤", blurb: "3-hour floating party catamaran: DJ, unlimited drinks, Caribbean food, VIP stop at a natural pool.", planned: true, day: "22 May", link: "https://www.getyourguide.com/punta-cana-l411/punta-cana-party-boat-with-snorkeling-booze-and-hip-hop-t875850/" },
   { id: "altos", name: "Altos de Chavón", icon: "🌇", blurb: "Replica 16th-century Mediterranean village above the Chavón River. Cobblestone streets, galleries, golden-hour views.", planned: true, day: "23 May" },
-  { id: "coco-bongo", name: "Coco Bongo", icon: "🎭", blurb: "Punta Cana's wildest nightlife — confetti, tribute acts, acrobats from 8pm, full club until 3am. Open bar.", planned: true, day: "23 May" },
+  { id: "coco-bongo", name: "Coco Bongo", icon: "🎭", blurb: "Punta Cana's wildest nightlife — confetti, tribute acts, acrobats from 8pm, full club until 3am. Open bar.", planned: true, day: "23 May", link: "https://www.cocobongo.com/show/punta-cana/?lang=en" },
   { id: "jellyfish", name: "Jellyfish Restaurant", icon: "🪼", blurb: "Beachfront restaurant on Bavaro Beach — fresh seafood, sunsets, upscale but laid-back.", planned: true, day: "24 May" },
   { id: "sky-dinner", name: "Dinner in the Sky", icon: "🎈", blurb: "Table suspended 50m in the air by a crane. Sunset cocktails, panoramic views, surreal.", planned: true, day: "23 May" },
 

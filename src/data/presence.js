@@ -8,6 +8,7 @@ export const PRESENCE = [
   { name: "Camara", start: 20, end: 26, color: C.green },
   { name: "Miles", start: 20, end: 25, color: C.cyan },
   { name: "Ebony", start: 17, end: 24, color: C.pink },
+  { name: "Justin", start: 18, end: 25, color: C.turquoise },
 ];
 
 export const TRIP_START_DAY = 18;

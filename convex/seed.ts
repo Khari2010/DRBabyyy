@@ -1,6 +1,6 @@
 import { internalMutation } from "./_generated/server";
 
-const V1_SLUGS = ["kai", "khari", "candice", "kyanna", "camara", "miles", "ebony"];
+const V1_SLUGS = ["kai", "khari", "candice", "kyanna", "camara", "miles", "ebony", "justin"];
 
 export const seedPlayers = internalMutation({
   args: {},

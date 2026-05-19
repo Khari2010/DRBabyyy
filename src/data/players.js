@@ -1,6 +1,6 @@
 import { C } from "./colors.js";
 
-export const MEMBERS = ["Kai", "Khari", "Candice", "Kyanna", "Camara", "Miles", "Ebony"];
+export const MEMBERS = ["Kai", "Khari", "Candice", "Kyanna", "Camara", "Miles", "Ebony", "Justin"];
 export const FULL_GROUP = MEMBERS;
 
 export const PLAYERS = [
@@ -11,9 +11,10 @@ export const PLAYERS = [
   { id: 5, num: "05", slug: "camara", name: "Camara", title: "The Messy One", role: "Never stops, never sleeps, always tries to be the main character", bio: "Gets the most drunk, will never sleep, doesn't ever want to stop partying. Three drinks deep and it's already over — says he can handle it every time, never can, and somehow always ends up in the most embarrassing situation possible.", color: C.green, emoji: "💣", avatar: "/images/avatars/camara.webp" },
   { id: 6, num: "06", slug: "miles", name: "Miles", title: "The Joker", role: "Funniest in the room, first to disappear", bio: "Always funny, always cracking people up, and might just vanish into thin air halfway through the night. Will have everyone crying laughing at dinner then completely disappear by midnight with zero explanation.", color: C.cyan, emoji: "🃏", avatar: "/images/avatars/miles.webp" },
   { id: 7, num: "07", slug: "ebony", name: "Ebony", title: "The UV Babe", role: "Pretty face, killer figure, lives by the UV index", bio: "Pretty face, killer figure, and permanently checking the UV levels for the perfect tanning window. Lives for a good sunset and brings the kind of energy that flips the whole vibe of a holiday.", color: C.pink, emoji: "🌅", avatar: "/images/avatars/ebony.webp" },
+  { id: 8, num: "08", slug: "justin", name: "Justin", title: "The Flow State", role: "Brought in to push everyone past their limits", bio: "An unknown to most of the group, but specifically here to help every person reach their maximum flow state. Won't stop joking, won't stop drinking, won't stop partying — and somehow drags the whole crew along for the ride.", color: C.turquoise, emoji: "🌀", avatar: "/images/avatars/justin.webp" },
 ];
 
 // Slugs that appear in the login picker and have private pages in v1.
-export const V1_LOGIN_SLUGS = ["kai", "khari", "candice", "kyanna", "camara", "miles", "ebony"];
+export const V1_LOGIN_SLUGS = ["kai", "khari", "candice", "kyanna", "camara", "miles", "ebony", "justin"];
 
 export const playerBySlug = (slug) => PLAYERS.find((p) => p.slug === slug) ?? null;

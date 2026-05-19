@@ -223,6 +223,35 @@ function ActivityCard({ activity, myVote, likers, dislikers, onVote }) {
           <span>👎</span>
           <span>{dislikers.length}</span>
         </button>
+        {activity.link && (
+          <a
+            href={activity.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              background: `${accent}15`,
+              color: accent,
+              border: "none",
+              borderRadius: 14,
+              padding: "6px 14px",
+              minHeight: 34,
+              fontFamily: "Nunito, sans-serif",
+              fontWeight: 800,
+              fontSize: 11,
+              letterSpacing: 0.5,
+              textTransform: "uppercase",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              textDecoration: "none",
+              transition: "all 0.3s ease",
+            }}
+          >
+            <span>Details</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        )}
       </div>
 
       {(likers.length > 0 || dislikers.length > 0) && (
