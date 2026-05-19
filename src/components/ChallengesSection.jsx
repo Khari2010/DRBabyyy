@@ -44,9 +44,22 @@ export default function ChallengesSection() {
 
   return (
     <section style={{ margin: "16px 0" }}>
-      <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(20px, 4vw, 28px)", lineHeight: 1.2, color: C.dark, margin: "0 0 12px" }}>
-        Challenges — Day {currentDayNumber}
-      </h2>
+      {gamesLive ? (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{
+            fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11,
+            letterSpacing: 3, textTransform: "uppercase", color: C.gold, marginBottom: 4,
+          }}>
+            Day {currentDayNumber} · The hunt
+          </div>
+          <div style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: "clamp(22px, 5vw, 30px)", color: C.dark, lineHeight: 1.1,
+          }}>
+            What did you just do?
+          </div>
+        </div>
+      ) : null}
       <div style={{ display: "flex", gap: 8, margin: "12px 0" }}>
         {["easy", "medium", "wild"].map((d) => (
           <Pill

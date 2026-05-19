@@ -15,6 +15,7 @@ import SectionHeader from "../components/SectionHeader.jsx";
 import Reveal from "../components/Reveal.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ChallengesSection from "../components/ChallengesSection.jsx";
+import TodaysClaims from "../components/TodaysClaims.jsx";
 import ProposeForm from "../components/ProposeForm.jsx";
 import VotingRow from "../components/VotingRow.jsx";
 
@@ -133,6 +134,9 @@ export default function PlayerGamesPage() {
           />
         </Reveal>
         <Reveal delay={0.05}>
+          <TodaysClaims />
+        </Reveal>
+        <Reveal delay={0.1}>
           <ChallengesSection />
         </Reveal>
       </SectionBand>
