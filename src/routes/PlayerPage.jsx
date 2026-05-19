@@ -285,25 +285,8 @@ export default function PlayerPage() {
         <AboutYourHoliday player={player} myFlights={myFlights} defaultCollapsed />
       </section>
 
-      {/* ── ADVENTURES ───────────────────────────────────────────────────── */}
-      <section id="adventures" style={{ padding: "80px 0 60px", background: C.sand }}>
-        <Reveal>
-          <SectionHeader
-            label="The Plan"
-            title="Adventure Map"
-            tagline="Like what you're into. Dislike what you'd skip. Votes shape the trip."
-            accent={C.coralDeep}
-          />
-        </Reveal>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
-          <Reveal delay={0.1}>
-            <AdventuresPanel mySlug={slug} allVotes={allVotes} onVote={castVote} />
-          </Reveal>
-        </div>
-      </section>
-
       {/* ── ITINERARY ────────────────────────────────────────────────────── */}
-      <section id="itinerary" style={{ padding: "80px 0 60px", background: C.white }}>
+      <section id="itinerary" style={{ padding: "80px 0 60px", background: C.sand }}>
         <Reveal>
           <SectionHeader
             label="The Squad Phase · 18–25 May"
@@ -315,6 +298,23 @@ export default function PlayerPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
           <Reveal delay={0.1}>
             <YourItineraryHome player={player} />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── ADVENTURES ───────────────────────────────────────────────────── */}
+      <section id="adventures" style={{ padding: "80px 0 60px", background: C.white }}>
+        <Reveal>
+          <SectionHeader
+            label="The Plan"
+            title="Adventure Map"
+            tagline="Like what you're into. Dislike what you'd skip. Votes shape the trip."
+            accent={C.coralDeep}
+          />
+        </Reveal>
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
+          <Reveal delay={0.1}>
+            <AdventuresPanel mySlug={slug} allVotes={allVotes} onVote={castVote} />
           </Reveal>
         </div>
       </section>
