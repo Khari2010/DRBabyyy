@@ -56,6 +56,9 @@ export const getRecentActivity = query({
       mySlug = session?.playerSlug ?? null;
     }
 
+    const allChallenges = await ctx.db.query("challenges").collect();
+    const challengeMap = new Map(allChallenges.map((c) => [c.challengeId, c]));
+
     return await Promise.all(sorted.map(async (e) => {
       let myReaction: "vouch" | "dispute" | null = null;
       if (mySlug) {
@@ -68,10 +71,7 @@ export const getRecentActivity = query({
       let label = "";
       let labelIcon = "";
       if (e.type === "challenge" && e.challengeId) {
-        const challenge = await ctx.db
-          .query("challenges")
-          .withIndex("by_challenge_id", (q) => q.eq("challengeId", e.challengeId!))
-          .unique();
+        const challenge = challengeMap.get(e.challengeId);
         label = challenge?.title ?? e.challengeId;
         labelIcon = challenge?.icon ?? "";
       } else if (e.type === "negative" && e.negativeId) {

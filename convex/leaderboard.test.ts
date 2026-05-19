@@ -160,5 +160,6 @@ describe("leaderboard.getRecentActivity joined labels", () => {
     });
     const rows = await t.query(api.leaderboard.getRecentActivity, { limit: 10 });
     expect(rows[0].label).toBe("deleted-challenge");
+    expect(rows[0].labelIcon).toBe("");
   });
 });
