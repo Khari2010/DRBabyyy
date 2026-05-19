@@ -4,6 +4,8 @@ import { api } from "../../convex/_generated/api";
 import { useGameState } from "../lib/useGameState.js";
 import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
+import EntryRow from "../components/EntryRow.jsx";
+import { useSession } from "../lib/useSession.js";
 
 function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
@@ -43,6 +45,11 @@ function BoardRow({ row, rank }) {
 export default function LeaderboardPage() {
   const [tab, setTab] = useState("daily");
   const { currentDailyKey, currentDayNumber, gamesLive } = useGameState();
+  const session = useSession();
+  const activity = useQuery(
+    api.leaderboard.getRecentActivity,
+    session?.token ? { limit: 12, token: session.token } : { limit: 12 }
+  ) ?? [];
   const daily = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey }) ?? [];
   const holiday = useQuery(api.leaderboard.getHoliday, {}) ?? [];
   const rows = tab === "daily" ? daily : holiday;
@@ -82,6 +89,15 @@ export default function LeaderboardPage() {
           rows.map((row, i) => <BoardRow key={row.slug} row={row} rank={i + 1} />)
         )}
       </div>
+
+      <section style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 18 }}>Recent activity</h2>
+        <div style={{ background: C.white, borderRadius: 12, overflow: "hidden" }}>
+          {activity.length === 0
+            ? <div style={{ padding: 20, textAlign: "center", color: C.textBody }}>Nothing yet</div>
+            : activity.map((e) => <EntryRow key={e._id} entry={e} />)}
+        </div>
+      </section>
     </main>
   );
 }
