@@ -125,3 +125,40 @@ export const listAll = query({
     return await ctx.db.query("rollovers").collect();
   },
 });
+
+export const undoLast = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+    const state = await getGameState(ctx);
+    if (!state) throw new Error("gameState not seeded");
+
+    const all = await ctx.db.query("rollovers").collect();
+    if (all.length === 0) throw new Error("no rollovers to undo");
+
+    // The "most recent" is the highest dayNumber row.
+    const sorted = all.sort((a, b) => b.dayNumber - a.dayNumber);
+    const last = sorted[0];
+
+    await ctx.db.delete(last._id);
+
+    if (last.dayNumber === 1) {
+      // Undoing the kickoff → back to pre-trip
+      await ctx.db.patch(state._id, {
+        gamesLive: false,
+        currentDayNumber: 0,
+        currentDailyKey: "pre-trip",
+        updatedAt: Date.now(),
+      });
+    } else {
+      // Undoing day N → back to day N-1
+      const prev = last.dayNumber - 1;
+      await ctx.db.patch(state._id, {
+        currentDayNumber: prev,
+        currentDailyKey: `day-${prev}`,
+        updatedAt: Date.now(),
+      });
+    }
+  },
+});

@@ -129,3 +129,45 @@ describe("rollovers.get", () => {
     expect(r).toBeNull();
   });
 });
+
+describe("rollovers.undoLast", () => {
+  it("removes the most recent rollover and reverses gameState to previous day", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" }); // kickoff → Day 1
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" }); // close Day 1 → Day 2
+    await t.mutation(api.rollovers.undoLast, { token: "tok-khari" });
+    const state = await t.run((ctx) => ctx.db.query("gameState").first());
+    expect(state?.currentDayNumber).toBe(1);
+    expect(state?.currentDailyKey).toBe("day-1");
+    expect(state?.gamesLive).toBe(true);
+  });
+
+  it("undoLast on the kickoff returns to pre-trip", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await t.mutation(api.rollovers.undoLast, { token: "tok-khari" });
+    const state = await t.run((ctx) => ctx.db.query("gameState").first());
+    expect(state?.gamesLive).toBe(false);
+    expect(state?.currentDayNumber).toBe(0);
+    expect(state?.currentDailyKey).toBe("pre-trip");
+    const rows = await t.run((ctx) => ctx.db.query("rollovers").collect());
+    expect(rows.length).toBe(0);
+  });
+
+  it("rejects non-admin", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await expect(t.mutation(api.rollovers.undoLast, { token: "tok-camara" }))
+      .rejects.toThrow(/admin only/);
+  });
+
+  it("rejects when no rollovers exist", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await expect(t.mutation(api.rollovers.undoLast, { token: "tok-khari" }))
+      .rejects.toThrow(/no rollovers to undo/);
+  });
+});
