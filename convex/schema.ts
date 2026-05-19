@@ -141,4 +141,30 @@ export default defineSchema({
     text: v.string(),
     createdAt: v.number(),
   }).index("by_activity", ["activityId"]),
+
+  activitySuggestions: defineTable({
+    proposerSlug: v.string(),
+    title: v.string(),
+    notes: v.optional(v.string()),
+    category: v.optional(v.string()),
+    cost: v.optional(v.string()),
+    status: v.union(
+      v.literal("proposed"),
+      v.literal("voting"),
+      v.literal("approved"),
+      v.literal("rejected"),
+    ),
+    yesCount: v.number(),
+    noCount: v.number(),
+    createdAt: v.number(),
+    draftedAt: v.optional(v.number()),
+    resolvedAt: v.optional(v.number()),
+  }).index("by_status", ["status"]),
+
+  activitySuggestionVotes: defineTable({
+    suggestionId: v.id("activitySuggestions"),
+    voterSlug: v.string(),
+    vote: v.union(v.literal("yes"), v.literal("no")),
+    at: v.number(),
+  }).index("by_suggestion_and_voter", ["suggestionId", "voterSlug"]),
 });
