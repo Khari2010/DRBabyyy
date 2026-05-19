@@ -4,8 +4,35 @@ import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
 import { useGameState } from "../lib/useGameState.js";
 import { C } from "../data/colors.js";
+import { RADIUS, MICRO_LABEL, BODY } from "../data/design.js";
+import SectionBand from "../components/primitives/SectionBand.jsx";
+import Card from "../components/primitives/Card.jsx";
+import SectionHeader from "../components/SectionHeader.jsx";
+import Reveal from "../components/Reveal.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ProposedRow from "../components/ProposedRow.jsx";
+
+const ACCENT = C.coralDeep;
+
+function ActionButton({ onClick, variant = "primary", children, disabled }) {
+  const base = {
+    width: "100%", padding: "12px 16px", borderRadius: RADIUS.md,
+    fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 14,
+    letterSpacing: 0.3, cursor: disabled ? "default" : "pointer",
+    border: 0, opacity: disabled ? 0.5 : 1,
+  };
+  const variants = {
+    primary: { background: C.green, color: C.white },
+    secondary: { background: "transparent", color: C.coralDeep, border: `1.5px solid ${C.coralDeep}` },
+    danger: { background: "transparent", color: C.coralDeep, border: `2px solid ${C.coralDeep}` },
+  };
+  return (
+    <button type="button" onClick={onClick} disabled={disabled}
+      style={{ ...base, ...variants[variant] }}>
+      {children}
+    </button>
+  );
+}
 
 export default function AdminPage() {
   const session = useSession();
@@ -22,10 +49,35 @@ export default function AdminPage() {
   const voting = allSuggestions.filter((s) => s.status === "voting");
 
   if (!token) {
-    return <div style={{ padding: 24 }}>Please log in first.</div>;
+    return (
+      <div style={{ minHeight: "100vh", background: C.sand }}>
+        <SectionBand bg="sand" innerMaxWidth={520}>
+          <Card><div style={{ ...BODY, textAlign: "center" }}>Please log in first.</div></Card>
+        </SectionBand>
+        <BottomNav />
+      </div>
+    );
   }
-  if (isAdmin === undefined) return <div style={{ padding: 24 }}>Loading…</div>;
-  if (isAdmin === false) return <div style={{ padding: 24 }}>Admins only. Nice try.</div>;
+  if (isAdmin === undefined) {
+    return (
+      <div style={{ minHeight: "100vh", background: C.sand }}>
+        <SectionBand bg="sand" innerMaxWidth={520}>
+          <Card><div style={{ ...BODY, textAlign: "center" }}>Loading…</div></Card>
+        </SectionBand>
+        <BottomNav />
+      </div>
+    );
+  }
+  if (isAdmin === false) {
+    return (
+      <div style={{ minHeight: "100vh", background: C.sand }}>
+        <SectionBand bg="sand" innerMaxWidth={520}>
+          <Card><div style={{ ...BODY, textAlign: "center" }}>Admins only. Nice try.</div></Card>
+        </SectionBand>
+        <BottomNav />
+      </div>
+    );
+  }
 
   const handleRollover = async () => {
     const label = state.gamesLive
@@ -33,10 +85,9 @@ export default function AdminPage() {
       : "Start the games (Day 1)?";
     if (!window.confirm(label)) return;
     const wasLive = state.gamesLive;
-    const closingDay = state.currentDayNumber;
     try {
       await trigger({ token });
-      if (wasLive) navigate(`/leaderboard`);
+      if (wasLive) navigate("/leaderboard");
     } catch (err) {
       alert(err.message);
     }
@@ -44,15 +95,11 @@ export default function AdminPage() {
 
   const handleUndo = async () => {
     if (!window.confirm("Undo the last rollover? This deletes the most recent rollover row.")) return;
-    try {
-      await undoLast({ token });
-    } catch (err) {
-      alert(err.message);
-    }
+    try { await undoLast({ token }); } catch (err) { alert(err.message); }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("⚠️ WIPE all entries, vouches, rollovers, suggestions, and reset to pre-trip. Use this to clear practice data before the real games start. Continue?")) return;
+    if (!window.confirm("⚠️ WIPE all entries, vouches, rollovers, suggestions, and reset to pre-trip. Continue?")) return;
     try {
       await resetGame({ token });
       alert("Practice data wiped. Game state is now pre-trip.");
@@ -62,71 +109,99 @@ export default function AdminPage() {
   };
 
   return (
-    <main style={{ maxWidth: 480, margin: "0 auto", padding: 16 }}>
-      <h1>Admin Console</h1>
+    <div style={{ minHeight: "100vh", background: C.sand }}>
+      <SectionBand bg="sand" pad="40px 0 24px" innerMaxWidth={520}>
+        <Reveal>
+          <SectionHeader
+            label="Backstage"
+            title="Admin Console"
+            accent={ACCENT}
+            compact
+          />
+        </Reveal>
 
-      <section style={{ padding: 16, background: C.white, borderRadius: 12, marginBottom: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Game state</h3>
-        <div>Status: {state.gamesLive ? `● LIVE (Day ${state.currentDayNumber})` : "○ Pre-trip"}</div>
-        <button
-          type="button"
-          onClick={handleRollover}
-          style={{
-            marginTop: 12, padding: 12, width: "100%", borderRadius: 8,
-            background: C.green, color: C.white, border: 0, fontWeight: 700, cursor: "pointer",
-          }}
-        >
-          {state.gamesLive
-            ? `Trigger rollover → Day ${state.currentDayNumber + 1}`
-            : "Start the games"}
-        </button>
-      </section>
+        <Reveal>
+          <Card style={{ marginBottom: 16 }}>
+            <div style={{ ...MICRO_LABEL, color: ACCENT, marginBottom: 6 }}>Game state</div>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 22, color: C.dark, marginBottom: 4 }}>
+              {state.gamesLive ? `● LIVE · Day ${state.currentDayNumber}` : "○ Pre-trip"}
+            </div>
+            <div style={{ ...BODY, fontSize: 13, marginBottom: 14 }}>
+              {state.gamesLive
+                ? "Tap to lock today's scores and reveal the loser."
+                : "Tap to kick off Day 1 and unlock claiming."}
+            </div>
+            <ActionButton onClick={handleRollover} variant="primary">
+              {state.gamesLive
+                ? `Trigger rollover → Day ${state.currentDayNumber + 1}`
+                : "Start the games"}
+            </ActionButton>
+          </Card>
+        </Reveal>
+      </SectionBand>
 
-      <section style={{ padding: 16, background: C.white, borderRadius: 12, marginBottom: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Suggestions awaiting draft ({proposed.length})</h3>
-        {proposed.length === 0 ? (
-          <div style={{ fontSize: 13, color: C.textBody }}>No new suggestions.</div>
-        ) : (
-          proposed.map((s) => <ProposedRow key={s._id} suggestion={s} isAdmin={true} />)
-        )}
-        {voting.length > 0 && (
-          <>
-            <h3 style={{ marginTop: 16 }}>Currently voting ({voting.length})</h3>
-            {voting.map((s) => (
-              <div key={s._id} style={{ padding: 8, fontSize: 13 }}>
-                {s.title} — {s.points} pts · 👍 {s.yesCount} 👎 {s.noCount}
+      <SectionBand bg="white" pad="32px 0" innerMaxWidth={520}>
+        <Reveal>
+          <SectionHeader
+            label="Crowdsource"
+            title="Suggestions"
+            accent={C.coral}
+            compact
+          />
+        </Reveal>
+        <Reveal>
+          <Card style={{ marginBottom: 16 }}>
+            <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 8 }}>
+              Awaiting draft ({proposed.length})
+            </div>
+            {proposed.length === 0 ? (
+              <div style={{ ...BODY, fontSize: 13 }}>No new suggestions.</div>
+            ) : (
+              proposed.map((s) => <ProposedRow key={s._id} suggestion={s} isAdmin={true} />)
+            )}
+            {voting.length > 0 && (
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.sandDark}` }}>
+                <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 8 }}>
+                  Currently voting ({voting.length})
+                </div>
+                {voting.map((s) => (
+                  <div key={s._id} style={{
+                    padding: "6px 0", fontFamily: "Nunito, sans-serif", fontSize: 13,
+                  }}>
+                    {s.title} — {s.points} pts · 👍 {s.yesCount} 👎 {s.noCount}
+                  </div>
+                ))}
               </div>
-            ))}
-          </>
-        )}
-      </section>
+            )}
+          </Card>
+        </Reveal>
+      </SectionBand>
 
-      <section style={{ padding: 16, background: C.white, borderRadius: 12 }}>
-        <h3 style={{ marginTop: 0 }}>Edge actions</h3>
-        <button
-          type="button"
-          onClick={handleUndo}
-          style={{
-            padding: 10, width: "100%", borderRadius: 8,
-            border: `1px solid ${C.coralDeep}`, color: C.coralDeep, background: "transparent",
-            cursor: "pointer",
-          }}
-        >
-          Undo last rollover
-        </button>
-        <button
-          type="button"
-          onClick={handleReset}
-          style={{
-            marginTop: 8, padding: 10, width: "100%", borderRadius: 8,
-            border: `2px solid ${C.coralDeep}`, color: C.coralDeep, background: "transparent",
-            fontWeight: 700, cursor: "pointer",
-          }}
-        >
-          ⚠️ Reset practice data
-        </button>
-      </section>
+      <SectionBand bg="sand" pad="32px 0 80px" innerMaxWidth={520}>
+        <Reveal>
+          <SectionHeader
+            label="Caution"
+            title="Edge actions"
+            accent={C.coralDeep}
+            tagline="Reversal and reset tools — use carefully."
+            compact
+          />
+        </Reveal>
+        <Reveal>
+          <Card>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <ActionButton onClick={handleUndo} variant="secondary">
+                Undo last rollover
+              </ActionButton>
+              <ActionButton onClick={handleReset} variant="danger">
+                ⚠️ Reset practice data
+              </ActionButton>
+            </div>
+          </Card>
+        </Reveal>
+      </SectionBand>
+
       <BottomNav />
-    </main>
+    </div>
   );
 }
