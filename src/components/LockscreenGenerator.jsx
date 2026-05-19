@@ -209,11 +209,14 @@ export default function LockscreenGenerator({
       drawLockscreen(ctx, nameForDraw, avatarImg, accent);
       setReady(true);
     };
-    run();
+    if (!collapsed) {
+      setReady(false);
+      run();
+    }
     return () => {
       cancelled = true;
     };
-  }, [nameForDraw, avatarUrl, accent]);
+  }, [nameForDraw, avatarUrl, accent, collapsed]);
 
   const handleDownload = async () => {
     const canvas = canvasRef.current;
