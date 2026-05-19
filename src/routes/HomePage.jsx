@@ -238,49 +238,6 @@ const StickyNav = () => {
   );
 };
 
-const Countdown = ({ loaded }) => {
-  const [now, setNow] = useState(new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const target = new Date("2026-05-18T11:00:00+01:00");
-  const diff = target - now;
-
-  if (diff <= 0) {
-    return (
-      <div style={{ opacity: loaded ? 1 : 0, transition: "all 0.6s ease 0.7s", marginTop: 24 }}>
-        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(20px, 5vw, 32px)", color: C.yellow, textShadow: `0 0 30px ${C.yellow}66` }}>
-          WE OUT HERE
-        </div>
-      </div>
-    );
-  }
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const mins = Math.floor((diff / (1000 * 60)) % 60);
-  const secs = Math.floor((diff / 1000) % 60);
-
-  const units = [
-    { val: days, label: "days" },
-    { val: hours, label: "hrs" },
-    { val: mins, label: "min" },
-    { val: secs, label: "sec" },
-  ];
-
-  return (
-    <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24, opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s ease 0.7s" }}>
-      {units.map((u) => (
-        <div key={u.label} style={{ textAlign: "center", background: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderRadius: 14, padding: "10px 12px", minWidth: 56 }}>
-          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 22, color: C.white, lineHeight: 1 }}>{String(u.val).padStart(2, "0")}</div>
-          <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>{u.label}</div>
-        </div>
-      ))}
-    </div>
-  );
-};
 
 const ProfileCard = ({ player, index, onOpen, holidayMap }) => (
   <Reveal delay={index * 0.08} style={{ flex: "0 0 auto" }}>
@@ -828,7 +785,14 @@ export default function HomePage() {
           <h1 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(52px, 14vw, 110px)", lineHeight: 0.9, color: C.white, opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s", textShadow: `4px 4px 0 ${C.coral}66` }}>PUNTA</h1>
           <h1 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(52px, 14vw, 110px)", lineHeight: 0.9, background: `linear-gradient(135deg, ${C.yellow}, ${C.coral}, ${C.turquoise})`, backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s", animation: loaded ? "shimmer 5s linear infinite" : "none" }}>CANA</h1>
           <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.8)", marginTop: 20, letterSpacing: 0.5, opacity: loaded ? 1 : 0, transition: "all 0.6s ease 0.6s" }}>6 friends. 12 days. 1 island. No mercy.</p>
-          <Countdown loaded={loaded} />
+          <div style={{
+            textAlign: "center", color: C.white,
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: "clamp(24px, 6vw, 40px)", lineHeight: 1.1,
+            margin: "24px 0",
+          }}>
+            We're in Punta Cana.
+          </div>
           <div style={{ marginTop: 32, fontSize: 20, color: "rgba(255,255,255,0.4)", animation: loaded ? "float 3s ease-in-out infinite" : "none", opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 1s" }}>↓</div>
         </div>
       </section>
