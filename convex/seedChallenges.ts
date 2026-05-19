@@ -58,3 +58,19 @@ export const seedGameState = internalMutation({
     }
   },
 });
+
+export const retireChallengeIds = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const idsToRetire = ["gianni-bike"];
+    for (const id of idsToRetire) {
+      const existing = await ctx.db
+        .query("challenges")
+        .withIndex("by_challenge_id", (q) => q.eq("challengeId", id))
+        .unique();
+      if (existing && existing.status === "active") {
+        await ctx.db.patch(existing._id, { status: "retired" });
+      }
+    }
+  },
+});
