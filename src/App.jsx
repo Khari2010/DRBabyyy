@@ -7,6 +7,7 @@ import AdminPage from "./routes/AdminPage.jsx";
 import StyleGuide from "./routes/StyleGuide.jsx";
 import SuggestionsPage from "./routes/SuggestionsPage.jsx";
 import PunishmentRevealPage from "./routes/PunishmentRevealPage.jsx";
+import PlayerGamesPage from "./routes/PlayerGamesPage.jsx";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/player/:slug" element={<PlayerPage />} />
+        <Route path="/player/:slug/games" element={<PlayerGamesPage />} />
         <Route path="/games" element={<GamesPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/admin" element={<AdminPage />} />

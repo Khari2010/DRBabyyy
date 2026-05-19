@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -8,7 +8,6 @@ import { flightsForPlayer } from "../data/flights.js";
 import { C } from "../data/colors.js";
 import AdventuresPanel from "../components/AdventuresPanel.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
-import GamesOverview from "../components/GamesOverview.jsx";
 import AboutYourHoliday from "../components/AboutYourHoliday.jsx";
 import HolidayNameEditor from "../components/HolidayNameEditor.jsx";
 import LockscreenGenerator from "../components/LockscreenGenerator.jsx";
@@ -17,106 +16,7 @@ import YourItineraryHome from "../components/YourItineraryHome.jsx";
 import TheCrew from "../components/TheCrew.jsx";
 import Reveal from "../components/Reveal.jsx";
 import PlayerStickyNav from "../components/PlayerStickyNav.jsx";
-import ChallengeCard from "../components/ChallengeCard.jsx";
-import ClaimModal from "../components/ClaimModal.jsx";
-import { useGameState } from "../lib/useGameState.js";
-import { useSession } from "../lib/useSession.js";
 import BottomNav from "../components/BottomNav.jsx";
-
-function ChallengesSection() {
-  const { gamesLive, currentDayNumber } = useGameState();
-  const challenges = useQuery(api.challenges.listActive) ?? [];
-  const session = useSession();
-  const activity = useQuery(
-    api.leaderboard.getRecentActivity,
-    session?.token ? { limit: 50, token: session.token } : "skip"
-  ) ?? [];
-  const mySlug = session?.slug;
-  const mine = activity.filter((e) => e.subjectSlug === mySlug);
-  const [active, setActive] = useState(null);
-  const [tab, setTab] = useState("easy");
-
-  if (!gamesLive) {
-    return (
-      <section style={{ padding: 16, background: "#FEF9EF", borderRadius: 12, margin: "16px 0" }}>
-        <strong>Games kick off after breakfast (Day 1).</strong>
-        <p style={{ marginTop: 4, color: "#4A4A6A" }}>
-          Once Khari or Kai pulls the trigger, this is where you'll claim challenges.
-        </p>
-      </section>
-    );
-  }
-
-  const byDifficulty = {
-    easy: challenges.filter((c) => c.difficulty === "easy"),
-    medium: challenges.filter((c) => c.difficulty === "medium"),
-    wild: challenges.filter((c) => c.difficulty === "wild"),
-  };
-
-  return (
-    <section style={{ margin: "16px 0" }}>
-      <h2>Challenges — Day {currentDayNumber}</h2>
-      <div style={{ display: "flex", gap: 8, margin: "12px 0" }}>
-        {["easy", "medium", "wild"].map((d) => (
-          <button
-            key={d}
-            type="button"
-            onClick={() => setTab(d)}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 999,
-              background: tab === d ? "#1A1A2E" : "transparent",
-              color: tab === d ? "#FFF" : "#1A1A2E",
-              border: "1px solid #1A1A2E",
-              textTransform: "capitalize",
-              cursor: "pointer",
-            }}
-          >
-            {d} ({byDifficulty[d].length})
-          </button>
-        ))}
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>
-        {byDifficulty[tab].map((c) => (
-          <ChallengeCard key={c.challengeId} challenge={c} onClaim={setActive} />
-        ))}
-      </div>
-      {active !== null && <ClaimModal challenge={active} onClose={() => setActive(null)} />}
-      {mine.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 16, marginBottom: 8 }}>My recent</h3>
-          <div style={{ background: "#FFFFFF", borderRadius: 12, overflow: "hidden" }}>
-            {mine.map((e) => (
-              <div
-                key={e._id}
-                style={{
-                  padding: 10,
-                  borderBottom: "1px solid #F5EDE0",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  opacity: e.status === "disputed" ? 0.5 : 1,
-                  textDecoration: e.status === "disputed" ? "line-through" : "none",
-                }}
-              >
-                <span>
-                  {e.type === "challenge"
-                    ? (e.challengeId ?? "?")
-                    : `foul: ${e.negativeId ?? "?"}`}
-                </span>
-                <span style={{ fontWeight: 600 }}>
-                  {e.points >= 0 ? "+" : ""}{e.points}
-                  {e.status === "verified" ? " 🛡" : ""}
-                  {e.status === "disputed" ? " ⚠️" : ""}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
 
 // Ensure the Google Fonts link + shared keyframes are loaded once (matches
 // what HomePage does in its own effect). These are required because the
@@ -452,23 +352,6 @@ export default function PlayerPage() {
         <AboutYourHoliday player={player} myFlights={myFlights} />
       </section>
 
-      {/* ── CHALLENGES ───────────────────────────────────────────────────── */}
-      <section id="challenges" style={{ padding: "60px 0 40px", background: C.sand }}>
-        <Reveal>
-          <SectionHeader
-            label="Daily Challenges"
-            title="Claim Your Points"
-            tagline="Complete challenges, earn points, climb the board."
-            accent={C.gold}
-          />
-        </Reveal>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
-          <Reveal delay={0.1}>
-            <ChallengesSection />
-          </Reveal>
-        </div>
-      </section>
-
       {/* ── ADVENTURES ───────────────────────────────────────────────────── */}
       <section id="adventures" style={{ padding: "80px 0 60px", background: C.sand }}>
         <Reveal>
@@ -503,23 +386,7 @@ export default function PlayerPage() {
         </div>
       </section>
 
-      {/* ── THE GAME (DARK band) ─────────────────────────────────────────── */}
-      <section id="game" style={{ padding: "80px 0 60px", background: C.dark }}>
-        <Reveal>
-          <SectionHeader
-            label="Earn Your Bragging Rights"
-            title="Learn the Game"
-            tagline="Points, penalties, forfeits — the whole system."
-            accent={C.gold}
-            onDark
-          />
-        </Reveal>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-          <GamesOverview />
-        </div>
-      </section>
-
-      {/* ── THE CREW (WHITE band after dark) ─────────────────────────────── */}
+      {/* ── THE CREW ─────────────────────────────────────────────────────── */}
       <section id="crew" style={{ padding: "80px 0 60px", background: C.white }}>
         <Reveal>
           <SectionHeader
