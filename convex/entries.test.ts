@@ -105,3 +105,43 @@ describe("entries.claim", () => {
     ).rejects.toThrow(/unknown challenge/);
   });
 });
+
+describe("entries.vouch", () => {
+  it("increments vouchCount and flips status to verified at 1 vouch", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "kyanna", "tok-kyanna");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      entryId = await ctx.db.insert("entries", { type: "challenge", subjectSlug: "kai", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.entries.vouch, { token: "tok-kyanna", entryId });
+    const after = await t.run((ctx) => ctx.db.get(entryId));
+    expect(after?.status).toBe("verified");
+    expect(after?.vouchCount).toBe(1);
+  });
+
+  it("rejects self-vouch", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      entryId = await ctx.db.insert("entries", { type: "challenge", subjectSlug: "kai", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await expect(t.mutation(api.entries.vouch, { token: "tok-kai", entryId }))
+      .rejects.toThrow(/cannot react to own entry/);
+  });
+
+  it("rejects double vouch by same player", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "kyanna", "tok-kyanna");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      entryId = await ctx.db.insert("entries", { type: "challenge", subjectSlug: "kai", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.entries.vouch, { token: "tok-kyanna", entryId });
+    await expect(t.mutation(api.entries.vouch, { token: "tok-kyanna", entryId }))
+      .rejects.toThrow(/already reacted/);
+  });
+});

@@ -40,3 +40,29 @@ export const claim = mutation({
     });
   },
 });
+
+export const vouch = mutation({
+  args: { token: v.string(), entryId: v.id("entries") },
+  handler: async (ctx, { token, entryId }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    const entry = await ctx.db.get(entryId);
+    if (!entry) throw new Error("unknown entry");
+    if (entry.subjectSlug === playerSlug) throw new Error("cannot react to own entry");
+
+    const existing = await ctx.db
+      .query("entryReactions")
+      .withIndex("by_entry_and_player", (q) => q.eq("entryId", entryId).eq("playerSlug", playerSlug))
+      .unique();
+    if (existing) throw new Error("already reacted");
+
+    await ctx.db.insert("entryReactions", { entryId, playerSlug, reaction: "vouch", at: Date.now() });
+
+    const newCount = entry.vouchCount + 1;
+    const patch: Record<string, any> = { vouchCount: newCount };
+    if (entry.status === "active" && newCount >= 1) {
+      patch.status = "verified";
+      patch.resolvedAt = Date.now();
+    }
+    await ctx.db.patch(entryId, patch);
+  },
+});
