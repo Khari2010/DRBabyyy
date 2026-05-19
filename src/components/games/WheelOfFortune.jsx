@@ -33,7 +33,7 @@ function buildSlice(i) {
 
 const SLICES = FORFEITS.map((_, i) => buildSlice(i));
 
-export default function WheelOfFortune() {
+export default function WheelOfFortune({ onResult } = {}) {
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState(null);
@@ -57,7 +57,11 @@ export default function WheelOfFortune() {
     if (!spinning) return;
     setSpinning(false);
     if (pendingIndex.current != null) {
-      setResult(FORFEITS[pendingIndex.current]);
+      const winner = FORFEITS[pendingIndex.current];
+      setResult(winner);
+      if (typeof onResult === "function") {
+        onResult(winner);
+      }
     }
   };
 

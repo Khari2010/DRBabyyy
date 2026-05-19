@@ -80,7 +80,7 @@ export default function TheCrew({ player, myAnswers, allAnswers, onSaveAnswer })
         >
           Tap a player to see their pre-trip answers.
         </div>
-        <CrewAnswersPanel mySlug={player.slug} allAnswers={allAnswers} />
+        {false /* questionnaire hidden — kept for future revival */ && <CrewAnswersPanel mySlug={player.slug} allAnswers={allAnswers} />}
       </div>
     </div>
   );

@@ -3,11 +3,13 @@ import { PLAYERS, V1_LOGIN_SLUGS } from "../data/players.js";
 import { QUESTIONS } from "../data/questions.js";
 import QuestionBlock from "./QuestionBlock.jsx";
 import { C } from "../data/colors.js";
+import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 
 // Home-style pill with an inline avatar (28px, 2px colour ring, no extra
 // shadow) — matches the "small avatar" treatment spec.
 export default function CrewAnswersPanel({ mySlug, allAnswers }) {
   const [expandedSlug, setExpandedSlug] = useState(null);
+  const holidayMap = useHolidayNameMap();
 
   const crew = PLAYERS.filter(
     (p) => V1_LOGIN_SLUGS.includes(p.slug) && p.slug !== mySlug,
@@ -86,7 +88,7 @@ export default function CrewAnswersPanel({ mySlug, allAnswers }) {
                   </span>
                 )}
               </span>
-              {p.name}
+              {displayName(p.slug, holidayMap)}
             </button>
           );
         })}
