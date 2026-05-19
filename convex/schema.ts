@@ -6,6 +6,7 @@ export default defineSchema({
   players: defineTable({
     slug: v.string(),
     passcodeHash: v.union(v.string(), v.null()),
+    holidayName: v.optional(v.string()),
   }).index("by_slug", ["slug"]),
 
   answers: defineTable({

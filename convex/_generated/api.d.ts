@@ -8,11 +8,21 @@
  * @module
  */
 
+import type * as _seedData_challenges from "../_seedData/challenges.js";
 import type * as activityVotes from "../activityVotes.js";
 import type * as admin from "../admin.js";
 import type * as answers from "../answers.js";
 import type * as auth from "../auth.js";
+import type * as challenges from "../challenges.js";
+import type * as entries from "../entries.js";
+import type * as gameState from "../gameState.js";
+import type * as helpers from "../helpers.js";
+import type * as leaderboard from "../leaderboard.js";
+import type * as players from "../players.js";
+import type * as rollovers from "../rollovers.js";
 import type * as seed from "../seed.js";
+import type * as seedChallenges from "../seedChallenges.js";
+import type * as suggestions from "../suggestions.js";
 
 import type {
   ApiFromModules,
@@ -21,11 +31,21 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "_seedData/challenges": typeof _seedData_challenges;
   activityVotes: typeof activityVotes;
   admin: typeof admin;
   answers: typeof answers;
   auth: typeof auth;
+  challenges: typeof challenges;
+  entries: typeof entries;
+  gameState: typeof gameState;
+  helpers: typeof helpers;
+  leaderboard: typeof leaderboard;
+  players: typeof players;
+  rollovers: typeof rollovers;
   seed: typeof seed;
+  seedChallenges: typeof seedChallenges;
+  suggestions: typeof suggestions;
 }>;
 
 /**
