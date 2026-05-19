@@ -3,6 +3,7 @@ import HomePage from "./routes/HomePage.jsx";
 import PlayerPage from "./routes/PlayerPage.jsx";
 import GamesPage from "./routes/GamesPage.jsx";
 import LeaderboardPage from "./routes/LeaderboardPage.jsx";
+import AdminPage from "./routes/AdminPage.jsx";
 import StyleGuide from "./routes/StyleGuide.jsx";
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/player/:slug" element={<PlayerPage />} />
         <Route path="/games" element={<GamesPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/admin" element={<AdminPage />} />
         <Route path="/styleguide" element={<StyleGuide />} />
       </Routes>
     </BrowserRouter>
