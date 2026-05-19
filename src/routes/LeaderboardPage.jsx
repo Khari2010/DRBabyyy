@@ -6,12 +6,13 @@ import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
 import EntryRow from "../components/EntryRow.jsx";
 import { useSession } from "../lib/useSession.js";
+import FoulModal from "../components/FoulModal.jsx";
 
 function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
 }
 
-function BoardRow({ row, rank }) {
+function BoardRow({ row, rank, onFoul }) {
   const p = playerBySlug(row.slug);
   return (
     <div style={{
@@ -38,14 +39,30 @@ function BoardRow({ row, rank }) {
       }}>
         {row.total >= 0 ? "+" : ""}{row.total}
       </div>
+      {onFoul && (
+        <button
+          type="button"
+          onClick={() => onFoul({ slug: row.slug, name: p?.name ?? row.slug })}
+          title="Log a foul"
+          style={{
+            padding: "4px 8px", marginLeft: 4, fontSize: 12,
+            borderRadius: 6, border: 0, background: C.coralDeep, color: C.white,
+            cursor: "pointer",
+          }}
+        >
+          Foul
+        </button>
+      )}
     </div>
   );
 }
 
 export default function LeaderboardPage() {
   const [tab, setTab] = useState("daily");
+  const [foulTarget, setFoulTarget] = useState(null);
   const { currentDailyKey, currentDayNumber, gamesLive } = useGameState();
   const session = useSession();
+  const handleFoul = session?.slug ? setFoulTarget : null;
   const activity = useQuery(
     api.leaderboard.getRecentActivity,
     session?.token ? { limit: 12, token: session.token } : { limit: 12 }
@@ -86,7 +103,14 @@ export default function LeaderboardPage() {
             No claims yet
           </div>
         ) : (
-          rows.map((row, i) => <BoardRow key={row.slug} row={row} rank={i + 1} />)
+          rows.map((row, i) => (
+            <BoardRow
+              key={row.slug}
+              row={row}
+              rank={i + 1}
+              onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
+            />
+          ))
         )}
       </div>
 
@@ -98,6 +122,14 @@ export default function LeaderboardPage() {
             : activity.map((e) => <EntryRow key={e._id} entry={e} />)}
         </div>
       </section>
+
+      {foulTarget && (
+        <FoulModal
+          targetSlug={foulTarget.slug}
+          targetName={foulTarget.name}
+          onClose={() => setFoulTarget(null)}
+        />
+      )}
     </main>
   );
 }
