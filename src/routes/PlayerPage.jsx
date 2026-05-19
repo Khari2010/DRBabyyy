@@ -15,7 +15,7 @@ import { useHolidayNameMap } from "../lib/displayName.js";
 import YourItineraryHome from "../components/YourItineraryHome.jsx";
 import TheCrew from "../components/TheCrew.jsx";
 import Reveal from "../components/Reveal.jsx";
-import PlayerStickyNav from "../components/PlayerStickyNav.jsx";
+import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
 // Ensure the Google Fonts link + shared keyframes are loaded once (matches
@@ -147,77 +147,7 @@ export default function PlayerPage() {
         lineHeight: 1.6,
       }}
     >
-      <PlayerStickyNav accent={player.color} />
-
-      {/* ── HERO / LOGOUT CHIP ───────────────────────────────────────────── */}
-      <div
-        style={{
-          position: "fixed",
-          top: 16,
-          right: 16,
-          zIndex: 900,
-          background: C.white,
-          borderRadius: 999,
-          padding: "6px 10px 6px 14px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          fontFamily: "Nunito, sans-serif",
-          fontWeight: 800,
-          maxWidth: "calc(100vw - 32px)",
-        }}
-      >
-        <button
-          onClick={() => navigate("/")}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: C.textBody,
-            cursor: "pointer",
-            fontWeight: 800,
-            fontSize: 13,
-            padding: "6px 4px",
-            minHeight: 32,
-          }}
-        >
-          ← Home
-        </button>
-        <span style={{ width: 1, height: 18, background: C.sandDark }} />
-        <button
-          onClick={() => navigate("/games")}
-          style={{
-            background: C.gold,
-            color: C.white,
-            border: "none",
-            borderRadius: 999,
-            cursor: "pointer",
-            fontWeight: 800,
-            fontSize: 13,
-            padding: "6px 12px",
-            minHeight: 32,
-            letterSpacing: 0.5,
-          }}
-        >
-          🎮 Games
-        </button>
-        <span style={{ width: 1, height: 18, background: C.sandDark }} />
-        <button
-          onClick={handleLogout}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: C.textBody,
-            cursor: "pointer",
-            fontWeight: 800,
-            fontSize: 13,
-            padding: "6px 4px",
-            minHeight: 32,
-          }}
-        >
-          Log out
-        </button>
-      </div>
+      <LogoutChip />
 
       {/* Hero — keeps player-colour gradient → sand, applies home's double-border avatar */}
       <section
@@ -335,6 +265,7 @@ export default function PlayerPage() {
           <LockscreenGenerator
             holidayName={holidayMap[slug]}
             legalName={player.name}
+            avatarUrl={player.avatar}
             accent={player.color}
           />
         </Reveal>

@@ -9,6 +9,7 @@ import SectionBand from "../components/primitives/SectionBand.jsx";
 import Card from "../components/primitives/Card.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
 import Reveal from "../components/Reveal.jsx";
+import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ProposedRow from "../components/ProposedRow.jsx";
 
@@ -110,6 +111,7 @@ export default function AdminPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.sand }}>
+      <LogoutChip />
       <SectionBand bg="sand" pad="40px 0 24px" innerMaxWidth={520}>
         <Reveal>
           <SectionHeader

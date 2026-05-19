@@ -14,6 +14,7 @@ import SectionHeader from "../components/SectionHeader.jsx";
 import Reveal from "../components/Reveal.jsx";
 import EntryRow from "../components/EntryRow.jsx";
 import FoulModal from "../components/FoulModal.jsx";
+import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import RevealFlow from "../components/RevealFlow.jsx";
 
@@ -108,6 +109,7 @@ export default function LeaderboardPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.sand }}>
+      <LogoutChip />
       <SectionBand bg="sand" pad="40px 0 24px" innerMaxWidth={520}>
         <Reveal>
           <SectionHeader

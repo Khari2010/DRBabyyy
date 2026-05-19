@@ -13,6 +13,7 @@ import Card from "../components/primitives/Card.jsx";
 import Avatar from "../components/primitives/Avatar.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
 import Reveal from "../components/Reveal.jsx";
+import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ChallengesSection from "../components/ChallengesSection.jsx";
 import TodaysClaims from "../components/TodaysClaims.jsx";
@@ -115,6 +116,7 @@ export default function PlayerGamesPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.sand }}>
+      <LogoutChip />
       <SectionBand bg="sand" pad="32px 0 24px" innerMaxWidth={520}>
         <Reveal>
           <DashboardHero
