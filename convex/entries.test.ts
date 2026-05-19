@@ -145,3 +145,40 @@ describe("entries.vouch", () => {
       .rejects.toThrow(/already reacted/);
   });
 });
+
+describe("entries.dispute", () => {
+  it("flips to disputed after 2 disputes", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "kyanna", "tok-kyanna");
+    await seedSession(t, "camara", "tok-camara");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      entryId = await ctx.db.insert("entries", { type: "challenge", subjectSlug: "kai", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.entries.dispute, { token: "tok-kyanna", entryId });
+    let after = await t.run((ctx) => ctx.db.get(entryId));
+    expect(after?.status).toBe("active");
+    expect(after?.disputeCount).toBe(1);
+
+    await t.mutation(api.entries.dispute, { token: "tok-camara", entryId });
+    after = await t.run((ctx) => ctx.db.get(entryId));
+    expect(after?.status).toBe("disputed");
+    expect(after?.disputeCount).toBe(2);
+  });
+
+  it("does not change status on a verified entry (verified is final)", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "kyanna", "tok-kyanna");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      entryId = await ctx.db.insert("entries", { type: "challenge", subjectSlug: "kai", challengeId: "x", points: 10, status: "verified", vouchCount: 1, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.entries.dispute, { token: "tok-kyanna", entryId });
+    const after = await t.run((ctx) => ctx.db.get(entryId));
+    // verified is final; disputeCount still increments but status stays verified
+    expect(after?.status).toBe("verified");
+    expect(after?.disputeCount).toBe(1);
+  });
+});
