@@ -304,3 +304,99 @@ describe("entries.applyForfeitDeduct", () => {
     expect(rows[0].points).toBe(-25); // -|-25| = -25
   });
 });
+
+describe("entries.unclaim", () => {
+  it("deletes my active entry created within 60s", async () => {
+    const t = convexTest(schema);
+    let entryId: string;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "khari", token: "tok-khari", createdAt: Date.now() });
+      await ctx.db.insert("gameState", { gamesLive: true, currentDayNumber: 1, currentDailyKey: "2026-05-20", updatedAt: Date.now() });
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge",
+        subjectSlug: "khari",
+        challengeId: "mamajuana",
+        points: 10,
+        status: "active",
+        vouchCount: 0,
+        disputeCount: 0,
+        dailyKey: "2026-05-20",
+        createdAt: Date.now() - 10_000,
+      });
+    });
+    await t.mutation(api.entries.unclaim, { token: "tok-khari", entryId: entryId! });
+    const remaining = await t.run((ctx) => ctx.db.query("entries").collect());
+    expect(remaining).toHaveLength(0);
+  });
+
+  it("rejects entries older than 60s", async () => {
+    const t = convexTest(schema);
+    let entryId: string;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "khari", token: "tok-khari", createdAt: Date.now() });
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge",
+        subjectSlug: "khari",
+        challengeId: "mamajuana",
+        points: 10,
+        status: "active",
+        vouchCount: 0,
+        disputeCount: 0,
+        dailyKey: "2026-05-20",
+        createdAt: Date.now() - 120_000,
+      });
+    });
+    await expect(
+      t.mutation(api.entries.unclaim, { token: "tok-khari", entryId: entryId! }),
+    ).rejects.toThrow(/too late/i);
+  });
+
+  it("rejects unclaiming someone else's entry", async () => {
+    const t = convexTest(schema);
+    let entryId: string;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("players", { slug: "camara", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "camara", token: "tok-camara", createdAt: Date.now() });
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge",
+        subjectSlug: "khari",
+        challengeId: "mamajuana",
+        points: 10,
+        status: "active",
+        vouchCount: 0,
+        disputeCount: 0,
+        dailyKey: "2026-05-20",
+        createdAt: Date.now() - 10_000,
+      });
+    });
+    await expect(
+      t.mutation(api.entries.unclaim, { token: "tok-camara", entryId: entryId! }),
+    ).rejects.toThrow(/not your entry/i);
+  });
+
+  it("rejects unclaim on verified/disputed entries", async () => {
+    const t = convexTest(schema);
+    let entryId: string;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "khari", token: "tok-khari", createdAt: Date.now() });
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge",
+        subjectSlug: "khari",
+        challengeId: "mamajuana",
+        points: 10,
+        status: "verified",
+        vouchCount: 1,
+        disputeCount: 0,
+        dailyKey: "2026-05-20",
+        createdAt: Date.now() - 10_000,
+      });
+    });
+    await expect(
+      t.mutation(api.entries.unclaim, { token: "tok-khari", entryId: entryId! }),
+    ).rejects.toThrow(/already resolved/i);
+  });
+});

@@ -142,3 +142,23 @@ export const applyForfeitDeduct = mutation({
     });
   },
 });
+
+export const unclaim = mutation({
+  args: { token: v.string(), entryId: v.id("entries") },
+  handler: async (ctx, { token, entryId }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    const entry = await ctx.db.get(entryId);
+    if (!entry) throw new Error("unknown entry");
+    if (entry.subjectSlug !== playerSlug) throw new Error("not your entry");
+    if (entry.status !== "active") throw new Error("already resolved");
+    if (Date.now() - entry.createdAt > 60_000) throw new Error("too late to undo");
+
+    const reactions = await ctx.db
+      .query("entryReactions")
+      .withIndex("by_entry", (q) => q.eq("entryId", entryId))
+      .collect();
+    for (const r of reactions) await ctx.db.delete(r._id);
+
+    await ctx.db.delete(entryId);
+  },
+});
