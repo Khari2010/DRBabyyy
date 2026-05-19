@@ -4,6 +4,8 @@ import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
 import { C } from "../data/colors.js";
+import { RADIUS, SHADOW, HEADING, BODY, MICRO_LABEL } from "../data/design.js";
+import Card from "./primitives/Card.jsx";
 
 const BONUS_RE = /^\+(\d+)\s+(\w+)$/;
 
@@ -59,21 +61,61 @@ export default function ClaimModal({ challenge, onClose }) {
     <div
       role="dialog"
       style={{
-        position: "fixed", inset: 0, background: "rgba(26,26,46,0.6)",
-        display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 100,
+        position: "fixed",
+        inset: 0,
+        background: "rgba(26,26,46,0.6)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+        zIndex: 100,
       }}
       onClick={onClose}
     >
-      <div
+      <Card
+        padding={24}
         onClick={(e) => e.stopPropagation()}
-        style={{ background: C.white, padding: 20, borderRadius: 16, maxWidth: 360, width: "100%" }}
+        style={{
+          maxWidth: 360,
+          width: "100%",
+          boxShadow: SHADOW.dramatic,
+        }}
       >
         <div style={{ fontSize: 32 }}>{challenge.icon}</div>
-        <h3 style={{ margin: "8px 0 4px", color: C.dark }}>{challenge.title}</h3>
-        <div style={{ color: C.textBody, marginBottom: 12 }}>+{challenge.points} base</div>
+
+        <h3
+          style={{
+            ...HEADING.h3,
+            margin: "8px 0 4px",
+            color: C.dark,
+          }}
+        >
+          {challenge.title}
+        </h3>
+
+        <div
+          style={{
+            ...BODY,
+            marginBottom: 12,
+          }}
+        >
+          +{challenge.points} base
+        </div>
 
         {bonusOpts.map((b) => (
-          <label key={b.key} style={{ display: "flex", gap: 8, padding: "6px 0", cursor: "pointer" }}>
+          <label
+            key={b.key}
+            style={{
+              display: "flex",
+              gap: 8,
+              padding: "6px 0",
+              cursor: "pointer",
+              fontFamily: "Nunito, sans-serif",
+              fontSize: 14,
+              color: C.textBody,
+              alignItems: "center",
+            }}
+          >
             <input
               type="checkbox"
               checked={selected.has(b.key)}
@@ -83,23 +125,57 @@ export default function ClaimModal({ challenge, onClose }) {
           </label>
         ))}
 
-        <div style={{ fontWeight: 700, margin: "12px 0", color: C.dark }}>
+        <div
+          style={{
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 800,
+            fontSize: 15,
+            margin: "12px 0",
+            color: C.dark,
+          }}
+        >
           Total: +{total}
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: 10, borderRadius: 8 }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: 1,
+              padding: "10px 14px",
+              borderRadius: RADIUS.md,
+              border: `1.5px solid ${C.sandDark}`,
+              background: "transparent",
+              fontFamily: "Nunito, sans-serif",
+              fontWeight: 700,
+              fontSize: 14,
+              color: C.textBody,
+              cursor: "pointer",
+            }}
+          >
             Cancel
           </button>
           <button
             disabled={submitting}
             onClick={handleConfirm}
-            style={{ flex: 1, padding: 10, borderRadius: 8, background: C.green, color: C.white, fontWeight: 600 }}
+            style={{
+              flex: 1,
+              padding: "10px 14px",
+              borderRadius: RADIUS.md,
+              background: C.green,
+              color: C.white,
+              border: 0,
+              fontFamily: "Nunito, sans-serif",
+              fontWeight: 800,
+              fontSize: 14,
+              cursor: submitting ? "default" : "pointer",
+              opacity: submitting ? 0.7 : 1,
+            }}
           >
             {submitting ? "..." : "I did this"}
           </button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
