@@ -88,3 +88,83 @@ describe("suggestions.draft", () => {
     })).rejects.toThrow(/cannot draft/);
   });
 });
+
+describe("suggestions.vote", () => {
+  async function setupVoting(t: ReturnType<typeof convexTest>) {
+    await seedPlayer(t, "khari", true);
+    for (const slug of ["kai", "kyanna", "candice", "camara", "miles", "ebony", "justin"]) {
+      await seedPlayer(t, slug);
+    }
+    await seedPlayer(t, "proposer");
+    await t.mutation(api.suggestions.create, { token: "tok-proposer", title: "Test" });
+    const s = await t.run((ctx) => ctx.db.query("suggestions").first());
+    await t.mutation(api.suggestions.draft, {
+      token: "tok-khari", suggestionId: s!._id, points: 25, category: "chill",
+    });
+    return s!._id;
+  }
+
+  it("counts a yes vote", async () => {
+    const t = convexTest(schema);
+    const id = await setupVoting(t);
+    await t.mutation(api.suggestions.vote, { token: "tok-kai", suggestionId: id, vote: "yes" });
+    const s = await t.run((ctx) => ctx.db.get(id));
+    expect(s?.yesCount).toBe(1);
+    expect(s?.status).toBe("voting");
+  });
+
+  it("5 yes → approved + new challenges row inserted", async () => {
+    const t = convexTest(schema);
+    const id = await setupVoting(t);
+    for (const slug of ["kai", "kyanna", "candice", "camara", "miles"]) {
+      await t.mutation(api.suggestions.vote, { token: `tok-${slug}`, suggestionId: id, vote: "yes" });
+    }
+    const s = await t.run((ctx) => ctx.db.get(id));
+    expect(s?.status).toBe("approved");
+    expect(s?.resultingChallengeId).toBeDefined();
+    const ch = await t.run((ctx) =>
+      ctx.db.query("challenges").withIndex("by_challenge_id", (q) => q.eq("challengeId", s!.resultingChallengeId!)).unique());
+    expect(ch?.title).toBe("Test");
+    expect(ch?.points).toBe(25);
+    expect(ch?.status).toBe("active");
+  });
+
+  it("5 no → rejected", async () => {
+    const t = convexTest(schema);
+    const id = await setupVoting(t);
+    for (const slug of ["kai", "kyanna", "candice", "camara", "miles"]) {
+      await t.mutation(api.suggestions.vote, { token: `tok-${slug}`, suggestionId: id, vote: "no" });
+    }
+    const s = await t.run((ctx) => ctx.db.get(id));
+    expect(s?.status).toBe("rejected");
+  });
+
+  it("rejects self-vote", async () => {
+    const t = convexTest(schema);
+    const id = await setupVoting(t);
+    await expect(t.mutation(api.suggestions.vote, { token: "tok-proposer", suggestionId: id, vote: "yes" }))
+      .rejects.toThrow(/cannot vote on own/);
+  });
+
+  it("rejects double-vote", async () => {
+    const t = convexTest(schema);
+    const id = await setupVoting(t);
+    await t.mutation(api.suggestions.vote, { token: "tok-kai", suggestionId: id, vote: "yes" });
+    await expect(t.mutation(api.suggestions.vote, { token: "tok-kai", suggestionId: id, vote: "no" }))
+      .rejects.toThrow(/already voted/);
+  });
+
+  it("rejects vote on suggestion not in voting status", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    let sid: any;
+    await t.run(async (ctx) => {
+      sid = await ctx.db.insert("suggestions", {
+        proposerSlug: "other", title: "X", status: "proposed",
+        yesCount: 0, noCount: 0, createdAt: Date.now(),
+      });
+    });
+    await expect(t.mutation(api.suggestions.vote, { token: "tok-kai", suggestionId: sid, vote: "yes" }))
+      .rejects.toThrow(/cannot vote/);
+  });
+});
