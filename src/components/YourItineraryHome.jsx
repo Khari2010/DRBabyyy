@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { DAYS } from "../data/itinerary.js";
 import { currentTripDayIndex } from "../lib/drTime.js";
 import { flightsForPlayer } from "../data/flights.js";
 import { C } from "../data/colors.js";
 import DayCommentThread from "./DayCommentThread.jsx";
+import { useSession } from "../lib/useSession.js";
 
 // Same colour + image mapping as the home page itinerary section.
 const DAY_COLORS = [
@@ -79,11 +82,11 @@ function bucketForTime(time) {
 function groupItemsByBucket(items) {
   if (!Array.isArray(items)) return {};
   const map = {};
-  for (const it of items) {
+  items.forEach((it, idx) => {
     const b = bucketForTime(it.time);
     if (!map[b]) map[b] = [];
-    map[b].push(it);
-  }
+    map[b].push({ item: it, originalIndex: idx });
+  });
   return map;
 }
 
@@ -440,6 +443,13 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
   const accent = isPresent ? player.color : color;
   const heroSrc = heroImgForDay(dayIndex);
 
+  const session = useSession();
+  const token = session?.token;
+  const mySlug = session?.slug;
+  const setRsvp = useMutation(api.itemRsvps.setItemRsvp);
+  const clearRsvp = useMutation(api.itemRsvps.clearItemRsvp);
+  const rsvps = useQuery(api.itemRsvps.rsvpsForDay, { dayDate: day.date }) ?? {};
+
   return (
     <div
       style={{
@@ -594,23 +604,71 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
                       listStyle: "none", padding: 0, margin: 0,
                       display: "flex", flexDirection: "column", gap: 8,
                     }}>
-                      {bucketItems.map((it, i) => (
-                        <li key={i} style={{
-                          display: "flex", alignItems: "baseline", gap: 8,
-                          fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.dark,
-                        }}>
-                          {it.time && (
-                            <span style={{
-                              fontWeight: 800, color: C.textBody, minWidth: 56, fontSize: 12,
-                              textTransform: "uppercase", letterSpacing: 0.5,
-                            }}>{it.time}</span>
-                          )}
-                          <span>
-                            {it.icon ? `${it.icon} ` : ""}{it.activity}
-                            {it.note && <span style={{ color: C.textBody }}> — {it.note}</span>}
-                          </span>
-                        </li>
-                      ))}
+                      {bucketItems.map(({ item: it, originalIndex }) => {
+                        const itemKey = String(originalIndex);
+                        const itemRsvps = rsvps[itemKey] ?? { in: [], out: [] };
+                        const myRsvp = itemRsvps.in.includes(mySlug) ? "in"
+                                     : itemRsvps.out.includes(mySlug) ? "out"
+                                     : null;
+
+                        const toggle = async (newStatus) => {
+                          if (!token) return;
+                          try {
+                            if (myRsvp === newStatus) {
+                              await clearRsvp({ token, dayDate: day.date, itemKey });
+                            } else {
+                              await setRsvp({ token, dayDate: day.date, itemKey, status: newStatus });
+                            }
+                          } catch (err) {
+                            alert(err.message);
+                          }
+                        };
+
+                        return (
+                          <li key={originalIndex} style={{
+                            display: "flex", flexDirection: "column", gap: 6,
+                            fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.dark,
+                            paddingBottom: 8, borderBottom: `1px dashed ${C.sandDark}`,
+                          }}>
+                            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                              {it.time && (
+                                <span style={{
+                                  fontWeight: 800, color: C.textBody, minWidth: 56, fontSize: 12,
+                                  textTransform: "uppercase", letterSpacing: 0.5,
+                                }}>{it.time}</span>
+                              )}
+                              <span style={{ flex: 1 }}>
+                                {it.icon ? `${it.icon} ` : ""}{it.activity}
+                                {it.note && <span style={{ color: C.textBody }}> — {it.note}</span>}
+                              </span>
+                            </div>
+                            {token && (
+                              <div style={{ display: "flex", gap: 6, marginLeft: 64 }}>
+                                <button type="button" onClick={() => toggle("in")}
+                                  style={{
+                                    padding: "4px 10px", borderRadius: 999, border: 0,
+                                    fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11,
+                                    cursor: "pointer",
+                                    background: myRsvp === "in" ? C.green : "rgba(0,0,0,0.05)",
+                                    color: myRsvp === "in" ? C.white : C.dark,
+                                  }}>
+                                  ✓ In ({itemRsvps.in.length})
+                                </button>
+                                <button type="button" onClick={() => toggle("out")}
+                                  style={{
+                                    padding: "4px 10px", borderRadius: 999, border: 0,
+                                    fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11,
+                                    cursor: "pointer",
+                                    background: myRsvp === "out" ? C.coralDeep : "rgba(0,0,0,0.05)",
+                                    color: myRsvp === "out" ? C.white : C.dark,
+                                  }}>
+                                  ✗ Out ({itemRsvps.out.length})
+                                </button>
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 );
