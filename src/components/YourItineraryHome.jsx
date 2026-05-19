@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { DAYS } from "../data/itinerary.js";
+import { currentTripDayIndex } from "../lib/drTime.js";
 import { flightsForPlayer } from "../data/flights.js";
 import { C } from "../data/colors.js";
 
@@ -409,84 +410,46 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
 
       {/* Items */}
       <div style={{ padding: "clamp(16px, 4vw, 22px)" }}>
-        {day.items.map((item, i) => (
-          <div
-            key={i}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 12,
-              padding: "10px 0",
-              borderTop: i > 0 ? `1px solid ${C.sandDark}` : "none",
-            }}
-          >
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 12,
-                background: `${accent}18`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 18,
-                flexShrink: 0,
-              }}
-            >
-              {item.icon}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontFamily: "Nunito, sans-serif",
-                  fontWeight: 900,
-                  fontSize: 10,
-                  color: accent,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                }}
-              >
-                {item.time}
-              </div>
-              <div
-                style={{
-                  fontFamily: "Nunito, sans-serif",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: C.dark,
-                  lineHeight: 1.4,
-                  marginTop: 2,
-                }}
-              >
-                {item.activity}
-              </div>
-              {item.note && (
-                <div
-                  style={{
-                    fontFamily: "Nunito, sans-serif",
-                    fontSize: 11,
-                    color: C.textBody,
-                    fontWeight: 600,
-                    marginTop: 3,
-                    opacity: 0.75,
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {item.note}
-                </div>
-              )}
-            </div>
+        {day.items && day.items.length > 0 ? (
+          <ul style={{
+            listStyle: "none", padding: 0, margin: 0,
+            display: "flex", flexDirection: "column", gap: 10,
+          }}>
+            {day.items.map((it, i) => (
+              <li key={i} style={{
+                display: "flex", alignItems: "baseline", gap: 8,
+                fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.dark,
+              }}>
+                {it.time && (
+                  <span style={{
+                    fontWeight: 800, color: C.textBody, minWidth: 56, fontSize: 12,
+                    textTransform: "uppercase", letterSpacing: 0.5,
+                  }}>{it.time}</span>
+                )}
+                <span>
+                  {it.icon ? `${it.icon} ` : ""}{it.activity}
+                  {it.note && <span style={{ color: C.textBody }}> — {it.note}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {(!day.items || day.items.length < 2) && (
+          <div style={{
+            marginTop: 12, padding: "8px 12px",
+            background: C.sand, borderRadius: 8,
+            fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, fontStyle: "italic",
+          }}>
+            More details pending — drop a comment.
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
 }
 
 export default function YourItineraryHome({ player }) {
-  // Start on the player's first present day if they have one; otherwise day 0.
-  const firstPresentIdx = DAYS.findIndex((d) => d.who.includes(player.name));
-  const [activeDay, setActiveDay] = useState(firstPresentIdx === -1 ? 0 : firstPresentIdx);
+  const [activeDay, setActiveDay] = useState(() => currentTripDayIndex(DAYS));
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
