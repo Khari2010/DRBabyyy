@@ -13,6 +13,7 @@ export default function AdminPage() {
   const state = useGameState();
   const trigger = useMutation(api.rollovers.trigger);
   const undoLast = useMutation(api.rollovers.undoLast);
+  const resetGame = useMutation(api.admin.resetGame);
 
   if (!token) {
     return <div style={{ padding: 24 }}>Please log in first.</div>;
@@ -39,6 +40,16 @@ export default function AdminPage() {
     if (!window.confirm("Undo the last rollover? This deletes the most recent rollover row.")) return;
     try {
       await undoLast({ token });
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("⚠️ WIPE all entries, vouches, rollovers, suggestions, and reset to pre-trip. Use this to clear practice data before the real games start. Continue?")) return;
+    try {
+      await resetGame({ token });
+      alert("Practice data wiped. Game state is now pre-trip.");
     } catch (err) {
       alert(err.message);
     }
@@ -77,6 +88,17 @@ export default function AdminPage() {
           }}
         >
           Undo last rollover
+        </button>
+        <button
+          type="button"
+          onClick={handleReset}
+          style={{
+            marginTop: 8, padding: 10, width: "100%", borderRadius: 8,
+            border: `2px solid ${C.coralDeep}`, color: C.coralDeep, background: "transparent",
+            fontWeight: 700, cursor: "pointer",
+          }}
+        >
+          ⚠️ Reset practice data
         </button>
       </section>
     </main>
