@@ -1,4 +1,5 @@
 // src/components/ChallengeCard.jsx
+import Card from "./primitives/Card.jsx";
 import { C } from "../data/colors.js";
 
 const DIFFICULTY_COLOR = {
@@ -12,36 +13,41 @@ export default function ChallengeCard({ challenge, onClaim }) {
     <button
       type="button"
       onClick={() => onClaim(challenge)}
-      style={{
-        display: "flex",
-        gap: 12,
-        padding: 12,
-        borderRadius: 12,
-        border: `1px solid ${C.sandDark}`,
-        background: C.white,
-        textAlign: "left",
-        cursor: "pointer",
-        width: "100%",
-      }}
+      style={{ all: "unset", display: "block", cursor: "pointer", width: "100%" }}
     >
-      <div style={{ fontSize: 28, lineHeight: 1 }}>{challenge.icon}</div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 600, color: C.dark }}>{challenge.title}</div>
-        {challenge.bonus && (
-          <div style={{ fontSize: 12, color: C.textBody, marginTop: 2 }}>
-            Bonus: {challenge.bonus}
+      <Card padding={14}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div style={{ fontSize: 28, lineHeight: 1 }}>{challenge.icon}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontFamily: "'Dela Gothic One', sans-serif",
+              fontSize: 16,
+              color: C.dark,
+              lineHeight: 1.2,
+            }}>
+              {challenge.title}
+            </div>
+            {challenge.bonus && (
+              <div style={{
+                fontFamily: "Nunito, sans-serif",
+                fontSize: 12,
+                color: C.textBody,
+                marginTop: 4,
+              }}>
+                Bonus: {challenge.bonus}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      <div
-        style={{
-          fontWeight: 700,
-          color: DIFFICULTY_COLOR[challenge.difficulty] ?? C.dark,
-          alignSelf: "center",
-        }}
-      >
-        +{challenge.points}
-      </div>
+          <div style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: 22,
+            color: DIFFICULTY_COLOR[challenge.difficulty] ?? C.dark,
+            flexShrink: 0,
+          }}>
+            +{challenge.points}
+          </div>
+        </div>
+      </Card>
     </button>
   );
 }
