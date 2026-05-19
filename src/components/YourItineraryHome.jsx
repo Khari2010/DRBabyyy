@@ -60,6 +60,17 @@ const BUCKETS = [
   { key: "anytime", label: "Anytime" },
 ];
 
+function dayCostStrings(day) {
+  const costs = [];
+  if (day.cost) costs.push(day.cost);
+  if (Array.isArray(day.items)) {
+    for (const it of day.items) {
+      if (it.cost && !costs.includes(it.cost)) costs.push(it.cost);
+    }
+  }
+  return costs;
+}
+
 function bucketForTime(time) {
   if (!time) return "anytime";
   const t = String(time).trim();
@@ -164,6 +175,23 @@ function CollapsedDayRow({ day, isPresent, isToday, playerColor, onClick }) {
           }}>{day.tagline}</div>
         )}
       </div>
+      {(() => {
+        const costs = dayCostStrings(day);
+        if (costs.length === 0) return null;
+        return (
+          <span style={{
+            fontFamily: "Nunito, sans-serif", fontWeight: 800,
+            fontSize: 10, color: C.gold,
+            padding: "2px 8px", borderRadius: 999,
+            background: `${C.gold}18`,
+            whiteSpace: "nowrap",
+            marginRight: 4,
+            flexShrink: 0,
+          }}>
+            💰
+          </span>
+        );
+      })()}
       {isPresent && (
         <span style={{
           width: 8, height: 8, borderRadius: "50%",
@@ -386,6 +414,24 @@ function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick, isT
             >
               {day.title}
             </div>
+            {(() => {
+              const costs = dayCostStrings(day);
+              if (costs.length === 0) return null;
+              return (
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  padding: "3px 10px",
+                  background: `${playerColor ?? C.gold}18`,
+                  color: playerColor ?? C.gold,
+                  borderRadius: 999,
+                  fontFamily: "Nunito, sans-serif", fontWeight: 800,
+                  fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase",
+                  marginTop: 6,
+                }}>
+                  💰 {costs.join(" · ")}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
