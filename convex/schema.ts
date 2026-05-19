@@ -65,7 +65,8 @@ export default defineSchema({
   })
     .index("by_subject", ["subjectSlug"])
     .index("by_daily_key", ["dailyKey"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_subject_and_daily_key", ["subjectSlug", "dailyKey"]),
 
   entryReactions: defineTable({
     entryId: v.id("entries"),
@@ -82,7 +83,7 @@ export default defineSchema({
     icon: v.optional(v.string()),
     points: v.optional(v.number()),
     category: v.optional(v.string()),
-    difficulty: v.optional(v.string()),
+    difficulty: v.optional(v.union(v.literal("easy"), v.literal("medium"), v.literal("wild"))),
     status: v.union(
       v.literal("proposed"),
       v.literal("voting"),
