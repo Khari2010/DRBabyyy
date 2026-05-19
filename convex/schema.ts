@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  // ── EXISTING TABLES ────────────────────────────────────────────────
   players: defineTable({
     slug: v.string(),
     passcodeHash: v.union(v.string(), v.null()),
@@ -30,4 +31,98 @@ export default defineSchema({
   })
     .index("by_activity", ["activityId"])
     .index("by_player_and_activity", ["playerSlug", "activityId"]),
+
+  // ── NEW: CHALLENGES SYSTEM ─────────────────────────────────────────
+  challenges: defineTable({
+    challengeId: v.string(),
+    title: v.string(),
+    icon: v.string(),
+    points: v.number(),
+    bonus: v.optional(v.string()),
+    category: v.string(),
+    difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("wild")),
+    status: v.union(v.literal("active"), v.literal("retired")),
+    createdBySlug: v.optional(v.string()),
+    approvedAt: v.optional(v.number()),
+  })
+    .index("by_challenge_id", ["challengeId"])
+    .index("by_status", ["status"]),
+
+  entries: defineTable({
+    type: v.union(v.literal("challenge"), v.literal("negative")),
+    subjectSlug: v.string(),
+    appliedBySlug: v.optional(v.string()),
+    challengeId: v.optional(v.string()),
+    negativeId: v.optional(v.string()),
+    points: v.number(),
+    bonusKey: v.optional(v.string()),
+    status: v.union(v.literal("active"), v.literal("verified"), v.literal("disputed")),
+    vouchCount: v.number(),
+    disputeCount: v.number(),
+    dailyKey: v.string(),
+    createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+  })
+    .index("by_subject", ["subjectSlug"])
+    .index("by_daily_key", ["dailyKey"])
+    .index("by_status", ["status"]),
+
+  entryReactions: defineTable({
+    entryId: v.id("entries"),
+    playerSlug: v.string(),
+    reaction: v.union(v.literal("vouch"), v.literal("dispute")),
+    at: v.number(),
+  })
+    .index("by_entry_and_player", ["entryId", "playerSlug"])
+    .index("by_entry", ["entryId"]),
+
+  suggestions: defineTable({
+    proposerSlug: v.string(),
+    title: v.string(),
+    icon: v.optional(v.string()),
+    points: v.optional(v.number()),
+    category: v.optional(v.string()),
+    difficulty: v.optional(v.string()),
+    status: v.union(
+      v.literal("proposed"),
+      v.literal("voting"),
+      v.literal("approved"),
+      v.literal("rejected"),
+    ),
+    yesCount: v.number(),
+    noCount: v.number(),
+    resultingChallengeId: v.optional(v.string()),
+    createdAt: v.number(),
+    draftedAt: v.optional(v.number()),
+    resolvedAt: v.optional(v.number()),
+  }).index("by_status", ["status"]),
+
+  suggestionVotes: defineTable({
+    suggestionId: v.id("suggestions"),
+    voterSlug: v.string(),
+    vote: v.union(v.literal("yes"), v.literal("no")),
+    at: v.number(),
+  }).index("by_suggestion_and_voter", ["suggestionId", "voterSlug"]),
+
+  rollovers: defineTable({
+    dayNumber: v.number(),
+    dailyKey: v.string(),
+    triggeredBySlug: v.string(),
+    triggeredAt: v.number(),
+    loserSlug: v.optional(v.string()),
+    forfeitId: v.optional(v.string()),
+    forfeitLabel: v.optional(v.string()),
+    spunAt: v.optional(v.number()),
+  }).index("by_day_number", ["dayNumber"]),
+
+  gameState: defineTable({
+    gamesLive: v.boolean(),
+    currentDayNumber: v.number(),
+    currentDailyKey: v.string(),
+    updatedAt: v.number(),
+  }),
+
+  adminRoles: defineTable({
+    playerSlug: v.string(),
+  }).index("by_slug", ["playerSlug"]),
 });
