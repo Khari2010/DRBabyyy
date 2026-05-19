@@ -1,7 +1,15 @@
 export const SESSION_KEY = "drbabyyy.session";
+export const SESSION_EVENT = "drbabyyy:session-change";
+
+function notify() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(SESSION_EVENT));
+  }
+}
 
 export function saveSession({ slug, token }) {
   localStorage.setItem(SESSION_KEY, JSON.stringify({ slug, token }));
+  notify();
 }
 
 export function loadSession() {
@@ -20,4 +28,5 @@ export function loadSession() {
 
 export function clearSession() {
   localStorage.removeItem(SESSION_KEY);
+  notify();
 }
