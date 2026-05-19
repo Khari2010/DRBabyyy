@@ -53,7 +53,9 @@ function DashboardHero({ player, dailyTotal, holidayTotal, rank }) {
   const { gamesLive, currentDayNumber } = useGameState();
   const remaining = daysRemaining();
   return (
-    <Card tint={player?.color ?? C.gold} padding={20}>
+    <Card tint={player?.color ?? C.gold} padding={20} style={{
+      boxShadow: `0 4px 20px ${player?.color ?? C.flow}30, 0 0 0 1px ${player?.color ?? C.flow}15`,
+    }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         {player && <Avatar player={player} size="lg" />}
         <div style={{ flex: 1, minWidth: 0 }}>

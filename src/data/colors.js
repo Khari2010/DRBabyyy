@@ -1,6 +1,7 @@
 export const C = {
   sky: "#38BDF8",
   turquoise: "#00CEC9",
+  flow: "#5DD2D9",
   coral: "#FF6B6B",
   coralDeep: "#E8453C",
   yellow: "#FFD93D",

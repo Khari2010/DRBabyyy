@@ -37,7 +37,7 @@ export default function Reveal({ children, delay = 0, direction = "up", style = 
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translate(0) scale(1)" : dirs[direction],
-        transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 0.8s cubic-bezier(0.16,1,0.3,1) ${delay}s`,
+        transition: `opacity 1.0s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 1.0s cubic-bezier(0.16,1,0.3,1) ${delay}s`,
         ...style,
       }}
     >
