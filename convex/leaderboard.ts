@@ -1,0 +1,49 @@
+import { query } from "./_generated/server";
+import { v } from "convex/values";
+
+type Row = { slug: string; total: number; claimCount: number; verifiedCount: number; earliestAt: number };
+
+function aggregate(entries: Array<{ subjectSlug: string; points: number; status: string; createdAt: number }>): Row[] {
+  const map = new Map<string, Row>();
+  for (const e of entries) {
+    if (e.status === "disputed") continue;
+    const row = map.get(e.subjectSlug) ?? { slug: e.subjectSlug, total: 0, claimCount: 0, verifiedCount: 0, earliestAt: Infinity };
+    row.total += e.points;
+    row.claimCount += 1;
+    if (e.status === "verified") row.verifiedCount += 1;
+    if (e.createdAt < row.earliestAt) row.earliestAt = e.createdAt;
+    map.set(e.subjectSlug, row);
+  }
+  return Array.from(map.values()).sort((a, b) => {
+    if (b.total !== a.total) return b.total - a.total;
+    if (b.verifiedCount !== a.verifiedCount) return b.verifiedCount - a.verifiedCount;
+    return a.earliestAt - b.earliestAt;
+  });
+}
+
+export const getDaily = query({
+  args: { dailyKey: v.string() },
+  handler: async (ctx, { dailyKey }) => {
+    const entries = await ctx.db
+      .query("entries")
+      .withIndex("by_daily_key", (q) => q.eq("dailyKey", dailyKey))
+      .collect();
+    return aggregate(entries);
+  },
+});
+
+export const getHoliday = query({
+  args: {},
+  handler: async (ctx) => {
+    const entries = await ctx.db.query("entries").collect();
+    return aggregate(entries);
+  },
+});
+
+export const getRecentActivity = query({
+  args: { limit: v.number() },
+  handler: async (ctx, { limit }) => {
+    const all = await ctx.db.query("entries").collect();
+    return all.sort((a, b) => b.createdAt - a.createdAt).slice(0, limit);
+  },
+});
