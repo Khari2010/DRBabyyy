@@ -134,4 +134,11 @@ export default defineSchema({
     text: v.string(),
     createdAt: v.number(),
   }).index("by_day", ["dayDate"]),
+
+  activityComments: defineTable({
+    activityId: v.string(),
+    authorSlug: v.string(),
+    text: v.string(),
+    createdAt: v.number(),
+  }).index("by_activity", ["activityId"]),
 });
