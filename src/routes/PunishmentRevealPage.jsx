@@ -12,6 +12,56 @@ function nameOf(slug) {
   return PLAYERS.find((p) => p.slug === slug)?.name ?? slug;
 }
 
+function DeductPicker({ loserSlug }) {
+  const session = useSession();
+  const token = session?.token;
+  const apply = useMutation(api.entries.applyForfeitDeduct);
+  const [picked, setPicked] = useState(null);
+  const [done, setDone] = useState(false);
+  const targets = PLAYERS.filter((p) => p.slug !== loserSlug);
+
+  const submit = async (slug) => {
+    if (!token) { alert("Not logged in"); return; }
+    setPicked(slug);
+    try {
+      await apply({ token, targetSlug: slug, amount: 50 });
+      setDone(true);
+    } catch (err) {
+      alert(err.message);
+      setPicked(null);
+    }
+  };
+
+  if (done) {
+    return (
+      <div style={{ padding: 16 }}>
+        {nameOf(loserSlug)} deducted 50 from {nameOf(picked)}.
+      </div>
+    );
+  }
+  return (
+    <div>
+      <h3>📉 Pick someone to lose 50 points</h3>
+      <div style={{ display: "grid", gap: 8 }}>
+        {targets.map((p) => (
+          <button
+            key={p.slug}
+            type="button"
+            disabled={picked !== null}
+            onClick={() => submit(p.slug)}
+            style={{
+              padding: 10, borderRadius: 8, background: C.sand,
+              border: `1px solid ${C.sandDark}`, cursor: picked !== null ? "default" : "pointer",
+            }}
+          >
+            {p.emoji} {p.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function PunishmentRevealPage() {
   const [params] = useSearchParams();
   const day = Number(params.get("day") ?? 0);
@@ -124,7 +174,9 @@ export default function PunishmentRevealPage() {
       {stage === 3 && (
         <section style={{ textAlign: "center" }}>
           <h2>{nameOf(rollover.loserSlug)}, your fate:</h2>
-          {rollover.forfeitId ? (
+          {rollover.forfeitId === "deduct" ? (
+            <DeductPicker loserSlug={rollover.loserSlug} />
+          ) : rollover.forfeitId ? (
             <div>
               <div style={{ fontSize: 32, margin: 16 }}>
                 {FORFEITS.find((f) => f.id === rollover.forfeitId)?.icon}
