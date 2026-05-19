@@ -1,338 +1,128 @@
+import { useState } from "react";
 import { PLANNED_ACTIVITIES, UNPLANNED_ACTIVITIES } from "../data/activities.js";
 import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
-import Reveal from "./Reveal.jsx";
 
 function playerName(slug) {
   const p = PLAYERS.find((pl) => pl.slug === slug);
   return p?.name ?? slug;
 }
 
-function playerFor(slug) {
-  return PLAYERS.find((pl) => pl.slug === slug);
-}
-
-function VoterAvatars({ slugs }) {
-  if (!slugs.length) return null;
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: -4 }}>
-      {slugs.slice(0, 4).map((s, i) => {
-        const p = playerFor(s);
-        if (!p) return null;
-        return (
-          <span
-            key={s}
-            title={p.name}
-            style={{
-              width: 20,
-              height: 20,
-              borderRadius: "50%",
-              overflow: "hidden",
-              boxShadow: `0 0 0 2px ${p.color}`,
-              background: C.sand,
-              display: "inline-block",
-              marginLeft: i === 0 ? 0 : -4,
-              border: `1.5px solid ${C.white}`,
-            }}
-          >
-            {p.avatar ? (
-              <img
-                src={p.avatar}
-                alt={p.name}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  objectPosition: "center 15%",
-                }}
-              />
-            ) : (
-              <span
-                style={{
-                  fontSize: 10,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "100%",
-                  height: "100%",
-                }}
-              >
-                {p.emoji ?? p.name[0]}
-              </span>
-            )}
-          </span>
-        );
-      })}
-    </span>
-  );
-}
-
-function ActivityCard({ activity, myVote, likers, dislikers, onVote }) {
-  const likeActive = myVote === "like";
-  const dislikeActive = myVote === "dislike";
-
-  const toggle = (target) => {
-    if (myVote === target) onVote(null);
-    else onVote(target);
+function voteStyle(active, color) {
+  return {
+    padding: "6px 12px", borderRadius: 8, border: 0,
+    background: active ? color : "rgba(0,0,0,0.05)",
+    color: active ? C.white : C.dark,
+    fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12,
+    cursor: "pointer",
   };
-
-  const accent = activity.planned ? C.turquoise : C.coral;
-
-  // Card treatment mirrors home: soft radius 20, light shadow, optional
-  // player-colour tint for planned items vs coral dashed for unplanned.
-  const cardStyle = activity.planned
-    ? {
-        background: `linear-gradient(170deg, ${C.white} 0%, ${C.turquoise}08 100%)`,
-        border: `1px solid ${C.turquoise}25`,
-        boxShadow: `0 4px 20px ${C.turquoise}12`,
-      }
-    : {
-        background: `linear-gradient(170deg, ${C.white} 0%, ${C.coral}08 100%)`,
-        border: `1px dashed ${C.coral}55`,
-        boxShadow: `0 4px 20px ${C.coral}12`,
-      };
-
-  return (
-    <div
-      style={{
-        ...cardStyle,
-        borderRadius: 20,
-        padding: "20px 20px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 8,
-        }}
-      >
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            background: `${accent}18`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 22,
-            flexShrink: 0,
-          }}
-        >
-          {activity.icon}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: 16,
-              color: C.dark,
-              lineHeight: 1.2,
-            }}
-          >
-            {activity.name}
-          </div>
-          {activity.planned && activity.day && (
-            <div
-              style={{
-                fontFamily: "Nunito, sans-serif",
-                fontWeight: 800,
-                fontSize: 10,
-                color: accent,
-                letterSpacing: 1,
-                textTransform: "uppercase",
-                marginTop: 2,
-              }}
-            >
-              {activity.day}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <p
-        style={{
-          fontFamily: "Nunito, sans-serif",
-          fontSize: 13,
-          color: C.textBody,
-          fontWeight: 600,
-          lineHeight: 1.55,
-          margin: "0 0 14px",
-        }}
-      >
-        {activity.blurb}
-      </p>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          flexWrap: "wrap",
-        }}
-      >
-        <button
-          onClick={() => toggle("like")}
-          style={{
-            background: likeActive ? C.green : `${C.green}15`,
-            color: likeActive ? C.white : C.green,
-            border: "none",
-            borderRadius: 14,
-            padding: "6px 14px",
-            minHeight: 34,
-            fontFamily: "Nunito, sans-serif",
-            fontWeight: 800,
-            fontSize: 11,
-            letterSpacing: 0.5,
-            textTransform: "uppercase",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            transition: "all 0.3s ease",
-          }}
-          aria-pressed={likeActive}
-        >
-          <span>👍</span>
-          <span>{likers.length}</span>
-        </button>
-        <button
-          onClick={() => toggle("dislike")}
-          style={{
-            background: dislikeActive ? C.coralDeep : `${C.coralDeep}15`,
-            color: dislikeActive ? C.white : C.coralDeep,
-            border: "none",
-            borderRadius: 14,
-            padding: "6px 14px",
-            minHeight: 34,
-            fontFamily: "Nunito, sans-serif",
-            fontWeight: 800,
-            fontSize: 11,
-            letterSpacing: 0.5,
-            textTransform: "uppercase",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            transition: "all 0.3s ease",
-          }}
-          aria-pressed={dislikeActive}
-        >
-          <span>👎</span>
-          <span>{dislikers.length}</span>
-        </button>
-        {activity.link && (
-          <a
-            href={activity.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              background: `${accent}15`,
-              color: accent,
-              border: "none",
-              borderRadius: 14,
-              padding: "6px 14px",
-              minHeight: 34,
-              fontFamily: "Nunito, sans-serif",
-              fontWeight: 800,
-              fontSize: 11,
-              letterSpacing: 0.5,
-              textTransform: "uppercase",
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              textDecoration: "none",
-              transition: "all 0.3s ease",
-            }}
-          >
-            <span>Details</span>
-            <span aria-hidden="true">↗</span>
-          </a>
-        )}
-      </div>
-
-      {(likers.length > 0 || dislikers.length > 0) && (
-        <div
-          style={{
-            marginTop: 12,
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 10,
-            fontFamily: "Nunito, sans-serif",
-            fontSize: 12,
-            color: C.textBody,
-            fontWeight: 700,
-            lineHeight: 1.5,
-          }}
-        >
-          {likers.length > 0 && (
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <VoterAvatars slugs={likers} />
-              <span>
-                {likers
-                  .slice(0, 3)
-                  .map(playerName)
-                  .join(", ")}
-                {likers.length > 3 ? ` +${likers.length - 3}` : ""}
-              </span>
-            </span>
-          )}
-          {dislikers.length > 0 && (
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <VoterAvatars slugs={dislikers} />
-              <span style={{ color: C.coralDeep }}>
-                {dislikers
-                  .slice(0, 3)
-                  .map(playerName)
-                  .join(", ")}
-                {dislikers.length > 3 ? ` +${dislikers.length - 3}` : ""}
-              </span>
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-  );
 }
 
 export default function AdventuresPanel({ mySlug, allVotes, onVote }) {
+  const [expandedId, setExpandedId] = useState(null);
+
   const votesByActivity = new Map();
   for (const v of allVotes) {
     if (!votesByActivity.has(v.activityId)) votesByActivity.set(v.activityId, []);
     votesByActivity.get(v.activityId).push(v);
   }
 
-  const renderList = (list, offset = 0) =>
-    list.map((a, i) => {
+  const renderList = (list) =>
+    list.map((a) => {
       const rows = votesByActivity.get(a.id) ?? [];
       const likers = rows.filter((r) => r.vote === "like").map((r) => r.playerSlug);
       const dislikers = rows.filter((r) => r.vote === "dislike").map((r) => r.playerSlug);
       const mine = rows.find((r) => r.playerSlug === mySlug);
+      const myVote = mine?.vote ?? null;
+      const likeCount = likers.length;
+      const dislikeCount = dislikers.length;
+
       return (
-        <Reveal key={a.id} delay={(offset + i) * 0.05}>
-          <ActivityCard
-            activity={a}
-            myVote={mine?.vote ?? null}
-            likers={likers}
-            dislikers={dislikers}
-            onVote={(vote) => onVote(a.id, vote)}
-          />
-        </Reveal>
+        <div key={a.id}>
+          <button
+            type="button"
+            onClick={() => setExpandedId(expandedId === a.id ? null : a.id)}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", background: "transparent", border: 0,
+              borderBottom: `1px solid ${C.sandDark}`, cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <span style={{ fontSize: 22, lineHeight: 1 }}>{a.icon ?? "📍"}</span>
+            <span style={{
+              flex: 1, fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 14, color: C.dark,
+            }}>{a.name}</span>
+            {a.day && (
+              <span style={{
+                fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, letterSpacing: 0.5,
+                textTransform: "uppercase", color: C.textBody,
+              }}>
+                {a.day}
+              </span>
+            )}
+            <span style={{
+              fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 10, letterSpacing: 0.5,
+              textTransform: "uppercase",
+              color: a.planned ? C.turquoise : C.coral,
+            }}>
+              {a.planned ? "Booked" : "Planning"}
+            </span>
+            <span style={{ color: C.textBody }}>{expandedId === a.id ? "▴" : "▾"}</span>
+          </button>
+
+          {expandedId === a.id && (
+            <div style={{
+              padding: "12px 16px 16px",
+              background: C.sand,
+              fontFamily: "Nunito, sans-serif", fontSize: 13, color: C.dark,
+            }}>
+              {a.blurb && <div style={{ marginBottom: 6 }}>{a.blurb}</div>}
+              {a.link && (
+                <a href={a.link} target="_blank" rel="noreferrer"
+                  style={{ color: C.coralDeep, textDecoration: "underline" }}>
+                  More info ↗
+                </a>
+              )}
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => onVote(a.id, myVote === "like" ? null : "like")}
+                  style={voteStyle(myVote === "like", C.green)}
+                >
+                  👍 Yes ({likeCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onVote(a.id, myVote === "dislike" ? null : "dislike")}
+                  style={voteStyle(myVote === "dislike", C.coralDeep)}
+                >
+                  👎 No ({dislikeCount})
+                </button>
+              </div>
+              {(likers.length > 0 || dislikers.length > 0) && (
+                <div style={{
+                  marginTop: 10,
+                  fontFamily: "Nunito, sans-serif", fontSize: 11, color: C.textBody, fontWeight: 700,
+                }}>
+                  {likers.length > 0 && (
+                    <span>
+                      👍 {likers.slice(0, 3).map(playerName).join(", ")}
+                      {likers.length > 3 ? ` +${likers.length - 3}` : ""}
+                    </span>
+                  )}
+                  {likers.length > 0 && dislikers.length > 0 && "  ·  "}
+                  {dislikers.length > 0 && (
+                    <span style={{ color: C.coralDeep }}>
+                      👎 {dislikers.slice(0, 3).map(playerName).join(", ")}
+                      {dislikers.length > 3 ? ` +${dislikers.length - 3}` : ""}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       );
     });
 
@@ -366,8 +156,8 @@ export default function AdventuresPanel({ mySlug, allVotes, onVote }) {
           Already booked in
         </span>
       </div>
-      <div style={{ display: "grid", gap: 12 }}>
-        {renderList(PLANNED_ACTIVITIES, 0)}
+      <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${C.sandDark}` }}>
+        {renderList(PLANNED_ACTIVITIES)}
       </div>
 
       {/* Could add */}
@@ -405,8 +195,8 @@ export default function AdventuresPanel({ mySlug, allVotes, onVote }) {
           Vote it up to push it onto the itinerary
         </span>
       </div>
-      <div style={{ display: "grid", gap: 12 }}>
-        {renderList(UNPLANNED_ACTIVITIES, PLANNED_ACTIVITIES.length)}
+      <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${C.sandDark}` }}>
+        {renderList(UNPLANNED_ACTIVITIES)}
       </div>
     </div>
   );
