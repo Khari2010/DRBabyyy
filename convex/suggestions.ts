@@ -22,3 +22,28 @@ export const create = mutation({
     });
   },
 });
+
+export const draft = mutation({
+  args: {
+    token: v.string(),
+    suggestionId: v.id("suggestions"),
+    points: v.number(),
+    category: v.string(),
+    icon: v.optional(v.string()),
+  },
+  handler: async (ctx, { token, suggestionId, points, category, icon }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+    const s = await ctx.db.get(suggestionId);
+    if (!s) throw new Error("unknown suggestion");
+    if (s.status !== "proposed") throw new Error(`cannot draft suggestion in status ${s.status}`);
+    await ctx.db.patch(suggestionId, {
+      status: "voting",
+      points,
+      category,
+      difficulty: deriveDifficulty(points),
+      icon: icon ?? s.icon,
+      draftedAt: Date.now(),
+    });
+  },
+});
