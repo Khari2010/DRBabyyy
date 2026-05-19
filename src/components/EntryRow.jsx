@@ -1,12 +1,8 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
-import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
-
-function playerName(slug) {
-  return PLAYERS.find((p) => p.slug === slug)?.name ?? slug;
-}
+import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 
 export default function EntryRow({ entry }) {
   const session = useSession();
@@ -15,6 +11,8 @@ export default function EntryRow({ entry }) {
   const vouch = useMutation(api.entries.vouch);
   const dispute = useMutation(api.entries.dispute);
   const challenges = useQuery(api.challenges.listActive) ?? [];
+  const holidayMap = useHolidayNameMap();
+  const playerName = (slug) => displayName(slug, holidayMap);
 
   const challenge = entry.challengeId
     ? challenges.find((c) => c.challengeId === entry.challengeId)
