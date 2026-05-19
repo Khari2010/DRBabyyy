@@ -3,6 +3,10 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
 import { useGameState } from "../lib/useGameState.js";
+import { C } from "../data/colors.js";
+import { BODY } from "../data/design.js";
+import Card from "./primitives/Card.jsx";
+import Pill from "./primitives/Pill.jsx";
 import ChallengeCard from "./ChallengeCard.jsx";
 import ClaimModal from "./ClaimModal.jsx";
 
@@ -21,12 +25,14 @@ export default function ChallengesSection() {
 
   if (!gamesLive) {
     return (
-      <section style={{ padding: 16, background: "#FEF9EF", borderRadius: 12, margin: "16px 0" }}>
-        <strong>Games kick off after breakfast (Day 1).</strong>
-        <p style={{ marginTop: 4, color: "#4A4A6A" }}>
+      <Card>
+        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18 }}>
+          Games kick off after breakfast (Day 1).
+        </div>
+        <div style={{ ...BODY, marginTop: 8 }}>
           Once Khari or Kai pulls the trigger, this is where you'll claim challenges.
-        </p>
-      </section>
+        </div>
+      </Card>
     );
   }
 
@@ -38,25 +44,20 @@ export default function ChallengesSection() {
 
   return (
     <section style={{ margin: "16px 0" }}>
-      <h2>Challenges — Day {currentDayNumber}</h2>
+      <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(20px, 4vw, 28px)", lineHeight: 1.2, color: C.dark, margin: "0 0 12px" }}>
+        Challenges — Day {currentDayNumber}
+      </h2>
       <div style={{ display: "flex", gap: 8, margin: "12px 0" }}>
         {["easy", "medium", "wild"].map((d) => (
-          <button
+          <Pill
             key={d}
-            type="button"
+            active={tab === d}
+            accent={C.gold}
             onClick={() => setTab(d)}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 999,
-              background: tab === d ? "#1A1A2E" : "transparent",
-              color: tab === d ? "#FFF" : "#1A1A2E",
-              border: "1px solid #1A1A2E",
-              textTransform: "capitalize",
-              cursor: "pointer",
-            }}
+            style={{ textTransform: "capitalize" }}
           >
             {d} ({byDifficulty[d].length})
-          </button>
+          </Pill>
         ))}
       </div>
       <div style={{ display: "grid", gap: 8 }}>
@@ -67,19 +68,30 @@ export default function ChallengesSection() {
       {active !== null && <ClaimModal challenge={active} onClose={() => setActive(null)} />}
       {mine.length > 0 && (
         <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 16, marginBottom: 8 }}>My recent</h3>
-          <div style={{ background: "#FFFFFF", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 800,
+            fontSize: 11,
+            letterSpacing: 0.5,
+            textTransform: "uppercase",
+            color: C.textBody,
+            marginBottom: 8,
+          }}>
+            My recent
+          </div>
+          <Card padding={0} style={{ overflow: "hidden" }}>
             {mine.map((e) => (
               <div
                 key={e._id}
                 style={{
                   padding: 10,
-                  borderBottom: "1px solid #F5EDE0",
+                  borderBottom: `1px solid ${C.sandDark}`,
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   opacity: e.status === "disputed" ? 0.5 : 1,
                   textDecoration: e.status === "disputed" ? "line-through" : "none",
+                  fontFamily: "Nunito, sans-serif",
                 }}
               >
                 <span>
@@ -94,7 +106,7 @@ export default function ChallengesSection() {
                 </span>
               </div>
             ))}
-          </div>
+          </Card>
         </div>
       )}
     </section>

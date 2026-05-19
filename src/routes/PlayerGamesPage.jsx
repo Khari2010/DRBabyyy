@@ -7,62 +7,77 @@ import { V1_LOGIN_SLUGS, playerBySlug } from "../data/players.js";
 import { TRIP_END_DAY } from "../data/presence.js";
 import { useGameState } from "../lib/useGameState.js";
 import { C } from "../data/colors.js";
+import { SECTION_ACCENTS, BODY, MICRO_LABEL } from "../data/design.js";
+import SectionBand from "../components/primitives/SectionBand.jsx";
+import Card from "../components/primitives/Card.jsx";
+import Avatar from "../components/primitives/Avatar.jsx";
+import SectionHeader from "../components/SectionHeader.jsx";
+import Reveal from "../components/Reveal.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ChallengesSection from "../components/ChallengesSection.jsx";
 import ProposeForm from "../components/ProposeForm.jsx";
 import VotingRow from "../components/VotingRow.jsx";
 
+const ACCENT = SECTION_ACCENTS.game;
+
 function daysRemaining() {
-  // Today is during the trip. TRIP_END_DAY is the day number in May (e.g. 29).
-  // Approximate: assume current month is May.
   const now = new Date();
-  // Fall back: if before May or after, return 0 to avoid weird numbers.
-  if (now.getMonth() !== 4 /* May */) return 0;
+  if (now.getMonth() !== 4) return 0;
   return Math.max(0, TRIP_END_DAY - now.getDate());
 }
 
-function DashboardHeader({ player, board, dailyTotal, holidayTotal, rank }) {
-  const { gamesLive, currentDayNumber } = useGameState();
-  const remaining = daysRemaining();
-
+function Stat({ label, value, accent }) {
   return (
-    <section
-      style={{
-        background: player?.color ?? C.dark,
-        color: C.white,
-        padding: "20px 16px",
-        borderRadius: 16,
-        margin: "16px",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <h1 style={{ margin: 0, fontSize: 22 }}>{player?.name ?? "Player"}'s Games</h1>
-        <div style={{ fontSize: 12, opacity: 0.85 }}>
-          {gamesLive ? `Day ${currentDayNumber}` : "Pre-trip"}
-        </div>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 16 }}>
-        <Stat label="Today" value={dailyTotal} />
-        <Stat label="Holiday" value={holidayTotal} />
-        <Stat label="Rank" value={rank ? `#${rank}` : "—"} />
-      </div>
-
-      <div style={{ marginTop: 10, fontSize: 12, opacity: 0.85 }}>
-        {remaining > 0 ? `${remaining} day${remaining === 1 ? "" : "s"} of trip remaining` : "Trip in progress"}
-      </div>
-    </section>
-  );
-}
-
-function Stat({ label, value }) {
-  return (
-    <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 10, padding: "8px 10px" }}>
-      <div style={{ fontSize: 11, opacity: 0.85 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 800 }}>
+    <div style={{
+      background: "rgba(255,255,255,0.85)",
+      borderRadius: 14,
+      padding: "10px 12px",
+      flex: 1,
+      minWidth: 0,
+    }}>
+      <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 2 }}>{label}</div>
+      <div style={{
+        fontFamily: "'Dela Gothic One', sans-serif",
+        fontSize: 24,
+        color: accent ?? C.dark,
+        lineHeight: 1,
+      }}>
         {typeof value === "number" ? (value >= 0 ? `+${value}` : value) : value}
       </div>
     </div>
+  );
+}
+
+function DashboardHero({ player, dailyTotal, holidayTotal, rank }) {
+  const { gamesLive, currentDayNumber } = useGameState();
+  const remaining = daysRemaining();
+  return (
+    <Card tint={player?.color ?? C.gold} padding={20}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        {player && <Avatar player={player} size="lg" />}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ ...MICRO_LABEL, color: player?.color ?? ACCENT, marginBottom: 2 }}>
+            {gamesLive ? `Day ${currentDayNumber}` : "Pre-trip"}
+          </div>
+          <div style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: "clamp(22px, 5vw, 32px)",
+            color: C.dark,
+            lineHeight: 1.1,
+          }}>{player?.name ?? "Player"}'s Games</div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+        <Stat label="Today" value={dailyTotal} accent={dailyTotal >= 0 ? C.green : C.coralDeep} />
+        <Stat label="Holiday" value={holidayTotal} accent={holidayTotal >= 0 ? C.green : C.coralDeep} />
+        <Stat label="Rank" value={rank ? `#${rank}` : "—"} />
+      </div>
+
+      <div style={{ ...BODY, fontSize: 12, marginTop: 12, color: C.textBody }}>
+        {remaining > 0 ? `${remaining} day${remaining === 1 ? "" : "s"} of trip remaining` : "Trip in progress"}
+      </div>
+    </Card>
   );
 }
 
@@ -74,8 +89,8 @@ export default function PlayerGamesPage() {
   const { currentDailyKey } = useGameState();
   const daily = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey }) ?? [];
   const holiday = useQuery(api.leaderboard.getHoliday, {}) ?? [];
+  const allSuggestions = useQuery(api.suggestions.list, {}) ?? [];
 
-  // Same gate as PlayerPage: must be logged in as this slug, must be a known slug.
   const isKnownSlug = V1_LOGIN_SLUGS.includes(slug ?? "");
   const slugMatches = session && session.slug === slug;
 
@@ -91,56 +106,84 @@ export default function PlayerGamesPage() {
   const holidayRow = holiday.find((r) => r.slug === slug);
   const rank = holiday.findIndex((r) => r.slug === slug);
 
-  const allSuggestions = useQuery(api.suggestions.list, {}) ?? [];
   const myVoting = allSuggestions.filter((s) => s.status === "voting" && s.proposerSlug !== slug);
   const myProposed = allSuggestions.filter((s) => s.status === "proposed" && s.proposerSlug === slug);
   const recentApproved = allSuggestions.filter((s) => s.status === "approved").slice(-3);
 
   return (
-    <main style={{ minHeight: "100vh", background: C.sand }}>
-      <DashboardHeader
-        player={player}
-        board={holiday}
-        dailyTotal={dailyRow?.total ?? 0}
-        holidayTotal={holidayRow?.total ?? 0}
-        rank={rank >= 0 ? rank + 1 : null}
-      />
-      <div style={{ padding: "0 16px" }}>
-        <ChallengesSection />
-      </div>
+    <div style={{ minHeight: "100vh", background: C.sand }}>
+      <SectionBand bg="sand" pad="32px 0 24px" innerMaxWidth={520}>
+        <Reveal>
+          <DashboardHero
+            player={player}
+            dailyTotal={dailyRow?.total ?? 0}
+            holidayTotal={holidayRow?.total ?? 0}
+            rank={rank >= 0 ? rank + 1 : null}
+          />
+        </Reveal>
+      </SectionBand>
 
-      <section style={{ margin: "24px 0", padding: "0 16px" }}>
-        <h2 style={{ fontSize: 18 }}>Suggest a challenge</h2>
-        <ProposeForm />
+      <SectionBand bg="white" pad="40px 0" innerMaxWidth={520}>
+        <Reveal>
+          <SectionHeader
+            label="Earn it"
+            title="Your challenges"
+            accent={ACCENT}
+            compact
+          />
+        </Reveal>
+        <Reveal delay={0.05}>
+          <ChallengesSection />
+        </Reveal>
+      </SectionBand>
 
-        {myProposed.length > 0 && (
-          <div style={{ marginTop: 12, padding: 10, background: C.white, borderRadius: 8 }}>
-            <div style={{ fontSize: 12, color: C.textBody, marginBottom: 4 }}>Your pending suggestions</div>
-            {myProposed.map((s) => (
-              <div key={s._id} style={{ fontSize: 13, padding: "4px 0" }}>
-                ⏳ {s.title} — awaiting admin
+      <SectionBand bg="sand" pad="40px 0 80px" innerMaxWidth={520}>
+        <Reveal>
+          <SectionHeader
+            label="Crowdsource"
+            title="Suggest a challenge"
+            accent={C.coralDeep}
+            tagline="Pitch an idea; the admin sets points and the crew votes."
+            compact
+          />
+        </Reveal>
+        <Reveal delay={0.05}>
+          <Card>
+            <ProposeForm />
+            {myProposed.length > 0 && (
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.sandDark}` }}>
+                <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 6 }}>Your pending</div>
+                {myProposed.map((s) => (
+                  <div key={s._id} style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, padding: "2px 0" }}>
+                    ⏳ {s.title} — awaiting admin
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
+          </Card>
+        </Reveal>
 
         {myVoting.length > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <h3 style={{ fontSize: 16, marginBottom: 8 }}>Vote on the crew's ideas</h3>
-            <div style={{ background: C.white, borderRadius: 12, overflow: "hidden" }}>
-              {myVoting.map((s) => <VotingRow key={s._id} suggestion={s} />)}
+          <Reveal delay={0.1}>
+            <div style={{ marginTop: 20 }}>
+              <div style={{ ...MICRO_LABEL, color: C.coralDeep, marginBottom: 8 }}>Vote now</div>
+              <Card padding={0} style={{ overflow: "hidden" }}>
+                {myVoting.map((s) => <VotingRow key={s._id} suggestion={s} />)}
+              </Card>
             </div>
-          </div>
+          </Reveal>
         )}
 
         {recentApproved.length > 0 && (
-          <div style={{ marginTop: 16, fontSize: 12, color: C.textBody }}>
+          <div style={{
+            marginTop: 16, fontSize: 12, color: C.textBody, fontFamily: "Nunito, sans-serif",
+          }}>
             Recently approved: {recentApproved.map((s) => s.title).join(" · ")}
           </div>
         )}
-      </section>
+      </SectionBand>
 
       <BottomNav />
-    </main>
+    </div>
   );
 }
