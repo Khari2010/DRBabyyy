@@ -1,6 +1,6 @@
 import { convexTest } from "convex-test";
 import { describe, it, expect } from "vitest";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import schema from "./schema";
 
 describe("admin.resetPasscode", () => {
@@ -45,5 +45,31 @@ describe("admin.resetPasscode", () => {
     await expect(
       t.mutation(internal.admin.resetPasscode, { slug: "nobody" }),
     ).rejects.toThrow(/unknown player/i);
+  });
+});
+
+describe("admin.isAdmin", () => {
+  it("returns true for admin slugs", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "khari", token: "tok-k", createdAt: Date.now() });
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
+    });
+    expect(await t.query(api.admin.isAdmin, { token: "tok-k" })).toBe(true);
+  });
+
+  it("returns false for non-admin", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "camara", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "camara", token: "tok-c", createdAt: Date.now() });
+    });
+    expect(await t.query(api.admin.isAdmin, { token: "tok-c" })).toBe(false);
+  });
+
+  it("returns false for invalid token", async () => {
+    const t = convexTest(schema);
+    expect(await t.query(api.admin.isAdmin, { token: "bogus" })).toBe(false);
   });
 });
