@@ -10,6 +10,9 @@ import AdventuresPanel from "../components/AdventuresPanel.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
 import GamesOverview from "../components/GamesOverview.jsx";
 import AboutYourHoliday from "../components/AboutYourHoliday.jsx";
+import HolidayNameEditor from "../components/HolidayNameEditor.jsx";
+import LockscreenGenerator from "../components/LockscreenGenerator.jsx";
+import { useHolidayNameMap } from "../lib/displayName.js";
 import YourItineraryHome from "../components/YourItineraryHome.jsx";
 import TheCrew from "../components/TheCrew.jsx";
 import Reveal from "../components/Reveal.jsx";
@@ -18,6 +21,7 @@ import ChallengeCard from "../components/ChallengeCard.jsx";
 import ClaimModal from "../components/ClaimModal.jsx";
 import { useGameState } from "../lib/useGameState.js";
 import { useSession } from "../lib/useSession.js";
+import BottomNav from "../components/BottomNav.jsx";
 
 function ChallengesSection() {
   const { gamesLive, currentDayNumber } = useGameState();
@@ -166,6 +170,7 @@ export default function PlayerPage() {
   const saveAnswerMutation = useMutation(api.answers.save);
   const allVotes = useQuery(api.activityVotes.listAll) ?? [];
   const castVoteMutation = useMutation(api.activityVotes.castVote);
+  const holidayMap = useHolidayNameMap();
 
   useHomeStyleAssets();
 
@@ -416,6 +421,24 @@ export default function PlayerPage() {
         </Reveal>
       </section>
 
+      {/* ── HOLIDAY NAME + LOCKSCREEN (self-edit) ────────────────────────── */}
+      <section style={{ padding: "32px 16px 24px", background: C.sand }}>
+        <Reveal>
+          <HolidayNameEditor
+            token={session.token}
+            legalName={player.name}
+            accent={player.color}
+          />
+        </Reveal>
+        <Reveal delay={0.05}>
+          <LockscreenGenerator
+            holidayName={holidayMap[slug]}
+            legalName={player.name}
+            accent={player.color}
+          />
+        </Reveal>
+      </section>
+
       {/* ── ABOUT YOUR HOLIDAY ───────────────────────────────────────────── */}
       <section id="about" style={{ padding: "80px 0 60px", background: C.white }}>
         <Reveal>
@@ -534,6 +557,7 @@ export default function PlayerPage() {
       >
         PUNTA CANA '26 • ROYALTON CHIC • 🌊
       </footer>
+      <BottomNav />
     </div>
   );
 }

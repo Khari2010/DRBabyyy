@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
 import { useGameState } from "../lib/useGameState.js";
 import { C } from "../data/colors.js";
+import BottomNav from "../components/BottomNav.jsx";
 
 export default function AdminPage() {
   const session = useSession();
@@ -101,6 +102,7 @@ export default function AdminPage() {
           ⚠️ Reset practice data
         </button>
       </section>
+      <BottomNav />
     </main>
   );
 }

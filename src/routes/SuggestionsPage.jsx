@@ -3,12 +3,9 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
 import SuggestionDraftForm from "../components/SuggestionDraftForm.jsx";
-import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
-
-function nameOf(slug) {
-  return PLAYERS.find((p) => p.slug === slug)?.name ?? slug;
-}
+import { useHolidayNameMap, displayName } from "../lib/displayName.js";
+import BottomNav from "../components/BottomNav.jsx";
 
 function ProposeForm() {
   const session = useSession();
@@ -59,6 +56,7 @@ function VotingRow({ suggestion }) {
     api.suggestions.myVote,
     token ? { token, suggestionId: suggestion._id } : "skip",
   );
+  const holidayMap = useHolidayNameMap();
 
   const cast = async (v) => {
     if (!token) return;
@@ -73,7 +71,7 @@ function VotingRow({ suggestion }) {
     <div style={{ padding: 12, borderBottom: `1px solid ${C.sandDark}` }}>
       <div><strong>{suggestion.title}</strong> · {suggestion.points} pts · {suggestion.category}</div>
       <div style={{ fontSize: 12, color: C.textBody }}>
-        by {nameOf(suggestion.proposerSlug)}
+        by {displayName(suggestion.proposerSlug, holidayMap)}
       </div>
       <div style={{ display: "flex", gap: 6, marginTop: 6, alignItems: "center" }}>
         <button
@@ -103,6 +101,7 @@ function ProposedRow({ suggestion, isAdmin }) {
   const token = session?.token;
   const reject = useMutation(api.suggestions.reject);
   const [drafting, setDrafting] = useState(false);
+  const holidayMap = useHolidayNameMap();
 
   const handleReject = async () => {
     if (!token) return;
@@ -116,7 +115,7 @@ function ProposedRow({ suggestion, isAdmin }) {
   return (
     <div style={{ padding: 12, borderBottom: `1px solid ${C.sandDark}` }}>
       <div><strong>{suggestion.title}</strong></div>
-      <div style={{ fontSize: 12, color: C.textBody }}>by {nameOf(suggestion.proposerSlug)}</div>
+      <div style={{ fontSize: 12, color: C.textBody }}>by {displayName(suggestion.proposerSlug, holidayMap)}</div>
       {isAdmin && !drafting && (
         <div style={{ marginTop: 6, display: "flex", gap: 6 }}>
           <button
@@ -177,6 +176,7 @@ export default function SuggestionsPage() {
       {byStatus.rejected.map((s) => (
         <div key={s._id} style={{ padding: 8, color: C.textBody }}>{s.title}</div>
       ))}
+      <BottomNav />
     </main>
   );
 }

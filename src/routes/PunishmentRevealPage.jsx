@@ -7,10 +7,8 @@ import { FORFEITS } from "../data/forfeits.js";
 import { PLAYERS } from "../data/players.js";
 import WheelOfFortune from "../components/games/WheelOfFortune.jsx";
 import { C } from "../data/colors.js";
-
-function nameOf(slug) {
-  return PLAYERS.find((p) => p.slug === slug)?.name ?? slug;
-}
+import { useHolidayNameMap, displayName } from "../lib/displayName.js";
+import BottomNav from "../components/BottomNav.jsx";
 
 function DeductPicker({ loserSlug }) {
   const session = useSession();
@@ -19,6 +17,8 @@ function DeductPicker({ loserSlug }) {
   const [picked, setPicked] = useState(null);
   const [done, setDone] = useState(false);
   const targets = PLAYERS.filter((p) => p.slug !== loserSlug);
+  const holidayMap = useHolidayNameMap();
+  const nameOf = (slug) => displayName(slug, holidayMap);
 
   const submit = async (slug) => {
     if (!token) { alert("Not logged in"); return; }
@@ -54,7 +54,7 @@ function DeductPicker({ loserSlug }) {
               border: `1px solid ${C.sandDark}`, cursor: picked !== null ? "default" : "pointer",
             }}
           >
-            {p.emoji} {p.name}
+            {p.emoji} {nameOf(p.slug)}
           </button>
         ))}
       </div>
@@ -73,6 +73,8 @@ export default function PunishmentRevealPage() {
     rollover ? { dailyKey: rollover.dailyKey } : "skip",
   ) ?? [];
   const recordForfeit = useMutation(api.rollovers.recordForfeit);
+  const holidayMap = useHolidayNameMap();
+  const nameOf = (slug) => displayName(slug, holidayMap);
 
   const [stage, setStage] = useState(1);
 
@@ -191,6 +193,7 @@ export default function PunishmentRevealPage() {
           )}
         </section>
       )}
+      <BottomNav />
     </main>
   );
 }

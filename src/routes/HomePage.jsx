@@ -6,6 +6,9 @@ import { FLIGHTS } from "../data/flights.js";
 import LoginModal from "../components/LoginModal.jsx";
 import LoggedInChip from "../components/LoggedInChip.jsx";
 import { saveSession, loadSession } from "../lib/session.js";
+import { useHolidayNameMap, displayName } from "../lib/displayName.js";
+import { useSession } from "../lib/useSession.js";
+import BottomNav from "../components/BottomNav.jsx";
 
 // ─── FONTS ──────────────────────────────────────────────────────────────────
 const FONTS_URL =
@@ -279,7 +282,7 @@ const Countdown = ({ loaded }) => {
   );
 };
 
-const ProfileCard = ({ player, index, onOpen }) => (
+const ProfileCard = ({ player, index, onOpen, holidayMap }) => (
   <Reveal delay={index * 0.08} style={{ flex: "0 0 auto" }}>
     <div
       onClick={onOpen}
@@ -333,7 +336,7 @@ const ProfileCard = ({ player, index, onOpen }) => (
         gap: 8, textAlign: "center",
       }}>
         <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 13, color: player.color, letterSpacing: 3 }}>#{player.num}</div>
-        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.dark, lineHeight: 1.2 }}>{player.name}</div>
+        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.dark, lineHeight: 1.2 }}>{player.mystery ? player.name : displayName(player.slug, holidayMap, player.name)}</div>
         <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11, color: C.white, background: player.color, padding: "5px 16px", borderRadius: 16, letterSpacing: 0.5, textTransform: "uppercase" }}>{player.title}</div>
         <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, color: C.textBody, marginTop: 4, animation: "tapPulse 2.5s ease-in-out infinite" }}>tap to view profile</div>
       </div>
@@ -341,10 +344,11 @@ const ProfileCard = ({ player, index, onOpen }) => (
   </Reveal>
 );
 
-const ProfileModal = ({ player, onClose }) => {
+const ProfileModal = ({ player, onClose, holidayMap }) => {
   if (!player) return null;
   const presence = PRESENCE.find((p) => p.name === player.name);
   const playerFlights = FLIGHTS.filter((f) => f.who.includes(player.name));
+  const shownName = player.mystery ? player.name : displayName(player.slug, holidayMap, player.name);
 
   return (
     <div
@@ -436,7 +440,7 @@ const ProfileModal = ({ player, onClose }) => {
           {/* Text overlay at bottom */}
           <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 24px 24px" }}>
             <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.6)", letterSpacing: 4, marginBottom: 4 }}>#{player.num}</div>
-            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 32, color: C.white, textShadow: "0 2px 12px rgba(0,0,0,0.3)", marginBottom: 8 }}>{player.name}</div>
+            <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 32, color: C.white, textShadow: "0 2px 12px rgba(0,0,0,0.3)", marginBottom: 8 }}>{shownName}</div>
             <div style={{ display: "inline-block", fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.white, background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "6px 20px", borderRadius: 16, letterSpacing: 1.5, textTransform: "uppercase" }}>{player.title}</div>
           </div>
         </div>
@@ -503,6 +507,11 @@ const ProfileModal = ({ player, onClose }) => {
 const PresenceChart = () => {
   const startDay = 17;
   const totalDays = 13; // 17 to 29
+  const holidayMap = useHolidayNameMap();
+  const labelFor = (legalName) => {
+    const slug = PLAYERS.find((pp) => pp.name === legalName)?.slug;
+    return slug ? displayName(slug, holidayMap, legalName) : legalName;
+  };
   return (
     <Reveal delay={0.15}>
       <div style={{ padding: "0 24px", marginTop: 8 }}>
@@ -517,7 +526,7 @@ const PresenceChart = () => {
           {/* Rows */}
           {PRESENCE.map((p) => (
             <div key={p.name} style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
-              <div style={{ width: 68, fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.dark, flexShrink: 0, paddingRight: 4 }}>{p.name}</div>
+              <div style={{ width: 68, fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 12, color: C.dark, flexShrink: 0, paddingRight: 4 }}>{labelFor(p.name)}</div>
               <div style={{ flex: 1, display: "flex", gap: 2, height: 22 }}>
                 {Array.from({ length: totalDays }, (_, i) => {
                   const day = startDay + i;
@@ -760,6 +769,15 @@ export default function HomePage() {
   const [activeDay, setActiveDay] = useState(0);
   const [expandedPlayer, setExpandedPlayer] = useState(null);
   const scrollRef = useRef(null);
+  const holidayMap = useHolidayNameMap();
+  const reactiveSession = useSession();
+
+  // Auto-redirect logged-in users to their player page
+  useEffect(() => {
+    if (reactiveSession?.slug) {
+      navigate(`/player/${reactiveSession.slug}`, { replace: true });
+    }
+  }, [reactiveSession?.slug, navigate]);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -891,6 +909,7 @@ export default function HomePage() {
               player={p}
               index={i}
               onOpen={() => setExpandedPlayer(p.id)}
+              holidayMap={holidayMap}
             />
           ))}
         </div>
@@ -1001,6 +1020,7 @@ export default function HomePage() {
       <ProfileModal
         player={PLAYERS.find((p) => p.id === expandedPlayer) || null}
         onClose={() => setExpandedPlayer(null)}
+        holidayMap={holidayMap}
       />
 
       <LoginModal
@@ -1029,6 +1049,7 @@ export default function HomePage() {
           Player Log In
         </button>
       )}
+      <BottomNav />
     </div>
   );
 }

@@ -6,14 +6,17 @@ import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
 import EntryRow from "../components/EntryRow.jsx";
 import { useSession } from "../lib/useSession.js";
+import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 import FoulModal from "../components/FoulModal.jsx";
+import BottomNav from "../components/BottomNav.jsx";
 
 function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
 }
 
-function BoardRow({ row, rank, onFoul }) {
+function BoardRow({ row, rank, onFoul, holidayMap }) {
   const p = playerBySlug(row.slug);
+  const name = displayName(row.slug, holidayMap, row.slug);
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 12, padding: "10px 12px",
@@ -28,7 +31,7 @@ function BoardRow({ row, rank, onFoul }) {
       }}>
         {p?.emoji ?? "?"}
       </div>
-      <div style={{ flex: 1, fontWeight: 600 }}>{p?.name ?? row.slug}</div>
+      <div style={{ flex: 1, fontWeight: 600 }}>{name}</div>
       <div style={{ fontSize: 12, color: C.textBody }}>
         {row.claimCount} claims · {row.verifiedCount} 🛡
       </div>
@@ -42,7 +45,7 @@ function BoardRow({ row, rank, onFoul }) {
       {onFoul && (
         <button
           type="button"
-          onClick={() => onFoul({ slug: row.slug, name: p?.name ?? row.slug })}
+          onClick={() => onFoul({ slug: row.slug, name })}
           title="Log a foul"
           style={{
             padding: "4px 8px", marginLeft: 4, fontSize: 12,
@@ -70,6 +73,7 @@ export default function LeaderboardPage() {
   const daily = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey }) ?? [];
   const holiday = useQuery(api.leaderboard.getHoliday, {}) ?? [];
   const rows = tab === "daily" ? daily : holiday;
+  const holidayMap = useHolidayNameMap();
 
   return (
     <main style={{ maxWidth: 480, margin: "0 auto", padding: 16 }}>
@@ -109,6 +113,7 @@ export default function LeaderboardPage() {
               row={row}
               rank={i + 1}
               onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
+              holidayMap={holidayMap}
             />
           ))
         )}
@@ -130,6 +135,7 @@ export default function LeaderboardPage() {
           onClose={() => setFoulTarget(null)}
         />
       )}
+      <BottomNav />
     </main>
   );
 }
