@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
@@ -14,6 +15,69 @@ import BottomNav from "../components/BottomNav.jsx";
 import ProposedRow from "../components/ProposedRow.jsx";
 
 const ACCENT = C.coralDeep;
+
+function ActivityDraftForm({ suggestion, onDone }) {
+  const session = useSession();
+  const token = session?.token;
+  const draft = useMutation(api.activitySuggestions.draft);
+  const [category, setCategory] = useState("");
+  const [cost, setCost] = useState("");
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!category) { alert("Need category"); return; }
+    try {
+      await draft({ token, suggestionId: suggestion._id, category, cost: cost || undefined });
+      onDone();
+    } catch (err) { alert(err.message); }
+  };
+  return (
+    <form onSubmit={submit} style={{ marginTop: 8, padding: 8, background: C.sand, borderRadius: 8 }}>
+      <input value={category} onChange={(e) => setCategory(e.target.value)}
+        placeholder="Category (excursion / dining / nightlife)"
+        style={{ padding: 6, marginRight: 6, fontFamily: "Nunito, sans-serif" }} />
+      <input value={cost} onChange={(e) => setCost(e.target.value)}
+        placeholder="Cost (optional)"
+        style={{ padding: 6, fontFamily: "Nunito, sans-serif" }} />
+      <button type="submit"
+        style={{ marginLeft: 6, padding: 6, background: C.green, color: C.white, border: 0, borderRadius: 4 }}>
+        Send to vote
+      </button>
+    </form>
+  );
+}
+
+function ActivityProposedRow({ suggestion }) {
+  const session = useSession();
+  const token = session?.token;
+  const reject = useMutation(api.activitySuggestions.reject);
+  const [drafting, setDrafting] = useState(false);
+  return (
+    <div style={{ padding: "8px 0", borderBottom: `1px solid ${C.sandDark}` }}>
+      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", color: C.dark }}>{suggestion.title}</div>
+      {suggestion.notes && (
+        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody }}>
+          {suggestion.notes}
+        </div>
+      )}
+      {!drafting && (
+        <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+          <button type="button" onClick={() => setDrafting(true)}
+            style={{ padding: "4px 10px", borderRadius: 6, background: C.sand, border: `1px solid ${C.sandDark}` }}>
+            Draft
+          </button>
+          <button type="button"
+            onClick={() => reject({ token, suggestionId: suggestion._id }).catch((e) => alert(e.message))}
+            style={{ padding: "4px 10px", borderRadius: 6, background: C.coralDeep, color: C.white, border: 0 }}>
+            Reject
+          </button>
+        </div>
+      )}
+      {drafting && (
+        <ActivityDraftForm suggestion={suggestion} onDone={() => setDrafting(false)} />
+      )}
+    </div>
+  );
+}
 
 function ActionButton({ onClick, variant = "primary", children, disabled }) {
   const base = {
@@ -48,6 +112,10 @@ export default function AdminPage() {
   const allSuggestions = useQuery(api.suggestions.list, {}) ?? [];
   const proposed = allSuggestions.filter((s) => s.status === "proposed");
   const voting = allSuggestions.filter((s) => s.status === "voting");
+
+  const allActSugg = useQuery(api.activitySuggestions.list, {}) ?? [];
+  const actProposed = allActSugg.filter((s) => s.status === "proposed");
+  const actVoting = allActSugg.filter((s) => s.status === "voting");
 
   if (!token) {
     return (
@@ -171,6 +239,38 @@ export default function AdminPage() {
                     padding: "6px 0", fontFamily: "Nunito, sans-serif", fontSize: 13,
                   }}>
                     {s.title} — {s.points} pts · 👍 {s.yesCount} 👎 {s.noCount}
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </Reveal>
+      </SectionBand>
+
+      <SectionBand bg="white" pad="32px 0" innerMaxWidth={520}>
+        <Reveal>
+          <SectionHeader label="Crowdsource" title="Activity ideas" accent={C.turquoise} compact />
+        </Reveal>
+        <Reveal>
+          <Card>
+            <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 8 }}>
+              Awaiting draft ({actProposed.length})
+            </div>
+            {actProposed.length === 0
+              ? <div style={{ ...BODY, fontSize: 13 }}>No new ideas.</div>
+              : actProposed.map((s) => (
+                <ActivityProposedRow key={s._id} suggestion={s} />
+              ))}
+            {actVoting.length > 0 && (
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.sandDark}` }}>
+                <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 8 }}>
+                  Currently voting ({actVoting.length})
+                </div>
+                {actVoting.map((s) => (
+                  <div key={s._id} style={{
+                    padding: "6px 0", fontFamily: "Nunito, sans-serif", fontSize: 13,
+                  }}>
+                    {s.title} — {s.category} · 👍 {s.yesCount} 👎 {s.noCount}
                   </div>
                 ))}
               </div>
