@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { PLANNED_ACTIVITIES, UNPLANNED_ACTIVITIES } from "../data/activities.js";
 import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
 import ActivityCommentThread from "./ActivityCommentThread.jsx";
+import ProposeActivityForm from "./ProposeActivityForm.jsx";
 
 function playerName(slug) {
   const p = PLAYERS.find((pl) => pl.slug === slug);
@@ -21,6 +24,8 @@ function voteStyle(active, color) {
 
 export default function AdventuresPanel({ mySlug, allVotes, onVote }) {
   const [expandedId, setExpandedId] = useState(null);
+  const allActivitySuggestions = useQuery(api.activitySuggestions.list, {}) ?? [];
+  const approved = allActivitySuggestions.filter((s) => s.status === "approved");
 
   const votesByActivity = new Map();
   for (const v of allVotes) {
@@ -200,6 +205,26 @@ export default function AdventuresPanel({ mySlug, allVotes, onVote }) {
       <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${C.sandDark}` }}>
         {renderList(UNPLANNED_ACTIVITIES)}
       </div>
+
+      {approved.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          {approved.map((s) => (
+            <div key={s._id} style={{
+              padding: "10px 12px", borderBottom: `1px solid ${C.sandDark}`,
+              display: "flex", alignItems: "center", gap: 8,
+            }}>
+              <span style={{ fontSize: 18 }}>✨</span>
+              <div style={{ flex: 1, fontFamily: "Nunito, sans-serif" }}>
+                <div style={{ fontWeight: 700, color: C.dark }}>{s.title}</div>
+                <div style={{ fontSize: 11, color: C.textBody }}>
+                  Suggested · {s.category} · {s.cost ?? "TBD"}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <ProposeActivityForm />
     </div>
   );
 }
