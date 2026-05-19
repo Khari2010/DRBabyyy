@@ -11,7 +11,7 @@ export type SeedChallenge = {
   category: string;
 };
 
-export const SEED_CHALLENGES: SeedChallenge[] = [
+export const SEED_CHALLENGES = [
   { challengeId: "kiss-someone", title: "Kiss Someone", icon: "💋", points: 100, category: "social" },
   { challengeId: "sing-in-public", title: "Sing in Public", icon: "🎤", points: 15, bonus: "+50 crowd, +50 money", category: "wild" },
   { challengeId: "run-1km", title: "Run 1km", icon: "🏃", points: 20, category: "fitness" },
@@ -47,11 +47,11 @@ export const SEED_CHALLENGES: SeedChallenge[] = [
   { challengeId: "tattoo", title: "Get a Tattoo", icon: "🖋️", points: 250, category: "wild" },
   { challengeId: "all-nighter", title: "All Nighter (until midday)", icon: "🌙", points: 40, category: "wild" },
   { challengeId: "scavenger-hunt", title: "Scavenger Hunt (Food/Plant/Animal/Object)", icon: "🔍", points: 80, category: "squad" },
-];
+] as const satisfies readonly SeedChallenge[];
 
 export const NEGATIVE_POINTS_CONST = [
-  { id: "throw-up", action: "Throwing up", points: -50, icon: "🤮" },
-  { id: "bed-pre-11", action: "Going to bed before 11pm", points: -40, icon: "😴" },
-  { id: "debate-drinks", action: "Debating chosen drinks", points: -10, icon: "🙄" },
-  { id: "first-to-bed", action: "First to go to bed", points: -30, icon: "💤" },
+  { negativeId: "throw-up", action: "Throwing up", points: -50, icon: "🤮" },
+  { negativeId: "bed-pre-11", action: "Going to bed before 11pm", points: -40, icon: "😴" },
+  { negativeId: "debate-drinks", action: "Debating chosen drinks", points: -10, icon: "🙄" },
+  { negativeId: "first-to-bed", action: "First to go to bed", points: -30, icon: "💤" },
 ] as const;
