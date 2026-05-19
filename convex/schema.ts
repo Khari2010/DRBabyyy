@@ -127,4 +127,11 @@ export default defineSchema({
   adminRoles: defineTable({
     playerSlug: v.string(),
   }).index("by_slug", ["playerSlug"]),
+
+  dayComments: defineTable({
+    dayDate: v.string(),
+    authorSlug: v.string(),
+    text: v.string(),
+    createdAt: v.number(),
+  }).index("by_day", ["dayDate"]),
 });
