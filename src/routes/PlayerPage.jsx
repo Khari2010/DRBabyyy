@@ -282,7 +282,7 @@ export default function PlayerPage() {
             accent={C.turquoise}
           />
         </Reveal>
-        <AboutYourHoliday player={player} myFlights={myFlights} />
+        <AboutYourHoliday player={player} myFlights={myFlights} defaultCollapsed />
       </section>
 
       {/* ── ADVENTURES ───────────────────────────────────────────────────── */}

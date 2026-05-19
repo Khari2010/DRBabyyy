@@ -1,20 +1,170 @@
+import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useSession } from "../lib/useSession.js";
 import { C } from "../data/colors.js";
 import { RESORT, TRIP_INFO } from "../data/resort.js";
 import Reveal from "./Reveal.jsx";
 import Countdown from "./Countdown.jsx";
 import { getFlightDate } from "../lib/trip.js";
+import RoomNumberEditor from "./RoomNumberEditor.jsx";
 
 // Home-style "About the Holiday" band — centred eyebrow + title, then
 // stacked sub-module cards. Each card uses the standard C.white / radius 20 /
 // shadow 0 2px 12px rgba(0,0,0,0.04) pattern (optionally player-tinted).
-export default function AboutYourHoliday({ player, myFlights }) {
+export default function AboutYourHoliday({ player, myFlights, defaultCollapsed = false }) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const session = useSession();
+  const room = useQuery(
+    api.players.myRoomNumber,
+    session?.token ? { token: session.token } : "skip",
+  );
+  const returnFlight = (myFlights ?? []).find((f) => f.type === "Return");
   const target = getFlightDate(player);
+
+  if (collapsed) {
+    return (
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 24px" }}>
+        <div
+          style={{
+            ...tintedCardBase(player.color),
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 8,
+            }}
+          >
+            <Eyebrow color={player.color}>About your trip</Eyebrow>
+            <span style={{ flex: 1 }} />
+            <button
+              type="button"
+              onClick={() => setCollapsed(false)}
+              style={{
+                padding: "4px 10px",
+                borderRadius: 6,
+                background: "transparent",
+                border: `1px solid ${player.color}`,
+                color: player.color,
+                fontFamily: "Nunito, sans-serif",
+                fontWeight: 800,
+                fontSize: 11,
+                cursor: "pointer",
+              }}
+            >
+              Expand
+            </button>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: 12,
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: C.textBody,
+                  fontFamily: "Nunito, sans-serif",
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                  marginBottom: 4,
+                }}
+              >
+                Return flight
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Dela Gothic One', sans-serif",
+                  fontSize: 18,
+                  color: C.dark,
+                  lineHeight: 1.1,
+                }}
+              >
+                {returnFlight ? `${returnFlight.date} · ${returnFlight.flight}` : "TBD"}
+              </div>
+              {returnFlight && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: C.textBody,
+                    fontFamily: "Nunito, sans-serif",
+                    marginTop: 2,
+                  }}
+                >
+                  {returnFlight.depart} → {returnFlight.arrive}
+                </div>
+              )}
+            </div>
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: C.textBody,
+                  fontFamily: "Nunito, sans-serif",
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                  marginBottom: 4,
+                }}
+              >
+                Room
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Dela Gothic One', sans-serif",
+                  fontSize: 18,
+                  color: C.dark,
+                  lineHeight: 1.1,
+                }}
+              >
+                {room ?? "—"}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
+      {/* Collapse button */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+        <button
+          type="button"
+          onClick={() => setCollapsed(true)}
+          style={{
+            padding: "4px 10px",
+            borderRadius: 6,
+            background: "transparent",
+            border: `1px solid ${player.color}`,
+            color: player.color,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 800,
+            fontSize: 11,
+            cursor: "pointer",
+          }}
+        >
+          Collapse
+        </button>
+      </div>
+
       {/* Countdown card */}
       <Reveal delay={0.05}>
         <CountdownCard player={player} target={target} />
+      </Reveal>
+
+      {/* Room number editor */}
+      <Reveal delay={0.08}>
+        <div style={{ marginTop: 16 }}>
+          <RoomNumberEditor defaultCollapsed />
+        </div>
       </Reveal>
 
       {/* Flights + Stay row */}
