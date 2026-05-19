@@ -65,7 +65,7 @@ function presenceNoteFor(player, day) {
   return null;
 }
 
-function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick }) {
+function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick, isToday }) {
   const [hovered, setHovered] = useState(false);
   const color = DAY_COLORS[dayIndex % DAY_COLORS.length];
   const imgKey = DAY_IMAGES[dayIndex % DAY_IMAGES.length];
@@ -131,6 +131,26 @@ function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick }) {
             background: `linear-gradient(180deg, ${color}88 0%, ${color}DD 100%)`,
           }}
         />
+
+        {/* TODAY ribbon */}
+        {isToday && (
+          <div style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            zIndex: 4,
+            background: C.coralDeep,
+            color: C.white,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 900,
+            fontSize: 10,
+            padding: "3px 10px",
+            borderRadius: 999,
+            letterSpacing: 1,
+          }}>
+            TODAY
+          </div>
+        )}
 
         {/* You're here pill (top-left to avoid clashing with resort/cost) */}
         {isPresent && (
@@ -223,6 +243,20 @@ function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick }) {
           <div>
             <div
               style={{
+                fontFamily: "Nunito, sans-serif",
+                fontWeight: 800,
+                fontSize: 11,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                color: C.white,
+                opacity: 0.85,
+                marginBottom: 2,
+              }}
+            >
+              {day.dow}
+            </div>
+            <div
+              style={{
                 fontFamily: "'Dela Gothic One', sans-serif",
                 fontSize: 22,
                 color: C.white,
@@ -241,7 +275,7 @@ function DayCard({ day, dayIndex, isActive, isPresent, playerColor, onClick }) {
                 textTransform: "uppercase",
               }}
             >
-              {day.dow} — {day.title}
+              {day.title}
             </div>
           </div>
         </div>
@@ -451,7 +485,8 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
 }
 
 export default function YourItineraryHome({ player }) {
-  const [activeDay, setActiveDay] = useState(() => currentTripDayIndex(DAYS));
+  const todayIdx = currentTripDayIndex(DAYS);
+  const [activeDay, setActiveDay] = useState(() => todayIdx);
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -543,7 +578,36 @@ export default function YourItineraryHome({ player }) {
                 position: "relative",
               }}
             >
-              {d.date.split(" ")[0]}
+              {i === todayIdx && (
+                <span style={{
+                  position: "absolute",
+                  top: -10,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  background: C.coralDeep,
+                  color: C.white,
+                  fontFamily: "Nunito, sans-serif",
+                  fontWeight: 900,
+                  fontSize: 8,
+                  padding: "1px 6px",
+                  borderRadius: 999,
+                  letterSpacing: 0.5,
+                  whiteSpace: "nowrap",
+                }}>
+                  TODAY
+                </span>
+              )}
+              <span style={{
+                display: "flex", flexDirection: "column", alignItems: "center",
+                lineHeight: 1, gap: 1,
+              }}>
+                <span style={{ fontSize: 11, fontWeight: 900 }}>{d.date.split(" ")[0]}</span>
+                <span style={{
+                  fontSize: 8, fontWeight: 700, letterSpacing: 0.5,
+                  textTransform: "uppercase",
+                  opacity: 0.7,
+                }}>{d.dow}</span>
+              </span>
               {present && !isActive && (
                 <span
                   style={{
@@ -641,6 +705,7 @@ export default function YourItineraryHome({ player }) {
             isPresent={d.who.includes(player.name)}
             playerColor={player.color}
             onClick={() => scrollToDay(i)}
+            isToday={i === todayIdx}
           />
         ))}
       </div>
