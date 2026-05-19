@@ -182,3 +182,57 @@ describe("entries.dispute", () => {
     expect(after?.disputeCount).toBe(1);
   });
 });
+
+describe("entries.logNegative", () => {
+  it("inserts a negative entry with appliedBySlug", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedGameLive(t);
+    await t.mutation(api.entries.logNegative, {
+      token: "tok-kai",
+      subjectSlug: "camara",
+      negativeId: "throw-up",
+    });
+    const rows = await t.run((ctx) => ctx.db.query("entries").collect());
+    expect(rows.length).toBe(1);
+    expect(rows[0].type).toBe("negative");
+    expect(rows[0].subjectSlug).toBe("camara");
+    expect(rows[0].appliedBySlug).toBe("kai");
+    expect(rows[0].points).toBe(-50);
+  });
+
+  it("rejects self-foul", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedGameLive(t);
+    await expect(t.mutation(api.entries.logNegative, {
+      token: "tok-kai",
+      subjectSlug: "kai",
+      negativeId: "throw-up",
+    })).rejects.toThrow(/cannot foul yourself/);
+  });
+
+  it("rejects unknown negativeId", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedGameLive(t);
+    await expect(t.mutation(api.entries.logNegative, {
+      token: "tok-kai",
+      subjectSlug: "camara",
+      negativeId: "made-up",
+    })).rejects.toThrow(/unknown negative action/);
+  });
+
+  it("rejects when games not live", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await t.run(async (ctx) => {
+      await ctx.db.insert("gameState", {
+        gamesLive: false, currentDayNumber: 0, currentDailyKey: "pre-trip", updatedAt: Date.now(),
+      });
+    });
+    await expect(t.mutation(api.entries.logNegative, {
+      token: "tok-kai", subjectSlug: "camara", negativeId: "throw-up",
+    })).rejects.toThrow(/games not live/);
+  });
+});

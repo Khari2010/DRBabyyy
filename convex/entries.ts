@@ -2,6 +2,7 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, getGameState } from "./helpers";
+import { NEGATIVE_POINTS_CONST } from "./_seedData/challenges";
 
 export const claim = mutation({
   args: {
@@ -90,5 +91,31 @@ export const dispute = mutation({
       patch.resolvedAt = Date.now();
     }
     await ctx.db.patch(entryId, patch);
+  },
+});
+
+export const logNegative = mutation({
+  args: { token: v.string(), subjectSlug: v.string(), negativeId: v.string() },
+  handler: async (ctx, { token, subjectSlug, negativeId }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    if (subjectSlug === playerSlug) throw new Error("cannot foul yourself");
+    const state = await getGameState(ctx);
+    if (!state || !state.gamesLive) throw new Error("games not live");
+
+    const def = NEGATIVE_POINTS_CONST.find((n) => n.negativeId === negativeId);
+    if (!def) throw new Error("unknown negative action");
+
+    await ctx.db.insert("entries", {
+      type: "negative",
+      subjectSlug,
+      appliedBySlug: playerSlug,
+      negativeId,
+      points: def.points,
+      status: "active",
+      vouchCount: 0,
+      disputeCount: 0,
+      dailyKey: state.currentDailyKey,
+      createdAt: Date.now(),
+    });
   },
 });
