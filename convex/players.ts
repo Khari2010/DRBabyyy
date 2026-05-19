@@ -87,3 +87,69 @@ export const myHolidayName = query({
     return player?.holidayName ?? null;
   },
 });
+
+export const setMyRoomNumber = mutation({
+  args: { token: v.string(), roomNumber: v.string() },
+  handler: async (ctx, { token, roomNumber }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (!session) throw new Error("invalid session");
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_slug", (q) => q.eq("slug", session.playerSlug))
+      .unique();
+    if (!player) throw new Error("player not found");
+    const clean = roomNumber.trim().slice(0, 16);
+    await ctx.db.patch(player._id, { roomNumber: clean || undefined });
+    return { roomNumber: clean };
+  },
+});
+
+export const clearMyRoomNumber = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (!session) throw new Error("invalid session");
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_slug", (q) => q.eq("slug", session.playerSlug))
+      .unique();
+    if (!player) throw new Error("player not found");
+    await ctx.db.patch(player._id, { roomNumber: undefined });
+  },
+});
+
+export const roomNumberMap = query({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("players").collect();
+    const map: Record<string, string> = {};
+    for (const p of all) {
+      if (p.roomNumber && p.roomNumber.length > 0) {
+        map[p.slug] = p.roomNumber;
+      }
+    }
+    return map;
+  },
+});
+
+export const myRoomNumber = query({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (!session) return null;
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_slug", (q) => q.eq("slug", session.playerSlug))
+      .unique();
+    return player?.roomNumber ?? null;
+  },
+});
