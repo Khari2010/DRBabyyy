@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PLANNED_ACTIVITIES, UNPLANNED_ACTIVITIES } from "../data/activities.js";
 import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
+import ActivityCommentThread from "./ActivityCommentThread.jsx";
 
 function playerName(slug) {
   const p = PLAYERS.find((pl) => pl.slug === slug);
@@ -120,6 +121,7 @@ export default function AdventuresPanel({ mySlug, allVotes, onVote }) {
                   )}
                 </div>
               )}
+              <ActivityCommentThread activityId={a.id} />
             </div>
           )}
         </div>
