@@ -1,5 +1,6 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { NEGATIVE_POINTS_CONST } from "./_seedData/challenges";
 
 type Row = { slug: string; total: number; claimCount: number; verifiedCount: number; earliestAt: number };
 
@@ -64,7 +65,22 @@ export const getRecentActivity = query({
           .unique();
         myReaction = reaction?.reaction ?? null;
       }
-      return { ...e, myReaction };
+      let label = "";
+      let labelIcon = "";
+      if (e.type === "challenge" && e.challengeId) {
+        const challenge = await ctx.db
+          .query("challenges")
+          .withIndex("by_challenge_id", (q) => q.eq("challengeId", e.challengeId!))
+          .unique();
+        label = challenge?.title ?? e.challengeId;
+        labelIcon = challenge?.icon ?? "";
+      } else if (e.type === "negative" && e.negativeId) {
+        const neg = NEGATIVE_POINTS_CONST.find((n) => n.negativeId === e.negativeId);
+        label = neg?.action ?? e.negativeId;
+        labelIcon = neg?.icon ?? "";
+      }
+
+      return { ...e, myReaction, label, labelIcon };
     }));
   },
 });

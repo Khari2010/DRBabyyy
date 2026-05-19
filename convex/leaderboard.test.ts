@@ -90,3 +90,75 @@ describe("leaderboard.getRecentActivity with token", () => {
     expect(rows[0].myReaction).toBeNull();
   });
 });
+
+describe("leaderboard.getRecentActivity joined labels", () => {
+  it("attaches title + icon to challenge entries", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("challenges", {
+        challengeId: "mamajuana",
+        title: "Mamajuana Shot",
+        icon: "🍶",
+        points: 10,
+        category: "drinks",
+        difficulty: "easy",
+        status: "active",
+      });
+      await ctx.db.insert("entries", {
+        type: "challenge",
+        subjectSlug: "khari",
+        challengeId: "mamajuana",
+        points: 10,
+        status: "active",
+        vouchCount: 0,
+        disputeCount: 0,
+        dailyKey: "2026-05-20",
+        createdAt: Date.now(),
+      });
+    });
+    const rows = await t.query(api.leaderboard.getRecentActivity, { limit: 10 });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].label).toBe("Mamajuana Shot");
+    expect(rows[0].labelIcon).toBe("🍶");
+  });
+
+  it("attaches action + icon to negative entries", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", {
+        type: "negative",
+        subjectSlug: "khari",
+        appliedBySlug: "kai",
+        negativeId: "bed-pre-11",
+        points: -40,
+        status: "active",
+        vouchCount: 0,
+        disputeCount: 0,
+        dailyKey: "2026-05-20",
+        createdAt: Date.now(),
+      });
+    });
+    const rows = await t.query(api.leaderboard.getRecentActivity, { limit: 10 });
+    expect(rows[0].label).toBe("Going to bed before 11pm");
+    expect(rows[0].labelIcon).toBe("😴");
+  });
+
+  it("falls back to id when challenge/negative is missing", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", {
+        type: "challenge",
+        subjectSlug: "khari",
+        challengeId: "deleted-challenge",
+        points: 10,
+        status: "active",
+        vouchCount: 0,
+        disputeCount: 0,
+        dailyKey: "2026-05-20",
+        createdAt: Date.now(),
+      });
+    });
+    const rows = await t.query(api.leaderboard.getRecentActivity, { limit: 10 });
+    expect(rows[0].label).toBe("deleted-challenge");
+  });
+});
