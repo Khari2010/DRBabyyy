@@ -9,6 +9,7 @@ import { useSession } from "../lib/useSession.js";
 import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 import FoulModal from "../components/FoulModal.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import RevealFlow from "../components/RevealFlow.jsx";
 
 function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
@@ -65,6 +66,16 @@ export default function LeaderboardPage() {
   const [foulTarget, setFoulTarget] = useState(null);
   const { currentDailyKey, currentDayNumber, gamesLive } = useGameState();
   const session = useSession();
+  const lastClosedDay = currentDayNumber > 1 ? currentDayNumber - 1 : null;
+  const lastClosed = useQuery(
+    api.rollovers.get,
+    lastClosedDay ? { dayNumber: lastClosedDay } : "skip"
+  );
+  const allRollovers = useQuery(api.rollovers.listAll, {}) ?? [];
+  const pendingReveal = lastClosed && lastClosed.loserSlug && !lastClosed.forfeitId;
+  const history = allRollovers
+    .filter((r) => r.loserSlug && r.forfeitId)
+    .sort((a, b) => b.dayNumber - a.dayNumber);
   const handleFoul = session?.slug ? setFoulTarget : null;
   const activity = useQuery(
     api.leaderboard.getRecentActivity,
@@ -81,6 +92,10 @@ export default function LeaderboardPage() {
       <div style={{ color: C.textBody, margin: "4px 0 16px" }}>
         {gamesLive ? `Day ${currentDayNumber}` : "Games not live yet"}
       </div>
+
+      {pendingReveal && lastClosed && (
+        <RevealFlow rollover={lastClosed} />
+      )}
 
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         {[["daily", "Today"], ["holiday", "Holiday"]].map(([k, label]) => (
@@ -135,6 +150,24 @@ export default function LeaderboardPage() {
           onClose={() => setFoulTarget(null)}
         />
       )}
+
+      {history.length > 0 && (
+        <section style={{ marginTop: 24 }}>
+          <h2 style={{ fontSize: 18 }}>Punishment history</h2>
+          <div style={{ background: C.white, borderRadius: 12, overflow: "hidden" }}>
+            {history.map((r) => {
+              const player = PLAYERS.find((p) => p.slug === r.loserSlug);
+              return (
+                <div key={r._id} style={{ padding: 10, borderBottom: `1px solid ${C.sandDark}`, display: "flex", justifyContent: "space-between" }}>
+                  <span>Day {r.dayNumber} — {player?.name ?? r.loserSlug}</span>
+                  <strong>{r.forfeitLabel}</strong>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       <BottomNav />
     </main>
   );

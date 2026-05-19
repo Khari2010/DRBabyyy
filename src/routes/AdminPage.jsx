@@ -36,7 +36,7 @@ export default function AdminPage() {
     const closingDay = state.currentDayNumber;
     try {
       await trigger({ token });
-      if (wasLive) navigate(`/punishment-reveal?day=${closingDay}`);
+      if (wasLive) navigate(`/leaderboard`);
     } catch (err) {
       alert(err.message);
     }

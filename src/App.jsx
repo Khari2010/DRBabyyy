@@ -5,7 +5,6 @@ import GamesPage from "./routes/GamesPage.jsx";
 import LeaderboardPage from "./routes/LeaderboardPage.jsx";
 import AdminPage from "./routes/AdminPage.jsx";
 import StyleGuide from "./routes/StyleGuide.jsx";
-import PunishmentRevealPage from "./routes/PunishmentRevealPage.jsx";
 import PlayerGamesPage from "./routes/PlayerGamesPage.jsx";
 
 export default function App() {
@@ -19,7 +18,6 @@ export default function App() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/styleguide" element={<StyleGuide />} />
-        <Route path="/punishment-reveal" element={<PunishmentRevealPage />} />
       </Routes>
     </BrowserRouter>
   );
