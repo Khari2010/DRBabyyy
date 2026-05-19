@@ -483,7 +483,7 @@ function heroImgForDay(dayIndex) {
   return IMAGES[key];
 }
 
-function DayDetails({ day, dayIndex, player, presenceNote }) {
+function DayDetails({ day, dayIndex, player, presenceNote, isToday, onCollapse }) {
   const color = DAY_COLORS[dayIndex % DAY_COLORS.length];
   const isPresent = day.who.includes(player.name);
   const accent = isPresent ? player.color : color;
@@ -531,8 +531,38 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
           background: `linear-gradient(135deg, ${accent}, ${accent}DD)`,
           padding: "20px clamp(18px, 4vw, 24px)",
           color: C.white,
+          position: "relative",
         }}
       >
+        {isToday && (
+          <div style={{
+            position: "absolute", top: 12,
+            right: onCollapse ? 100 : 12,
+            background: C.coralDeep, color: C.white,
+            fontFamily: "Nunito, sans-serif", fontWeight: 900,
+            fontSize: 10, padding: "3px 10px",
+            borderRadius: 999, letterSpacing: 1, zIndex: 4,
+          }}>
+            TODAY
+          </div>
+        )}
+        {onCollapse && (
+          <button
+            type="button"
+            onClick={onCollapse}
+            style={{
+              position: "absolute", top: 10, right: 10, zIndex: 4,
+              padding: "4px 10px", borderRadius: 999,
+              background: "rgba(255,255,255,0.85)",
+              border: 0,
+              color: C.dark,
+              fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 11,
+              cursor: "pointer",
+            }}
+          >
+            Collapse ▴
+          </button>
+        )}
         <div
           style={{
             fontFamily: "Nunito, sans-serif",
@@ -847,14 +877,13 @@ export default function YourItineraryHome({ player }) {
           return (
             <div key={d.date} data-day-row={i}>
               {isActive ? (
-                <DayCard
+                <DayDetails
                   day={d}
                   dayIndex={i}
-                  isActive={true}
-                  isPresent={present}
+                  player={player}
+                  presenceNote={!present ? presenceNoteFor(player, d) : null}
                   isToday={i === todayIdx}
-                  playerColor={player.color}
-                  onClick={() => setActiveDay(activeDay === i ? -1 : i)}
+                  onCollapse={() => setActiveDay(-1)}
                 />
               ) : (
                 <CollapsedDayRow
@@ -864,14 +893,6 @@ export default function YourItineraryHome({ player }) {
                   isToday={i === todayIdx}
                   playerColor={player.color}
                   onClick={() => scrollToDay(i)}
-                />
-              )}
-              {isActive && (
-                <DayDetails
-                  day={d}
-                  dayIndex={i}
-                  player={player}
-                  presenceNote={!present ? presenceNoteFor(player, d) : null}
                 />
               )}
             </div>
