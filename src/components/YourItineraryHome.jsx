@@ -3,6 +3,7 @@ import { DAYS } from "../data/itinerary.js";
 import { currentTripDayIndex } from "../lib/drTime.js";
 import { flightsForPlayer } from "../data/flights.js";
 import { C } from "../data/colors.js";
+import DayCommentThread from "./DayCommentThread.jsx";
 
 // Same colour + image mapping as the home page itinerary section.
 const DAY_COLORS = [
@@ -443,6 +444,7 @@ function DayDetails({ day, dayIndex, player, presenceNote }) {
             More details pending — drop a comment.
           </div>
         )}
+        <DayCommentThread dayDate={day.date} />
       </div>
     </div>
   );
