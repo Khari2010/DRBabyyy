@@ -21,7 +21,7 @@ import EndDayTakeover from "../components/EndDayTakeover.jsx";
 import PlayerDayDrawer from "../components/PlayerDayDrawer.jsx";
 import FlowStateVoteCard from "../components/FlowStateVoteCard.jsx";
 import DaySummaryCard from "../components/DaySummaryCard.jsx";
-import WheelPreviewCard from "../components/WheelPreviewCard.jsx";
+import WheelTabPane from "../components/WheelTabPane.jsx";
 
 const ACCENT = C.gold;
 
@@ -231,6 +231,7 @@ export default function LeaderboardPage() {
   const [takeoverOpen, setTakeoverOpen] = useState(false);
   const [takeoverDay, setTakeoverDay] = useState(null);
   const [drawerSlug, setDrawerSlug] = useState(null);
+  const [feedTab, setFeedTab] = useState("activity");
 
   return (
     <div style={{ minHeight: "100vh", background: C.sand }}>
@@ -282,10 +283,6 @@ export default function LeaderboardPage() {
         {tab === "daily" && <FlowStateVoteCard />}
 
         <Reveal>
-          <WheelPreviewCard />
-        </Reveal>
-
-        <Reveal>
           <Card padding={0} style={{ overflow: "hidden" }}>
             {rowsLoading ? (
               [0, 1, 2, 3].map((i) => (
@@ -319,15 +316,41 @@ export default function LeaderboardPage() {
         <SectionBand bg="white" pad="40px 0" innerMaxWidth={520}>
           <Reveal>
             <SectionHeader
-              label="Live feed"
-              title="Recent activity"
-              accent={C.turquoise}
+              label={feedTab === "activity" ? "Live feed" : "What's at stake"}
+              title={feedTab === "activity" ? "Recent activity" : "The wheel"}
+              accent={feedTab === "activity" ? C.turquoise : C.coralDeep}
               compact
             />
           </Reveal>
           <Reveal>
+            <div style={{
+              display: "flex",
+              gap: 8,
+              marginBottom: 16,
+              justifyContent: "center",
+              alignItems: "center",
+            }}>
+              <Pill
+                active={feedTab === "activity"}
+                accent={C.turquoise}
+                onClick={() => setFeedTab("activity")}
+              >
+                Activity
+              </Pill>
+              <Pill
+                active={feedTab === "wheel"}
+                accent={C.coralDeep}
+                onClick={() => setFeedTab("wheel")}
+              >
+                🎰 The Wheel
+              </Pill>
+            </div>
+          </Reveal>
+          <Reveal>
             <Card padding={0} style={{ overflow: "hidden" }}>
-              {activityLoading ? (
+              {feedTab === "wheel" ? (
+                <WheelTabPane />
+              ) : activityLoading ? (
                 [0, 1, 2].map((i) => (
                   <BoardRowSkeleton key={i} isLast={i === 2} />
                 ))
