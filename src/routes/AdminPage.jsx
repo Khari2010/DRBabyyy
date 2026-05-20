@@ -199,12 +199,12 @@ export default function AdminPage() {
             </div>
             <div style={{ ...BODY, fontSize: 13, marginBottom: 14 }}>
               {state.gamesLive
-                ? "Tap to lock today's scores and reveal the loser."
+                ? "Fallback — End Day lives on the Board now. Use this if the Board takeover is unavailable."
                 : "Tap to kick off Day 1 and unlock claiming."}
             </div>
             <ActionButton onClick={handleRollover} variant="primary">
               {state.gamesLive
-                ? `Trigger rollover → Day ${state.currentDayNumber + 1}`
+                ? `Manual rollover (fallback) → Day ${state.currentDayNumber + 1}`
                 : "Start the games"}
             </ActionButton>
           </Card>
