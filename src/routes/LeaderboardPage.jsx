@@ -85,6 +85,33 @@ function BoardRow({ row, rank, onFoul, isMe, isLast }) {
   );
 }
 
+function BoardRowSkeleton({ isLast }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 12,
+      padding: "12px 14px",
+      borderBottom: isLast ? undefined : `1px solid ${C.sandDark}`,
+    }}>
+      <div style={{ width: 28 }} />
+      <div style={{
+        width: 32, height: 32, borderRadius: "50%", background: C.sandDark, opacity: 0.5,
+      }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          width: "40%", height: 12, borderRadius: 4, background: C.sandDark, opacity: 0.5,
+          marginBottom: 6,
+        }} />
+        <div style={{
+          width: "25%", height: 10, borderRadius: 4, background: C.sandDark, opacity: 0.3,
+        }} />
+      </div>
+      <div style={{
+        width: 40, height: 18, borderRadius: 4, background: C.sandDark, opacity: 0.5,
+      }} />
+    </div>
+  );
+}
+
 export default function LeaderboardPage() {
   const [tab, setTab] = useState("daily");
   const { currentDailyKey, currentDayNumber, gamesLive } = useGameState();
@@ -93,12 +120,17 @@ export default function LeaderboardPage() {
   const [foulTarget, setFoulTarget] = useState(null);
   const handleFoul = loggedIn ? setFoulTarget : null;
 
-  const daily = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey }) ?? [];
-  const holiday = useQuery(api.leaderboard.getHoliday, {}) ?? [];
-  const activity = useQuery(
+  const dailyRaw = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey });
+  const holidayRaw = useQuery(api.leaderboard.getHoliday, {});
+  const activityRaw = useQuery(
     api.leaderboard.getRecentActivity,
     session?.token ? { limit: 12, token: session.token } : "skip",
-  ) ?? [];
+  );
+  const daily = dailyRaw ?? [];
+  const holiday = holidayRaw ?? [];
+  const activity = activityRaw ?? [];
+  const rowsLoading = (tab === "daily" ? dailyRaw : holidayRaw) === undefined;
+  const activityLoading = !!session?.token && activityRaw === undefined;
   const rows = tab === "daily" ? daily : holiday;
 
   const lastClosedDay = currentDayNumber > 1 ? currentDayNumber - 1 : null;
@@ -232,7 +264,11 @@ export default function LeaderboardPage() {
 
         <Reveal>
           <Card padding={0} style={{ overflow: "hidden" }}>
-            {rows.length === 0 ? (
+            {rowsLoading ? (
+              [0, 1, 2, 3].map((i) => (
+                <BoardRowSkeleton key={i} isLast={i === 3} />
+              ))
+            ) : rows.length === 0 ? (
               <div style={{ padding: 24, textAlign: "center", color: C.textBody, ...BODY }}>
                 No claims yet
               </div>
@@ -264,9 +300,15 @@ export default function LeaderboardPage() {
           </Reveal>
           <Reveal>
             <Card padding={0} style={{ overflow: "hidden" }}>
-              {activity.length === 0
-                ? <div style={{ padding: 24, textAlign: "center", color: C.textBody, ...BODY }}>Nothing yet</div>
-                : activity.map((e) => <EntryRow key={e._id} entry={e} />)}
+              {activityLoading ? (
+                [0, 1, 2].map((i) => (
+                  <BoardRowSkeleton key={i} isLast={i === 2} />
+                ))
+              ) : activity.length === 0 ? (
+                <div style={{ padding: 24, textAlign: "center", color: C.textBody, ...BODY }}>Nothing yet</div>
+              ) : (
+                activity.map((e) => <EntryRow key={e._id} entry={e} />)
+              )}
             </Card>
           </Reveal>
         </SectionBand>
