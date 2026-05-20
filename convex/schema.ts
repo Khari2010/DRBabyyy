@@ -11,6 +11,14 @@ export default defineSchema({
     catchphrase: v.optional(v.string()),
   }).index("by_slug", ["slug"]),
 
+  playerProgress: defineTable({
+    slug: v.string(),
+    visitedLeaderboard: v.boolean(),
+    visitedScavenger: v.boolean(),
+    lockscreenSeen: v.boolean(),
+    welcomeHidden: v.boolean(),
+  }).index("by_slug", ["slug"]),
+
   answers: defineTable({
     playerSlug: v.string(),
     questionId: v.string(),
