@@ -24,6 +24,7 @@ import type * as itemRsvps from "../itemRsvps.js";
 import type * as leaderboard from "../leaderboard.js";
 import type * as players from "../players.js";
 import type * as rollovers from "../rollovers.js";
+import type * as scavenger from "../scavenger.js";
 import type * as seed from "../seed.js";
 import type * as seedChallenges from "../seedChallenges.js";
 import type * as suggestions from "../suggestions.js";
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   leaderboard: typeof leaderboard;
   players: typeof players;
   rollovers: typeof rollovers;
+  scavenger: typeof scavenger;
   seed: typeof seed;
   seedChallenges: typeof seedChallenges;
   suggestions: typeof suggestions;
