@@ -111,4 +111,32 @@ describe("flowVotes.castFlowVote", () => {
     await expect(t.mutation(api.flowVotes.castFlowVote, { token: "bogus", voteeSlug: "khari" }))
       .rejects.toThrow(/invalid session/);
   });
+
+  it("clearFlowVote removes the caller's vote", async () => {
+    const t = convexTest(schema);
+    await seedCrew(t);
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-kai", voteeSlug: "khari" });
+    await t.mutation(api.flowVotes.clearFlowVote, { token: "tok-kai" });
+    const votes = await t.run((ctx) => ctx.db.query("flowVotes").collect());
+    expect(votes.length).toBe(0);
+  });
+
+  it("auto-resolves with a single max when every player has voted", async () => {
+    const t = convexTest(schema);
+    await seedCrew(t); // 3 players: khari, kai, camara
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-khari", voteeSlug: "kai" });
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-camara", voteeSlug: "kai" });
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-kai", voteeSlug: "khari" });
+    // After the third vote, kai has 2, khari has 1 → kai wins.
+    const row = await t.run((ctx) => ctx.db.query("rollovers").first());
+    expect(row?.flowWinnerSlug).toBe("kai");
+    expect(row?.flowResolvedAt).toBeDefined();
+    // +10 entries row exists
+    const entries = await t.run((ctx) => ctx.db.query("entries").collect());
+    const award = entries.find((e) => e.type === "flowWin");
+    expect(award).toBeDefined();
+    expect(award?.subjectSlug).toBe("kai");
+    expect(award?.points).toBe(10);
+    expect(award?.dailyKey).toBe("day-1");
+  });
 });
