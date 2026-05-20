@@ -4,6 +4,7 @@ import { ConvexProvider } from "convex/react";
 import App from "./App.jsx";
 import { convex } from "./lib/convex.js";
 import ToastContainer from "./components/primitives/Toast.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -14,10 +15,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         outline-offset: 2px;
       }
     `}</style>
-    <ConvexProvider client={convex}>
-      <App />
-    </ConvexProvider>
-    <ToastContainer />
+    <ErrorBoundary>
+      <ConvexProvider client={convex}>
+        <App />
+      </ConvexProvider>
+      <ToastContainer />
+    </ErrorBoundary>
   </React.StrictMode>,
 );
 
