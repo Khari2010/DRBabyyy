@@ -1,6 +1,7 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession, requireAdmin } from "./helpers";
+import { requireSession, requireAdmin, getGameState } from "./helpers";
+import { finaliseFlowResolution } from "./flowVotes";
 
 export const resetPasscode = internalMutation({
   args: { slug: v.string() },
@@ -69,5 +70,63 @@ export const resetGame = mutation({
         updatedAt: Date.now(),
       });
     }
+  },
+});
+
+export const adminForceCloseFlowVote = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+    const state = await getGameState(ctx);
+    if (!state) throw new Error("gameState not seeded");
+    const rollover = await ctx.db
+      .query("rollovers")
+      .withIndex("by_day_number", (q) => q.eq("dayNumber", state.currentDayNumber))
+      .first();
+    if (!rollover) throw new Error("no rollover for current day");
+    if (!rollover.loserSlug) throw new Error("day not locked");
+    if (rollover.flowWinnerSlug) throw new Error("already resolved");
+    const votes = await ctx.db
+      .query("flowVotes")
+      .withIndex("by_daily_key", (q) => q.eq("dailyKey", rollover.dailyKey))
+      .collect();
+    await finaliseFlowResolution(ctx, rollover, votes, /* forced */ true);
+  },
+});
+
+export const adminBreakFlowTie = mutation({
+  args: { token: v.string(), voteeSlug: v.string() },
+  handler: async (ctx, { token, voteeSlug }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+    const state = await getGameState(ctx);
+    if (!state) throw new Error("gameState not seeded");
+    const rollover = await ctx.db
+      .query("rollovers")
+      .withIndex("by_day_number", (q) => q.eq("dayNumber", state.currentDayNumber))
+      .first();
+    if (!rollover) throw new Error("no rollover for current day");
+    if (!rollover.flowTieCandidates || rollover.flowTieCandidates.length === 0) {
+      throw new Error("no tie to break");
+    }
+    if (!rollover.flowTieCandidates.includes(voteeSlug)) {
+      throw new Error("not a tied candidate");
+    }
+    await ctx.db.patch(rollover._id, {
+      flowWinnerSlug: voteeSlug,
+      flowResolvedAt: Date.now(),
+      flowTieCandidates: undefined,
+    });
+    await ctx.db.insert("entries", {
+      type: "flowWin",
+      subjectSlug: voteeSlug,
+      points: 10,
+      status: "verified",
+      vouchCount: 0,
+      disputeCount: 0,
+      dailyKey: rollover.dailyKey,
+      createdAt: Date.now(),
+    });
   },
 });

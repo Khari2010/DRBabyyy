@@ -1,5 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { NEGATIVE_POINTS_CONST } from "./_seedData/challenges";
+import { itemById as scavengerItemById } from "../src/data/scavenger.js";
 
 const MAX_HOLIDAY_NAME_LENGTH = 24;
 
@@ -151,5 +153,86 @@ export const myRoomNumber = query({
       .withIndex("by_slug", (q) => q.eq("slug", session.playerSlug))
       .unique();
     return player?.roomNumber ?? null;
+  },
+});
+
+export const getPlayerDay = query({
+  args: {
+    slug: v.string(),
+    dailyKey: v.optional(v.string()),
+  },
+  handler: async (ctx, { slug, dailyKey }) => {
+    const entriesQuery = dailyKey
+      ? ctx.db
+          .query("entries")
+          .withIndex("by_subject_and_daily_key", (q) =>
+            q.eq("subjectSlug", slug).eq("dailyKey", dailyKey),
+          )
+      : ctx.db
+          .query("entries")
+          .withIndex("by_subject", (q) => q.eq("subjectSlug", slug));
+
+    const entries = await entriesQuery.collect();
+    entries.sort((a, b) => a.createdAt - b.createdAt);
+
+    const challenges = await ctx.db.query("challenges").collect();
+    const challengeMap = new Map(challenges.map((c) => [c.challengeId, c]));
+
+    const items = await Promise.all(
+      entries.map(async (e) => {
+        let label = "";
+        let labelIcon = "";
+        let photoUrl: string | null = null;
+        if (e.type === "challenge" && e.challengeId) {
+          const c = challengeMap.get(e.challengeId);
+          label = c?.title ?? e.challengeId;
+          labelIcon = c?.icon ?? "";
+        } else if (e.type === "scavenger" && e.scavengerItemId) {
+          const item = scavengerItemById(e.scavengerItemId);
+          label = item?.name ?? e.scavengerItemId;
+          labelIcon = item?.icon ?? "";
+          if (e.photoStorageId) {
+            photoUrl = await ctx.storage.getUrl(e.photoStorageId);
+          }
+        } else if (e.type === "negative" && e.negativeId) {
+          const def = NEGATIVE_POINTS_CONST.find((n) => n.negativeId === e.negativeId);
+          label = def?.action ?? e.negativeId;
+          labelIcon = def?.icon ?? "";
+        }
+        return {
+          entryId: e._id,
+          type: e.type,
+          label,
+          labelIcon,
+          photoUrl,
+          points: e.points,
+          status: e.status,
+          createdAt: e.createdAt,
+        };
+      }),
+    );
+
+    const claims = items.filter((i) => i.type !== "negative");
+    const fouls = items.filter((i) => i.type === "negative");
+
+    // Vouches received — only count vouches on non-disputed entries.
+    const activeEntryIds = entries
+      .filter((e) => e.status !== "disputed")
+      .map((e) => e._id);
+
+    const vouchedBy: Record<string, number> = {};
+    for (const entryId of activeEntryIds) {
+      const reactions = await ctx.db
+        .query("entryReactions")
+        .withIndex("by_entry", (q) => q.eq("entryId", entryId))
+        .collect();
+      for (const r of reactions) {
+        if (r.reaction === "vouch") {
+          vouchedBy[r.playerSlug] = (vouchedBy[r.playerSlug] ?? 0) + 1;
+        }
+      }
+    }
+
+    return { claims, fouls, vouchedBy };
   },
 });

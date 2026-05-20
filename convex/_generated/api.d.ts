@@ -18,6 +18,7 @@ import type * as auth from "../auth.js";
 import type * as challenges from "../challenges.js";
 import type * as dayComments from "../dayComments.js";
 import type * as entries from "../entries.js";
+import type * as flowVotes from "../flowVotes.js";
 import type * as gameState from "../gameState.js";
 import type * as helpers from "../helpers.js";
 import type * as itemRsvps from "../itemRsvps.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   challenges: typeof challenges;
   dayComments: typeof dayComments;
   entries: typeof entries;
+  flowVotes: typeof flowVotes;
   gameState: typeof gameState;
   helpers: typeof helpers;
   itemRsvps: typeof itemRsvps;

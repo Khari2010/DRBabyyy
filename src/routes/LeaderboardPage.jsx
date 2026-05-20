@@ -19,6 +19,8 @@ import FoulModal from "../components/FoulModal.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import EndDayTakeover from "../components/EndDayTakeover.jsx";
+import PlayerDayDrawer from "../components/PlayerDayDrawer.jsx";
+import FlowStateVoteCard from "../components/FlowStateVoteCard.jsx";
 import { showToast } from "../lib/useToast.js";
 
 const ACCENT = C.gold;
@@ -27,19 +29,23 @@ function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
 }
 
-function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero }) {
+function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero, onTap, isFlowWinner }) {
   const p = playerBySlug(row.slug);
   const isTop3 = rank <= 3;
   const medal = ["🥇", "🥈", "🥉"][rank - 1];
 
   return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: 12,
-      padding: "12px 14px",
-      borderBottom: isLast ? undefined : `1px solid ${C.sandDark}`,
-      background: isMe ? `${p?.color ?? C.coral}08` : "transparent",
-      opacity: isZero ? 0.55 : 1,
-    }}>
+    <div
+      onClick={onTap ? () => onTap(row.slug) : undefined}
+      style={{
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "12px 14px",
+        borderBottom: isLast ? undefined : `1px solid ${C.sandDark}`,
+        background: isMe ? `${p?.color ?? C.coral}08` : "transparent",
+        opacity: isZero ? 0.55 : 1,
+        cursor: onTap ? "pointer" : "default",
+      }}
+    >
       <div style={{
         width: 28, textAlign: "center",
         fontFamily: "'Dela Gothic One', sans-serif",
@@ -54,7 +60,7 @@ function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero }) {
           fontSize: 14, color: C.dark,
           display: "flex", alignItems: "center", gap: 6,
         }}>
-          <span>{displayName(row.slug, holidayMap, p?.name)}</span>
+          <span>{isFlowWinner ? `👑 ${displayName(row.slug, holidayMap, p?.name)}` : displayName(row.slug, holidayMap, p?.name)}</span>
           {isMe && (
             <span style={{
               padding: "1px 6px",
@@ -110,7 +116,10 @@ function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero }) {
       {onFoul && (
         <button
           type="button"
-          onClick={() => onFoul({ slug: row.slug, name: displayName(row.slug, holidayMap, p?.name) })}
+          onClick={(e) => {
+            e.stopPropagation();
+            onFoul({ slug: row.slug, name: displayName(row.slug, holidayMap, p?.name) });
+          }}
           title="Log a foul"
           style={{
             padding: "0 14px", marginLeft: 4, minHeight: 44,
@@ -166,6 +175,11 @@ export default function LeaderboardPage() {
 
   const dailyRaw = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey });
   const holidayRaw = useQuery(api.leaderboard.getHoliday, {});
+  const flowState = useQuery(
+    api.flowVotes.getFlowVoteState,
+    session?.token ? { token: session.token } : {},
+  );
+  const flowHistory = useQuery(api.flowVotes.getFlowHistory, {});
   const activityRaw = useQuery(
     api.leaderboard.getRecentActivity,
     session?.token ? { limit: 12, token: session.token } : "skip",
@@ -219,6 +233,7 @@ export default function LeaderboardPage() {
   const [endDayPending, setEndDayPending] = useState(false);
   const [takeoverOpen, setTakeoverOpen] = useState(false);
   const [takeoverDay, setTakeoverDay] = useState(null);
+  const [drawerSlug, setDrawerSlug] = useState(null);
 
   const canEndDay = !!isAdmin && gamesLive && currentDayEntryCount > 0 && !endDayPending;
 
@@ -328,6 +343,8 @@ export default function LeaderboardPage() {
           </div>
         </Reveal>
 
+        {tab === "daily" && <FlowStateVoteCard />}
+
         <Reveal>
           <Card padding={0} style={{ overflow: "hidden" }}>
             {rowsLoading ? (
@@ -348,7 +365,9 @@ export default function LeaderboardPage() {
                   isLast={i === rows.length - 1}
                   holidayMap={holidayMap}
                   isZero={!!row.isZero}
+                  onTap={setDrawerSlug}
                   onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
+                  isFlowWinner={row.slug === flowState?.winnerSlug && tab === "daily"}
                 />
               ))
             )}
@@ -397,6 +416,7 @@ export default function LeaderboardPage() {
               {history.map((r, i) => {
                 const player = playerBySlug(r.loserSlug);
                 const isLast = i === history.length - 1;
+                const flowWinner = flowHistory?.byDay?.find((d) => d.dayNumber === r.dayNumber)?.winnerSlug;
                 return (
                   <div key={r._id} style={{
                     padding: "12px 14px",
@@ -411,6 +431,11 @@ export default function LeaderboardPage() {
                       <div style={{ fontSize: 12, color: C.textBody, fontFamily: "Nunito, sans-serif" }}>
                         {r.forfeitLabel}
                       </div>
+                      {flowWinner && (
+                        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, marginTop: 2 }}>
+                          👑 {displayName(flowWinner, holidayMap, playerBySlug(flowWinner)?.name)}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -482,6 +507,14 @@ export default function LeaderboardPage() {
           </button>
         </div>
       </BottomSheet>
+
+      <PlayerDayDrawer
+        open={drawerSlug !== null}
+        slug={drawerSlug}
+        dailyKey={tab === "daily" ? currentDailyKey : undefined}
+        dayLabel={tab === "daily" ? (gamesLive ? `Day ${currentDayNumber}` : "Pre-trip") : "Holiday total"}
+        onClose={() => setDrawerSlug(null)}
+      />
 
       <EndDayTakeover
         open={takeoverOpen}
