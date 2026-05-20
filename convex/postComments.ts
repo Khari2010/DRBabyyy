@@ -20,7 +20,7 @@ export const add = mutation({
       text: trimmed,
       createdAt: Date.now(),
     });
-    await ctx.scheduler.runAfter(0, internal.pushNotifications.sendForComment, { commentId });
+    await ctx.scheduler.runAfter(0, internal.pushNotificationsActions.sendForComment, { commentId });
     return commentId;
   },
 });

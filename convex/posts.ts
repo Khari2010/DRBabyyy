@@ -27,7 +27,7 @@ export const create = mutation({
       photoStorageId,
       createdAt: Date.now(),
     });
-    await ctx.scheduler.runAfter(0, internal.pushNotifications.sendForPost, { postId });
+    await ctx.scheduler.runAfter(0, internal.pushNotificationsActions.sendForPost, { postId });
     return postId;
   },
 });
