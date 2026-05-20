@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
@@ -63,6 +63,13 @@ export default function ChallengesSection() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const TRUNCATE_AT = 8;
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    setShowAll(false);
+  }, [searchTerm, sortKey, filters]);
+
   const visibleChallenges = useMemo(() => {
     let filtered = challenges.filter((c) => filters.has(c.difficulty));
     const q = searchTerm.trim().toLowerCase();
@@ -74,6 +81,10 @@ export default function ChallengesSection() {
     }
     return sortChallenges(filtered, sortKey);
   }, [challenges, filters, sortKey, searchTerm]);
+
+  const hasSearch = searchTerm.trim().length > 0;
+  const truncated = !showAll && !hasSearch && visibleChallenges.length > TRUNCATE_AT;
+  const shownChallenges = truncated ? visibleChallenges.slice(0, TRUNCATE_AT) : visibleChallenges;
 
   if (!gamesLive) {
     return (
@@ -281,10 +292,36 @@ export default function ChallengesSection() {
 
       {/* CHALLENGE GRID */}
       <div style={{ display: "grid", gap: 8 }}>
-        {visibleChallenges.map((c) => (
+        {shownChallenges.map((c) => (
           <ChallengeCard key={c.challengeId} challenge={c} onClaim={handleCardTap} />
         ))}
       </div>
+
+      {truncated && (
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          style={{
+            width: "100%",
+            marginTop: 12,
+            padding: "12px 14px",
+            borderRadius: RADIUS.md,
+            border: `1px solid ${C.sandDark}`,
+            background: C.white,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 800,
+            fontSize: 13,
+            color: C.textBody,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          Show all {visibleChallenges.length} <span style={{ color: C.gold }}>→</span>
+        </button>
+      )}
 
       {activeChallenge && <ClaimSheet challenge={activeChallenge} onClose={() => setActiveChallenge(null)} />}
 
