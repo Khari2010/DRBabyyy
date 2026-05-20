@@ -436,6 +436,48 @@ describe("entries.claimScavenger", () => {
   });
 });
 
+describe("entries.rejectScavenger", () => {
+  it("disputes the entry and slides later finders up one rank", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "khari", "tok-khari");
+    await seedSession(t, "adan", "tok-adan");
+    await seedGameLive(t);
+    // Make Khari (the rejecter) an admin.
+    await t.run(async (ctx) => {
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
+    });
+
+    const sid = () => t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    await t.mutation(api.entries.claimScavenger, { token: "tok-kai", scavengerItemId: "coconut", photoStorageId: await sid() });
+    await t.mutation(api.entries.claimScavenger, { token: "tok-khari", scavengerItemId: "coconut", photoStorageId: await sid() });
+    await t.mutation(api.entries.claimScavenger, { token: "tok-adan", scavengerItemId: "coconut", photoStorageId: await sid() });
+
+    const kaiEntry = await t.run((ctx) =>
+      ctx.db.query("entries").withIndex("by_subject", (q) => q.eq("subjectSlug", "kai")).first(),
+    );
+    expect(kaiEntry).not.toBeNull();
+
+    await t.mutation(api.entries.rejectScavenger, {
+      token: "tok-khari",
+      entryId: kaiEntry!._id,
+    });
+
+    const all = await t.run((ctx) => ctx.db.query("entries").collect());
+    const kaiAfter = all.find((e) => e.subjectSlug === "kai");
+    const khariAfter = all.find((e) => e.subjectSlug === "khari");
+    const adanAfter = all.find((e) => e.subjectSlug === "adan");
+
+    expect(kaiAfter!.status).toBe("disputed");
+    // Khari was rank 2 → slides up to rank 1, points 5 + 5 = 10.
+    expect(khariAfter!.scavengerRank).toBe(1);
+    expect(khariAfter!.points).toBe(10);
+    // Adan was rank 3 → slides up to rank 2, points 5 + 3 = 8.
+    expect(adanAfter!.scavengerRank).toBe(2);
+    expect(adanAfter!.points).toBe(8);
+  });
+});
+
 describe("entries.unclaim", () => {
   it("deletes my active entry created within 60s", async () => {
     const t = convexTest(schema);

@@ -167,6 +167,52 @@ export const unclaim = mutation({
 
 const SCAVENGER_BONUS = { 1: 5, 2: 3, 3: 0 } as const;
 
+export const rejectScavenger = mutation({
+  args: { token: v.string(), entryId: v.id("entries") },
+  handler: async (ctx, { token, entryId }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+
+    const entry = await ctx.db.get(entryId);
+    if (!entry) throw new Error("unknown entry");
+    if (entry.type !== "scavenger") throw new Error("not a scavenger entry");
+    if (entry.status === "disputed") throw new Error("already rejected");
+    if (!entry.scavengerItemId) throw new Error("entry missing scavengerItemId");
+
+    await ctx.db.patch(entryId, { status: "disputed", resolvedAt: Date.now() });
+
+    const item = scavengerItemById(entry.scavengerItemId);
+    if (!item) return;
+
+    const laterActive = await ctx.db
+      .query("entries")
+      .withIndex("by_scavenger_item", (q) => q.eq("scavengerItemId", entry.scavengerItemId))
+      .collect();
+
+    const rejectedRank = entry.scavengerRank ?? 1;
+    const toSlide = laterActive
+      .filter(
+        (e) =>
+          e.status !== "disputed" &&
+          e._id !== entryId &&
+          (e.scavengerRank ?? 99) > rejectedRank,
+      )
+      .sort((a, b) => (a.scavengerRank ?? 99) - (b.scavengerRank ?? 99));
+
+    for (const e of toSlide) {
+      const oldRank = e.scavengerRank ?? 3;
+      const newRank = Math.max(1, Math.min(3, oldRank - 1));
+      if (newRank !== oldRank) {
+        const newBonus = SCAVENGER_BONUS[newRank as 1 | 2 | 3];
+        await ctx.db.patch(e._id, {
+          scavengerRank: newRank,
+          points: item.points + newBonus,
+        });
+      }
+    }
+  },
+});
+
 export const claimScavenger = mutation({
   args: {
     token: v.string(),
