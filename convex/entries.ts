@@ -184,25 +184,23 @@ export const rejectScavenger = mutation({
     const item = scavengerItemById(entry.scavengerItemId);
     if (!item) return;
 
-    const laterActive = await ctx.db
+    // Renumber all surviving active claims by chronological order.
+    // The Nth oldest active claim gets rank min(N, 3). This correctly
+    // handles the case where multiple late entries share rank 3 — only
+    // one of them slides up to rank 2 when a higher rank opens.
+    const allForItem = await ctx.db
       .query("entries")
       .withIndex("by_scavenger_item", (q) => q.eq("scavengerItemId", entry.scavengerItemId))
       .collect();
 
-    const rejectedRank = entry.scavengerRank ?? 1;
-    const toSlide = laterActive
-      .filter(
-        (e) =>
-          e.status !== "disputed" &&
-          e._id !== entryId &&
-          (e.scavengerRank ?? 99) > rejectedRank,
-      )
-      .sort((a, b) => (a.scavengerRank ?? 99) - (b.scavengerRank ?? 99));
+    const survivors = allForItem
+      .filter((e) => e.status !== "disputed")
+      .sort((a, b) => a.createdAt - b.createdAt);
 
-    for (const e of toSlide) {
-      const oldRank = e.scavengerRank ?? 3;
-      const newRank = Math.max(1, Math.min(3, oldRank - 1));
-      if (newRank !== oldRank) {
+    for (let i = 0; i < survivors.length; i++) {
+      const e = survivors[i];
+      const newRank = Math.min(i + 1, 3);
+      if (e.scavengerRank !== newRank) {
         const newBonus = SCAVENGER_BONUS[newRank as 1 | 2 | 3];
         await ctx.db.patch(e._id, {
           scavengerRank: newRank,

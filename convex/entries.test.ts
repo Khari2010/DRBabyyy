@@ -476,6 +476,55 @@ describe("entries.rejectScavenger", () => {
     expect(adanAfter!.scavengerRank).toBe(2);
     expect(adanAfter!.points).toBe(8);
   });
+
+  it("renumbers correctly when 4+ players share rank 3", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "khari", "tok-khari");
+    await seedSession(t, "adan", "tok-adan");
+    await seedSession(t, "tash", "tok-tash");
+    await seedSession(t, "mo", "tok-mo");
+    await seedGameLive(t);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
+    });
+
+    const sid = () => t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    await t.mutation(api.entries.claimScavenger, { token: "tok-kai", scavengerItemId: "coconut", photoStorageId: await sid() });
+    await t.mutation(api.entries.claimScavenger, { token: "tok-khari", scavengerItemId: "coconut", photoStorageId: await sid() });
+    await t.mutation(api.entries.claimScavenger, { token: "tok-adan", scavengerItemId: "coconut", photoStorageId: await sid() });
+    await t.mutation(api.entries.claimScavenger, { token: "tok-tash", scavengerItemId: "coconut", photoStorageId: await sid() });
+    await t.mutation(api.entries.claimScavenger, { token: "tok-mo", scavengerItemId: "coconut", photoStorageId: await sid() });
+
+    // Before rejection: ranks should be 1, 2, 3, 3, 3
+    const before = await t.run((ctx) => ctx.db.query("entries").collect());
+    const beforeByPlayer = Object.fromEntries(before.map((e) => [e.subjectSlug, e.scavengerRank]));
+    expect(beforeByPlayer.kai).toBe(1);
+    expect(beforeByPlayer.khari).toBe(2);
+    expect(beforeByPlayer.adan).toBe(3);
+    expect(beforeByPlayer.tash).toBe(3);
+    expect(beforeByPlayer.mo).toBe(3);
+
+    const kaiEntry = before.find((e) => e.subjectSlug === "kai")!;
+    await t.mutation(api.entries.rejectScavenger, {
+      token: "tok-khari", entryId: kaiEntry._id,
+    });
+
+    // After: surviving ranks (in chronological order khari, adan, tash, mo)
+    // should be 1, 2, 3, 3. Adan slides up to rank 2 (+3 bonus), tash/mo stay rank 3.
+    const after = await t.run((ctx) => ctx.db.query("entries").collect());
+    const find = (slug: string) => after.find((e) => e.subjectSlug === slug)!;
+
+    expect(find("kai").status).toBe("disputed");
+    expect(find("khari").scavengerRank).toBe(1);
+    expect(find("khari").points).toBe(10); // 5 + 5
+    expect(find("adan").scavengerRank).toBe(2);
+    expect(find("adan").points).toBe(8); // 5 + 3
+    expect(find("tash").scavengerRank).toBe(3);
+    expect(find("tash").points).toBe(5); // 5 + 0
+    expect(find("mo").scavengerRank).toBe(3);
+    expect(find("mo").points).toBe(5); // 5 + 0
+  });
 });
 
 describe("entries.unclaim", () => {
