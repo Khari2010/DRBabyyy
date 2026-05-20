@@ -9,6 +9,7 @@ const NAV_HEIGHT = 64;
 function navItems(slug, isAdmin) {
   const items = [
     { to: `/player/${slug}`, icon: "🏖️", label: "Home", match: (p) => p === `/player/${slug}` },
+    { to: "/wall", icon: "💬", label: "Wall", match: (p) => p.startsWith("/wall") },
     { to: `/player/${slug}/games`, icon: "🎯", label: "Games", match: (p) => p.startsWith(`/player/${slug}/games`) },
     { to: "/leaderboard", icon: "🏆", label: "Board", match: (p) => p.startsWith("/leaderboard") },
   ];
