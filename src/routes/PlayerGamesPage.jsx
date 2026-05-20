@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -26,7 +26,42 @@ function daysRemaining() {
   return Math.max(0, TRIP_END_DAY - now.getDate());
 }
 
-function Stat({ label, value, accent }) {
+function useCountUp(value, durationMs = 600) {
+  const [display, setDisplay] = useState(value);
+  const prev = useRef(value);
+  useEffect(() => {
+    const from = prev.current;
+    const to = value;
+    if (from === to) return;
+    const start = performance.now();
+    let raf;
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const v = from + (to - from) * eased;
+      setDisplay(Math.round(v));
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else prev.current = to;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, durationMs]);
+  return display;
+}
+
+function Stat({ label, value, accent, pulseOnChange = false }) {
+  const numericDisplay = useCountUp(typeof value === "number" ? value : 0);
+  const [pulseKey, setPulseKey] = useState(0);
+  const prevRef = useRef(value);
+  useEffect(() => {
+    if (pulseOnChange && value !== prevRef.current) {
+      setPulseKey((k) => k + 1);
+      prevRef.current = value;
+    }
+  }, [value, pulseOnChange]);
+
+  const display = pulseOnChange && typeof value === "number" ? numericDisplay : value;
+
   return (
     <div style={{
       background: "rgba(255,255,255,0.85)",
@@ -36,14 +71,25 @@ function Stat({ label, value, accent }) {
       minWidth: 0,
     }}>
       <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 2 }}>{label}</div>
-      <div style={{
-        fontFamily: "'Dela Gothic One', sans-serif",
-        fontSize: 24,
-        color: accent ?? C.dark,
-        lineHeight: 1,
-      }}>
-        {typeof value === "number" ? (value >= 0 ? `+${value}` : value) : value}
+      <div
+        key={pulseKey}
+        style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: 24,
+          color: accent ?? C.dark,
+          lineHeight: 1,
+          animation: pulseKey > 0 ? "drStatPulse 0.5s cubic-bezier(0.16,1,0.3,1)" : undefined,
+        }}
+      >
+        {typeof display === "number" ? (display >= 0 ? `+${display}` : display) : display}
       </div>
+      <style>{`
+        @keyframes drStatPulse {
+          0% { transform: scale(1); }
+          40% { transform: scale(1.18); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -71,7 +117,7 @@ function DashboardHero({ player, dailyTotal, holidayTotal, rank }) {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-        <Stat label="Today" value={dailyTotal} accent={dailyTotal >= 0 ? C.green : C.coralDeep} />
+        <Stat label="Today" value={dailyTotal} accent={dailyTotal >= 0 ? C.green : C.coralDeep} pulseOnChange />
         <Stat label="Holiday" value={holidayTotal} accent={holidayTotal >= 0 ? C.green : C.coralDeep} />
         <Stat label="Rank" value={rank ? `#${rank}` : "—"} />
       </div>
