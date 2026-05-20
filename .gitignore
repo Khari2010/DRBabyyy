@@ -25,6 +25,7 @@ Thumbs.db
 npm-debug.log*
 .superpowers/
 .vercel
+.claude/
 
 # Local-only source images (originals kept here, deployed copies are WebP in public/)
 Files
