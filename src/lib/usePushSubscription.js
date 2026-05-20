@@ -14,6 +14,8 @@ function urlBase64ToUint8Array(base64String) {
   return arr;
 }
 
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY ?? "";
+
 export function usePushSubscription() {
   const session = useSession();
   const subscribe = useMutation(api.pushNotifications.subscribe);
@@ -23,6 +25,11 @@ export function usePushSubscription() {
   const compute = useCallback(async () => {
     if (typeof window === "undefined") return;
     if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setState("unsupported");
+      return;
+    }
+    if (!VAPID_PUBLIC_KEY) {
+      // Frontend env not configured yet — treat as unsupported so the banner stays hidden.
       setState("unsupported");
       return;
     }
@@ -43,7 +50,7 @@ export function usePushSubscription() {
       try {
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_VAPID_PUBLIC_KEY),
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
         const json = sub.toJSON();
         await subscribe({
@@ -69,7 +76,7 @@ export function usePushSubscription() {
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_VAPID_PUBLIC_KEY),
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
     });
     const json = sub.toJSON();
     await subscribe({
