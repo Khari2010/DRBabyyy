@@ -11,12 +11,10 @@ import { SECTION_ACCENTS, BODY, MICRO_LABEL } from "../data/design.js";
 import SectionBand from "../components/primitives/SectionBand.jsx";
 import Card from "../components/primitives/Card.jsx";
 import Avatar from "../components/primitives/Avatar.jsx";
-import SectionHeader from "../components/SectionHeader.jsx";
 import Reveal from "../components/Reveal.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ChallengesSection from "../components/ChallengesSection.jsx";
-import TodaysClaims from "../components/TodaysClaims.jsx";
 import ProposeForm from "../components/ProposeForm.jsx";
 import VotingRow from "../components/VotingRow.jsx";
 
@@ -130,17 +128,6 @@ export default function PlayerGamesPage() {
 
       <SectionBand bg="white" pad="40px 0" innerMaxWidth={520}>
         <Reveal>
-          <SectionHeader
-            label="Earn it"
-            title="Your challenges"
-            accent={ACCENT}
-            compact
-          />
-        </Reveal>
-        <Reveal delay={0.05}>
-          <TodaysClaims />
-        </Reveal>
-        <Reveal delay={0.1}>
           <ChallengesSection />
         </Reveal>
       </SectionBand>
