@@ -125,11 +125,14 @@ export default defineSchema({
     forfeitId: v.optional(v.string()),
     forfeitLabel: v.optional(v.string()),
     spunAt: v.optional(v.number()),
+    closedAt: v.optional(v.number()),
     flowWinnerSlug: v.optional(v.string()),
     flowResolvedAt: v.optional(v.number()),
     flowTieCandidates: v.optional(v.array(v.string())),
     flowForcedClose: v.optional(v.boolean()),
-  }).index("by_day_number", ["dayNumber"]),
+  })
+    .index("by_day_number", ["dayNumber"])
+    .index("by_daily_key", ["dailyKey"]),
 
   gameState: defineTable({
     gamesLive: v.boolean(),
