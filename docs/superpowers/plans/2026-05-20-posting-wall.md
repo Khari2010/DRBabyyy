@@ -362,7 +362,7 @@ describe("posts.list", () => {
     expect(page.page[0]._id).toBe(newerId);
     expect(page.page[1]._id).toBe(olderId);
     expect(page.page[0].authorHolidayName).toBe("Sunshine");
-    expect(page.page[0].reactionCounts["🔥"]).toBe(1);
+    expect(page.page[0].reactionCounts.find((r) => r.emoji === "🔥")?.count).toBe(1);
     expect(page.page[0].viewerReactions).toContain("🔥");
     expect(page.page[0].commentCount).toBe(1);
     expect(page.page[1].commentCount).toBe(0);
@@ -420,12 +420,14 @@ export const list = query({
         .withIndex("by_post", (q) => q.eq("postId", post._id))
         .collect();
 
-      const reactionCounts: Record<string, number> = {};
+      // Convex disallows non-ASCII object keys, so reactionCounts ships as an array.
+      const countMap = new Map<string, number>();
       const viewerReactions: string[] = [];
       for (const r of reactions) {
-        reactionCounts[r.emoji] = (reactionCounts[r.emoji] ?? 0) + 1;
+        countMap.set(r.emoji, (countMap.get(r.emoji) ?? 0) + 1);
         if (r.playerSlug === playerSlug) viewerReactions.push(r.emoji);
       }
+      const reactionCounts = Array.from(countMap.entries()).map(([emoji, count]) => ({ emoji, count }));
 
       const comments = await ctx.db
         .query("postComments")
@@ -1924,7 +1926,7 @@ git commit -m "feat(wall): PostComposer (text + optional photo)"
 - [ ] **Step 1: Write `src/components/wall/ReactionRow.jsx`**
 
 ```jsx
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useSession } from "../../lib/useSession.js";
@@ -1933,13 +1935,18 @@ import { RADIUS } from "../../data/design.js";
 
 const ALLOWED = ["❤️", "😂", "🔥", "😭", "🍻", "👀"];
 
+// reactionCounts is Array<{emoji, count}> (Convex disallows emoji as object keys).
 export default function ReactionRow({ postId, reactionCounts, viewerReactions }) {
   const session = useSession();
   const toggle = useMutation(api.postReactions.toggle);
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  const countMap = useMemo(
+    () => new Map((reactionCounts ?? []).map((r) => [r.emoji, r.count])),
+    [reactionCounts],
+  );
   const viewerSet = new Set(viewerReactions ?? []);
-  const visible = ALLOWED.filter((e) => (reactionCounts?.[e] ?? 0) > 0 || viewerSet.has(e));
+  const visible = ALLOWED.filter((e) => (countMap.get(e) ?? 0) > 0 || viewerSet.has(e));
 
   async function tap(emoji) {
     if (!session) return;
@@ -1970,7 +1977,7 @@ export default function ReactionRow({ postId, reactionCounts, viewerReactions })
             }}
           >
             <span>{emoji}</span>
-            <span style={{ fontWeight: 700 }}>{reactionCounts?.[emoji] ?? 0}</span>
+            <span style={{ fontWeight: 700 }}>{countMap.get(emoji) ?? 0}</span>
           </button>
         );
       })}

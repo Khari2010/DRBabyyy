@@ -100,7 +100,7 @@ All authenticated mutations take a `token` and run through `requireSession` (exi
 
 - `create({ token, text, photoStorageId? })` — mutation. Trim text. Reject if both text and photo are empty. Reject if text > 500 chars after trim. Insert row. Schedule `internal.pushNotifications.sendForPost`. Return the new `postId`.
 - `remove({ token, postId })` — mutation. Author OR admin. Delete photo (if any), delete all `postComments` for the post, delete all `postReactions` for the post, delete the post itself.
-- `list({ paginationOpts })` — query. Uses `by_created_at` index, `order("desc")`, paginated via `ctx.db.query(...).paginate(paginationOpts)`. Each item enriched server-side with: author holiday name, photo URL via `ctx.storage.getUrl()`, `reactionCounts: Record<emoji, number>`, `viewerReactions: emoji[]`, `commentCount: number`.
+- `list({ paginationOpts })` — query. Uses `by_created_at` index, `order("desc")`, paginated via `ctx.db.query(...).paginate(paginationOpts)`. Each item enriched server-side with: author holiday name, photo URL via `ctx.storage.getUrl()`, `reactionCounts: Array<{emoji, count}>` (Convex blocks non-ASCII object keys, so counts ship as an array), `viewerReactions: emoji[]`, `commentCount: number`.
 - `generateUploadUrl({ token })` — mutation. Returns `await ctx.storage.generateUploadUrl()`. Matches the scavenger photo pattern.
 
 ### `convex/postComments.ts`
