@@ -689,3 +689,85 @@ describe("entries.unclaim", () => {
     ).rejects.toThrow(/already resolved/i);
   });
 });
+
+describe("claimScavenger — daily mode (day-2+)", () => {
+  async function setupDailyMode(t: ReturnType<typeof convexTest>) {
+    await t.run(async (ctx) => {
+      await ctx.db.insert("gameState", {
+        gamesLive: true, currentDayNumber: 2, currentDailyKey: "day-2", updatedAt: 1,
+      });
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "khari", token: "tok-k", createdAt: 1 });
+      await ctx.db.insert("players", { slug: "kai", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "kai", token: "tok-kai", createdAt: 1 });
+    });
+  }
+
+  it("first finder of today's item gets base 5 + bonus 5 = 10 pts", async () => {
+    const t = convexTest(schema);
+    await setupDailyMode(t);
+    const sid = await t.run((ctx) => ctx.storage.store(new Blob(["x"], { type: "image/jpeg" })));
+    const entryId = await t.mutation(api.entries.claimScavenger, {
+      token: "tok-k",
+      scavengerItemId: "tres-leches",
+      photoStorageId: sid,
+    });
+    const entry = await t.run((ctx) => ctx.db.get(entryId));
+    expect(entry?.points).toBe(10);
+    expect(entry?.scavengerRank).toBe(1);
+  });
+
+  it("second finder of today's item gets base 5 only (no bonus)", async () => {
+    const t = convexTest(schema);
+    await setupDailyMode(t);
+    const sid1 = await t.run((ctx) => ctx.storage.store(new Blob(["a"])));
+    const sid2 = await t.run((ctx) => ctx.storage.store(new Blob(["b"])));
+    await t.mutation(api.entries.claimScavenger, {
+      token: "tok-k",
+      scavengerItemId: "starfish",
+      photoStorageId: sid1,
+    });
+    const entryId = await t.mutation(api.entries.claimScavenger, {
+      token: "tok-kai",
+      scavengerItemId: "starfish",
+      photoStorageId: sid2,
+    });
+    const entry = await t.run((ctx) => ctx.db.get(entryId));
+    expect(entry?.points).toBe(5);
+    expect(entry?.scavengerRank).toBe(2);
+  });
+
+  it("rejects claim for an item NOT in today's set", async () => {
+    const t = convexTest(schema);
+    await setupDailyMode(t);
+    const sid = await t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    await expect(
+      t.mutation(api.entries.claimScavenger, {
+        token: "tok-k",
+        scavengerItemId: "coconut",
+        photoStorageId: sid,
+      }),
+    ).rejects.toThrow(/not today's item/);
+  });
+});
+
+describe("claimScavenger — Day 1 practice mode (unchanged)", () => {
+  it("uses legacy scoring (item.points + rank bonus) on day-1", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("gameState", {
+        gamesLive: true, currentDayNumber: 1, currentDailyKey: "day-1", updatedAt: 1,
+      });
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "khari", token: "tok-k", createdAt: 1 });
+    });
+    const sid = await t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    const entryId = await t.mutation(api.entries.claimScavenger, {
+      token: "tok-k",
+      scavengerItemId: "domino",
+      photoStorageId: sid,
+    });
+    const entry = await t.run((ctx) => ctx.db.get(entryId));
+    expect(entry?.points).toBe(25); // 20 base + 5 rank-1 bonus
+  });
+});

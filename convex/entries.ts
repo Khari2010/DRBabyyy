@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { requireSession, getGameState, requireAdmin } from "./helpers";
 import { NEGATIVE_POINTS_CONST } from "./_seedData/challenges";
 import { itemById as scavengerItemById } from "../src/data/scavenger.js";
+import { dailyItemsFor, isDailyScavengerActive } from "../src/data/dailyScavenger.js";
 
 export const claim = mutation({
   args: {
@@ -245,14 +246,29 @@ export const claimScavenger = mutation({
     );
     if (mineActive) throw new Error("already claimed");
 
-    const validCount = existingActive.filter((e) => e.status !== "disputed").length;
-    const rank = Math.min(validCount + 1, 3);
-    const bonus = SCAVENGER_BONUS[rank as 1 | 2 | 3];
+    let points: number;
+    let rank: number;
+
+    if (isDailyScavengerActive(state.currentDailyKey)) {
+      const todaysItems = dailyItemsFor(state.currentDailyKey)!;
+      if (!todaysItems.includes(scavengerItemId)) {
+        throw new Error("not today's item");
+      }
+      const validCount = existingActive.filter((e) => e.status !== "disputed").length;
+      rank = validCount + 1;
+      points = 5 + (rank === 1 ? 5 : 0);
+    } else {
+      // Practice mode / fallback: legacy open mechanic.
+      const validCount = existingActive.filter((e) => e.status !== "disputed").length;
+      rank = Math.min(validCount + 1, 3);
+      const bonus = SCAVENGER_BONUS[rank as 1 | 2 | 3];
+      points = (item as { points: number }).points + bonus;
+    }
 
     return await ctx.db.insert("entries", {
       type: "scavenger",
       subjectSlug: playerSlug,
-      points: (item as { points: number }).points + bonus,
+      points,
       status: "active",
       vouchCount: 0,
       disputeCount: 0,
