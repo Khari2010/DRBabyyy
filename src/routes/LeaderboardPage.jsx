@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useGameState } from "../lib/useGameState.js";
 import { useSession } from "../lib/useSession.js";
@@ -11,7 +11,6 @@ import SectionBand from "../components/primitives/SectionBand.jsx";
 import Card from "../components/primitives/Card.jsx";
 import Avatar from "../components/primitives/Avatar.jsx";
 import Pill from "../components/primitives/Pill.jsx";
-import BottomSheet from "../components/primitives/BottomSheet.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
 import Reveal from "../components/Reveal.jsx";
 import EntryRow from "../components/EntryRow.jsx";
@@ -21,7 +20,7 @@ import BottomNav from "../components/BottomNav.jsx";
 import EndDayTakeover from "../components/EndDayTakeover.jsx";
 import PlayerDayDrawer from "../components/PlayerDayDrawer.jsx";
 import FlowStateVoteCard from "../components/FlowStateVoteCard.jsx";
-import { showToast } from "../lib/useToast.js";
+import DaySummaryCard from "../components/DaySummaryCard.jsx";
 
 const ACCENT = C.gold;
 
@@ -228,30 +227,9 @@ export default function LeaderboardPage() {
 
   const dailyPlayingCount = daily.length;
 
-  const trigger = useMutation(api.rollovers.trigger);
-  const [endDayConfirm, setEndDayConfirm] = useState(false);
-  const [endDayPending, setEndDayPending] = useState(false);
   const [takeoverOpen, setTakeoverOpen] = useState(false);
   const [takeoverDay, setTakeoverDay] = useState(null);
   const [drawerSlug, setDrawerSlug] = useState(null);
-
-  const canEndDay = !!isAdmin && gamesLive && currentDayEntryCount > 0 && !endDayPending;
-
-  const handleEndDay = async () => {
-    if (!session?.token) return;
-    setEndDayPending(true);
-    const closingDay = currentDayNumber;
-    try {
-      await trigger({ token: session.token });
-      setEndDayConfirm(false);
-      setTakeoverDay(closingDay);
-      setTakeoverOpen(true);
-    } catch (err) {
-      showToast({ message: err.message || "End Day failed", accent: C.coralDeep });
-    } finally {
-      setEndDayPending(false);
-    }
-  };
 
   return (
     <div style={{ minHeight: "100vh", background: C.sand }}>
@@ -273,37 +251,16 @@ export default function LeaderboardPage() {
           />
         </Reveal>
 
-        {isAdmin && pendingReveal && lastClosed && (
+        {loggedIn && lastClosed?.closedAt && (
           <Reveal>
-            <button
-              type="button"
-              onClick={() => {
+            <DaySummaryCard
+              dayNumber={lastClosed.dayNumber}
+              hasLoser={!!lastClosed.loserSlug}
+              onReveal={() => {
                 setTakeoverDay(lastClosed.dayNumber);
                 setTakeoverOpen(true);
               }}
-              style={{
-                width: "100%",
-                marginBottom: 16,
-                padding: "14px 18px",
-                borderRadius: RADIUS.md,
-                background: C.coralDeep,
-                color: C.white,
-                border: 0,
-                fontFamily: "Nunito, sans-serif",
-                fontWeight: 800,
-                fontSize: 14,
-                letterSpacing: 0.3,
-                textAlign: "left",
-                cursor: "pointer",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
-              <span>Day {lastClosed.dayNumber} is unresolved — open the wheel</span>
-              <span aria-hidden="true">▶</span>
-            </button>
+            />
           </Reveal>
         )}
 
@@ -318,28 +275,6 @@ export default function LeaderboardPage() {
           }}>
             <Pill active={tab === "daily"} accent={ACCENT} onClick={() => setTab("daily")}>Today</Pill>
             <Pill active={tab === "holiday"} accent={ACCENT} onClick={() => setTab("holiday")}>Holiday</Pill>
-            {canEndDay && (
-              <button
-                type="button"
-                onClick={() => setEndDayConfirm(true)}
-                style={{
-                  marginLeft: 8,
-                  padding: "8px 14px",
-                  borderRadius: 999,
-                  background: C.coralDeep,
-                  color: C.white,
-                  border: 0,
-                  fontFamily: "Nunito, sans-serif",
-                  fontWeight: 800,
-                  fontSize: 12,
-                  letterSpacing: 0.5,
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                }}
-              >
-                End Day {currentDayNumber}
-              </button>
-            )}
           </div>
         </Reveal>
 
@@ -444,69 +379,6 @@ export default function LeaderboardPage() {
           </Reveal>
         </SectionBand>
       )}
-
-      <BottomSheet open={endDayConfirm} onClose={() => !endDayPending && setEndDayConfirm(false)}>
-        <h3 style={{
-          fontFamily: "'Dela Gothic One', sans-serif",
-          fontSize: 20,
-          color: C.dark,
-          margin: "8px 0 12px",
-          textAlign: "center",
-        }}>
-          End Day {currentDayNumber}?
-        </h3>
-        <p style={{
-          fontFamily: "Nunito, sans-serif",
-          fontSize: 14,
-          color: C.textBody,
-          lineHeight: 1.45,
-          textAlign: "center",
-          margin: "0 0 20px",
-        }}>
-          This locks all of today's claims and reveals the loser.
-          You can undo from <strong>/admin</strong> if needed.
-        </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-          <button
-            type="button"
-            onClick={() => setEndDayConfirm(false)}
-            disabled={endDayPending}
-            style={{
-              padding: "12px 20px",
-              borderRadius: RADIUS.md,
-              background: C.sand,
-              color: C.dark,
-              border: `1.5px solid ${C.sandDark}`,
-              fontFamily: "Nunito, sans-serif",
-              fontWeight: 800,
-              fontSize: 14,
-              cursor: endDayPending ? "default" : "pointer",
-              opacity: endDayPending ? 0.5 : 1,
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleEndDay}
-            disabled={endDayPending}
-            style={{
-              padding: "12px 20px",
-              borderRadius: RADIUS.md,
-              background: C.coralDeep,
-              color: C.white,
-              border: 0,
-              fontFamily: "Nunito, sans-serif",
-              fontWeight: 800,
-              fontSize: 14,
-              cursor: endDayPending ? "default" : "pointer",
-              opacity: endDayPending ? 0.7 : 1,
-            }}
-          >
-            {endDayPending ? "Ending…" : "End Day"}
-          </button>
-        </div>
-      </BottomSheet>
 
       <PlayerDayDrawer
         open={drawerSlug !== null}
