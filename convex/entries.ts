@@ -222,12 +222,15 @@ export const rejectScavenger = mutation({
 
     for (let i = 0; i < survivors.length; i++) {
       const e = survivors[i];
-      const newRank = Math.min(i + 1, 3);
+      const dailyMode = isDailyScavengerActive(e.dailyKey);
+      const newRank = dailyMode ? i + 1 : Math.min(i + 1, 3);
       if (e.scavengerRank !== newRank) {
-        const newBonus = SCAVENGER_BONUS[newRank as 1 | 2 | 3];
+        const newPoints = dailyMode
+          ? 5 + (newRank === 1 ? 5 : 0)
+          : item.points + SCAVENGER_BONUS[newRank as 1 | 2 | 3];
         await ctx.db.patch(e._id, {
           scavengerRank: newRank,
-          points: item.points + newBonus,
+          points: newPoints,
         });
       }
     }

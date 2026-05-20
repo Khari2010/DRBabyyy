@@ -1,16 +1,18 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
 import { useGameState } from "../lib/useGameState.js";
-import { SCAVENGER_ITEMS, SCAVENGER_CATEGORIES, itemById } from "../data/scavenger.js";
+import { itemById } from "../data/scavenger.js";
 import { dailyItemsFor, isDailyScavengerActive } from "../data/dailyScavenger.js";
 import { C } from "../data/colors.js";
 import { EYEBROW, HEADING, BODY, MICRO_LABEL, RADIUS } from "../data/design.js";
 import Card from "./primitives/Card.jsx";
-import Pill from "./primitives/Pill.jsx";
 import ScavengerCard from "./ScavengerCard.jsx";
 import ScavengerClaimSheet from "./ScavengerClaimSheet.jsx";
+import DailyScavengerReveal from "./DailyScavengerReveal.jsx";
+
+const LS_KEY = (slug) => `scav:lastRevealedDay:${slug ?? "anon"}`;
 
 export default function ScavengerSection() {
   const { gamesLive, currentDayNumber, currentDailyKey } = useGameState();
@@ -18,8 +20,15 @@ export default function ScavengerSection() {
   const mySlug = session?.slug;
   const mine = useQuery(api.scavenger.getMyFinds, session?.token ? { token: session.token } : "skip") ?? [];
 
-  const [category, setCategory] = useState("all");
   const [active, setActive] = useState(null);
+  const [showReveal, setShowReveal] = useState(false);
+
+  const dailyMode = isDailyScavengerActive(currentDailyKey);
+  const dailyItemIds = dailyMode ? (dailyItemsFor(currentDailyKey) ?? []) : null;
+  const dailyItems = useMemo(
+    () => (dailyMode ? dailyItemIds.map((id) => itemById(id)).filter(Boolean) : []),
+    [dailyMode, dailyItemIds],
+  );
 
   const mineByItem = useMemo(() => {
     const m = new Map();
@@ -35,15 +44,26 @@ export default function ScavengerSection() {
   const todayFinds = mine.filter((e) => e.dailyKey === currentDailyKey && e.status !== "disputed");
   const todayPoints = todayFinds.reduce((s, e) => s + e.points, 0);
 
-  const dailyMode = isDailyScavengerActive(currentDailyKey);
-  const dailyItemIds = dailyMode ? (dailyItemsFor(currentDailyKey) ?? []) : null;
-  const dailyItems = dailyMode ? dailyItemIds.map((id) => itemById(id)).filter(Boolean) : null;
+  useEffect(() => {
+    if (!dailyMode || !mySlug || !currentDailyKey) return;
+    try {
+      const last = window.localStorage.getItem(LS_KEY(mySlug));
+      if (last !== currentDailyKey) setShowReveal(true);
+    } catch {
+      // localStorage unavailable — skip the reveal silently
+    }
+  }, [dailyMode, mySlug, currentDailyKey]);
 
-  const visible = useMemo(() => {
-    if (dailyMode) return dailyItems;
-    if (category === "all") return SCAVENGER_ITEMS;
-    return SCAVENGER_ITEMS.filter((i) => i.category === category);
-  }, [category, dailyMode, dailyItems]);
+  const dismissReveal = () => {
+    try {
+      if (mySlug && currentDailyKey) {
+        window.localStorage.setItem(LS_KEY(mySlug), currentDailyKey);
+      }
+    } catch {
+      // ignore
+    }
+    setShowReveal(false);
+  };
 
   if (!gamesLive) {
     return (
@@ -58,13 +78,28 @@ export default function ScavengerSection() {
     );
   }
 
+  if (!dailyMode) {
+    return (
+      <Card>
+        <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18 }}>
+          Hunt resumes tomorrow.
+        </div>
+        <div style={{ ...BODY, marginTop: 8 }}>
+          The daily 4-item hunt picks up at the next day rollover.
+        </div>
+      </Card>
+    );
+  }
+
+  const isPracticeDay = currentDailyKey === "day-1";
+
   return (
     <section style={{ margin: "16px 0" }}>
       <div style={{ marginBottom: 16 }}>
         <div style={{ ...EYEBROW, color: C.gold, marginBottom: 4 }}>
-          Day {currentDayNumber} · Hunt the resort
+          Day {currentDayNumber} · Today's hunt
         </div>
-        <div style={{ ...HEADING.h2, color: C.dark }}>What did you find?</div>
+        <div style={{ ...HEADING.h2, color: C.dark }}>Find one from each category.</div>
       </div>
 
       <div style={{
@@ -78,11 +113,11 @@ export default function ScavengerSection() {
         }}>+{todayPoints}</span>
         <span style={{ flex: 1 }} />
         <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody }}>
-          {todayFinds.length} find{todayFinds.length === 1 ? "" : "s"}
+          {todayFinds.length} of 4
         </span>
       </div>
 
-      {!dailyMode && (
+      {isPracticeDay && (
         <div style={{
           padding: "10px 14px",
           background: `${C.gold}15`,
@@ -93,51 +128,30 @@ export default function ScavengerSection() {
           fontSize: 13,
           marginBottom: 12,
         }}>
-          <strong>Practice round</strong> — Day 1 finds don't count toward your Holiday total.
+          <strong>Practice round</strong> — Day 1 finds count today but not toward Holiday.
         </div>
       )}
 
-      {dailyMode && (
-        <div style={{
-          padding: "10px 14px",
-          background: `${C.turquoise}12`,
-          border: `1px dashed ${C.turquoise}55`,
-          borderRadius: RADIUS.md,
-          color: C.dark,
-          fontFamily: "Nunito, sans-serif",
-          fontSize: 13,
-          marginBottom: 12,
-        }}>
-          <strong>Today's hunt:</strong> 4 items, one per category.
-        </div>
-      )}
-
-      {!dailyMode && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-          <Pill active={category === "all"} accent={C.gold} onClick={() => setCategory("all")}>All</Pill>
-          {SCAVENGER_CATEGORIES.map((c) => (
-            <Pill
-              key={c.id}
-              active={category === c.id}
-              accent={c.color}
-              onClick={() => setCategory(c.id)}
-            >
-              {c.icon} {c.label}
-            </Pill>
+      {showReveal ? (
+        <Card padding={0} style={{ overflow: "hidden", marginBottom: 12 }}>
+          <DailyScavengerReveal
+            dailyKey={currentDailyKey}
+            isFirstReveal={isPracticeDay}
+            onDone={dismissReveal}
+          />
+        </Card>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+          {dailyItems.map((item) => (
+            <ScavengerCard
+              key={item.id}
+              item={item}
+              mine={mineByItem.get(item.id) ?? null}
+              onTap={setActive}
+            />
           ))}
         </div>
       )}
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-        {visible.map((item) => (
-          <ScavengerCard
-            key={item.id}
-            item={item}
-            mine={mineByItem.get(item.id) ?? null}
-            onTap={setActive}
-          />
-        ))}
-      </div>
 
       {active && <ScavengerClaimSheet item={active} onClose={() => setActive(null)} />}
     </section>

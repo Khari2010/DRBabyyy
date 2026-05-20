@@ -3,8 +3,8 @@ import { DAILY_SCAVENGER, dailyItemsFor, isDailyScavengerActive } from "../src/d
 import { itemById } from "../src/data/scavenger.js";
 
 describe("DAILY_SCAVENGER data sanity", () => {
-  it("has exactly 3 days covered (day-2, day-3, day-4)", () => {
-    expect(Object.keys(DAILY_SCAVENGER).sort()).toEqual(["day-2", "day-3", "day-4"]);
+  it("covers all 4 trip days (day-1 through day-4)", () => {
+    expect(Object.keys(DAILY_SCAVENGER).sort()).toEqual(["day-1", "day-2", "day-3", "day-4"]);
   });
 
   it("each day has exactly 4 items", () => {
@@ -44,8 +44,8 @@ describe("dailyItemsFor", () => {
 });
 
 describe("isDailyScavengerActive", () => {
-  it("false for day-1 (practice)", () => {
-    expect(isDailyScavengerActive("day-1")).toBe(false);
+  it("true for day-1 (practice still uses daily-categorical UI)", () => {
+    expect(isDailyScavengerActive("day-1")).toBe(true);
   });
   it("true for day-2 (real game)", () => {
     expect(isDailyScavengerActive("day-2")).toBe(true);

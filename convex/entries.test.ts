@@ -431,7 +431,7 @@ describe("entries.claimScavenger", () => {
     expect(rows[0].photoStorageId).toBe(storageId);
   });
 
-  it("gives rank=2 with +3 bonus to the second finder", async () => {
+  it("gives rank=2 with no bonus to the second finder (daily mode)", async () => {
     const t = convexTest(schema);
     await seedSession(t, "kai", "tok-kai");
     await seedSession(t, "khari", "tok-khari");
@@ -445,7 +445,7 @@ describe("entries.claimScavenger", () => {
       ctx.db.query("entries").withIndex("by_subject", (q) => q.eq("subjectSlug", "khari")).collect(),
     );
     expect(rows[0].scavengerRank).toBe(2);
-    expect(rows[0].points).toBe(8); // 5 + 3
+    expect(rows[0].points).toBe(5); // base only — daily mode has no rank-2 bonus
   });
 
   it("gives rank=3 with no bonus to the third+ finder", async () => {
@@ -568,12 +568,12 @@ describe("entries.rejectScavenger", () => {
     const adanAfter = all.find((e) => e.subjectSlug === "adan");
 
     expect(kaiAfter!.status).toBe("disputed");
-    // Khari was rank 2 → slides up to rank 1, points 5 + 5 = 10.
+    // Khari was rank 2 → slides up to rank 1, daily-mode points 5 + 5 = 10.
     expect(khariAfter!.scavengerRank).toBe(1);
     expect(khariAfter!.points).toBe(10);
-    // Adan was rank 3 → slides up to rank 2, points 5 + 3 = 8.
+    // Adan was rank 3 → slides up to rank 2, daily-mode no bonus = 5.
     expect(adanAfter!.scavengerRank).toBe(2);
-    expect(adanAfter!.points).toBe(8);
+    expect(adanAfter!.points).toBe(5);
   });
 
   it("rejects when caller is not an admin", async () => {
@@ -598,7 +598,7 @@ describe("entries.rejectScavenger", () => {
     ).rejects.toThrow();
   });
 
-  it("renumbers correctly when 4+ players share rank 3", async () => {
+  it("renumbers correctly when 5 players claim the same item (daily mode)", async () => {
     const t = convexTest(schema);
     await seedSession(t, "kai", "tok-kai");
     await seedSession(t, "khari", "tok-khari");
@@ -617,34 +617,33 @@ describe("entries.rejectScavenger", () => {
     await t.mutation(api.entries.claimScavenger, { token: "tok-tash", scavengerItemId: "coconut", photoStorageId: await sid() });
     await t.mutation(api.entries.claimScavenger, { token: "tok-mo", scavengerItemId: "coconut", photoStorageId: await sid() });
 
-    // Before rejection: ranks should be 1, 2, 3, 3, 3
+    // Daily mode: ranks are sequential (no cap). 1, 2, 3, 4, 5.
     const before = await t.run((ctx) => ctx.db.query("entries").collect());
     const beforeByPlayer = Object.fromEntries(before.map((e) => [e.subjectSlug, e.scavengerRank]));
     expect(beforeByPlayer.kai).toBe(1);
     expect(beforeByPlayer.khari).toBe(2);
     expect(beforeByPlayer.adan).toBe(3);
-    expect(beforeByPlayer.tash).toBe(3);
-    expect(beforeByPlayer.mo).toBe(3);
+    expect(beforeByPlayer.tash).toBe(4);
+    expect(beforeByPlayer.mo).toBe(5);
 
     const kaiEntry = before.find((e) => e.subjectSlug === "kai")!;
     await t.mutation(api.entries.rejectScavenger, {
       token: "tok-khari", entryId: kaiEntry._id,
     });
 
-    // After: surviving ranks (in chronological order khari, adan, tash, mo)
-    // should be 1, 2, 3, 3. Adan slides up to rank 2 (+3 bonus), tash/mo stay rank 3.
+    // After: survivors slide up. Khari → rank 1 (+5 bonus), others stay base 5.
     const after = await t.run((ctx) => ctx.db.query("entries").collect());
     const find = (slug: string) => after.find((e) => e.subjectSlug === slug)!;
 
     expect(find("kai").status).toBe("disputed");
     expect(find("khari").scavengerRank).toBe(1);
-    expect(find("khari").points).toBe(10); // 5 + 5
+    expect(find("khari").points).toBe(10); // 5 + 5 first-finder
     expect(find("adan").scavengerRank).toBe(2);
-    expect(find("adan").points).toBe(8); // 5 + 3
+    expect(find("adan").points).toBe(5);
     expect(find("tash").scavengerRank).toBe(3);
-    expect(find("tash").points).toBe(5); // 5 + 0
-    expect(find("mo").scavengerRank).toBe(3);
-    expect(find("mo").points).toBe(5); // 5 + 0
+    expect(find("tash").points).toBe(5);
+    expect(find("mo").scavengerRank).toBe(4);
+    expect(find("mo").points).toBe(5);
   });
 });
 
@@ -805,8 +804,27 @@ describe("claimScavenger — daily mode (day-2+)", () => {
   });
 });
 
-describe("claimScavenger — Day 1 practice mode (unchanged)", () => {
-  it("uses legacy scoring (item.points + rank bonus) on day-1", async () => {
+describe("claimScavenger — Day 1 (now daily mode too)", () => {
+  it("rejects items not in Day 1's picks", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("gameState", {
+        gamesLive: true, currentDayNumber: 1, currentDailyKey: "day-1", updatedAt: 1,
+      });
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "khari", token: "tok-k", createdAt: 1 });
+    });
+    const sid = await t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    await expect(
+      t.mutation(api.entries.claimScavenger, {
+        token: "tok-k",
+        scavengerItemId: "domino",
+        photoStorageId: sid,
+      }),
+    ).rejects.toThrow(/not today's item/);
+  });
+
+  it("scores Day 1 first-finder at base 5 + bonus 5 = 10 pts", async () => {
     const t = convexTest(schema);
     await t.run(async (ctx) => {
       await ctx.db.insert("gameState", {
@@ -818,10 +836,10 @@ describe("claimScavenger — Day 1 practice mode (unchanged)", () => {
     const sid = await t.run((ctx) => ctx.storage.store(new Blob(["x"])));
     const entryId = await t.mutation(api.entries.claimScavenger, {
       token: "tok-k",
-      scavengerItemId: "domino",
+      scavengerItemId: "coconut",
       photoStorageId: sid,
     });
     const entry = await t.run((ctx) => ctx.db.get(entryId));
-    expect(entry?.points).toBe(25); // 20 base + 5 rank-1 bonus
+    expect(entry?.points).toBe(10);
   });
 });
