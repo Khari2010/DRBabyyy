@@ -1,9 +1,10 @@
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useSession } from "../lib/useSession.js";
 import { PLAYERS } from "../data/players.js";
 import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 import { C } from "../data/colors.js";
-import { HEADING, BODY, MICRO_LABEL } from "../data/design.js";
+import { HEADING, BODY, MICRO_LABEL, RADIUS } from "../data/design.js";
 import BottomSheet from "./primitives/BottomSheet.jsx";
 import Avatar from "./primitives/Avatar.jsx";
 
@@ -37,7 +38,126 @@ function EmptyRow({ children }) {
   );
 }
 
-function ClaimRow({ claim }) {
+function ActionButtons({ claim, mySlug, token }) {
+  const vouch = useMutation(api.entries.vouch);
+  const dispute = useMutation(api.entries.dispute);
+  const removeNegative = useMutation(api.entries.removeNegative);
+
+  if (!token || !mySlug) return null;
+  if (claim.status !== "active") {
+    if (claim.myReaction) {
+      return (
+        <div style={{
+          fontSize: 10,
+          color: C.textBody,
+          fontFamily: "Nunito, sans-serif",
+          fontStyle: "italic",
+        }}>
+          you {claim.myReaction === "vouch" ? "vouched" : "disputed"}
+        </div>
+      );
+    }
+    return null;
+  }
+  if (claim.myReaction) {
+    return (
+      <div style={{
+        fontSize: 10,
+        color: C.textBody,
+        fontFamily: "Nunito, sans-serif",
+        fontStyle: "italic",
+      }}>
+        you {claim.myReaction === "vouch" ? "vouched" : "disputed"}
+      </div>
+    );
+  }
+  if (claim.type === "scavenger") {
+    return null;
+  }
+
+  const isFoul = claim.type === "negative";
+  const isMyFoulLogged = isFoul && claim.appliedBySlug === mySlug;
+  const isMyClaim = !isFoul && claim.subjectSlug === mySlug;
+  const isMyFoulReceived = isFoul && claim.subjectSlug === mySlug;
+  const canVouch = !isMyClaim && !isMyFoulLogged && !isMyFoulReceived;
+  const canDispute = !isMyClaim && !isMyFoulLogged;
+  const canRemove = isMyFoulLogged;
+
+  if (canRemove) {
+    return (
+      <button
+        type="button"
+        onClick={() => removeNegative({ token, entryId: claim.entryId }).catch((e) => alert(e.message))}
+        style={{
+          padding: "4px 10px",
+          borderRadius: 6,
+          background: "transparent",
+          color: C.coralDeep,
+          border: `1px solid ${C.coralDeep}`,
+          fontFamily: "Nunito, sans-serif",
+          fontWeight: 800,
+          fontSize: 10,
+          cursor: "pointer",
+        }}
+      >
+        Undo
+      </button>
+    );
+  }
+
+  if (!canVouch && !canDispute) return null;
+
+  return (
+    <div style={{ display: "flex", gap: 4 }}>
+      {canVouch && (
+        <button
+          type="button"
+          onClick={() => vouch({ token, entryId: claim.entryId }).catch((e) => alert(e.message))}
+          title="Vouch"
+          style={{
+            width: 30,
+            height: 26,
+            borderRadius: 6,
+            background: C.green,
+            color: C.white,
+            border: 0,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 800,
+            fontSize: 12,
+            cursor: "pointer",
+            padding: 0,
+          }}
+        >
+          ✓
+        </button>
+      )}
+      {canDispute && (
+        <button
+          type="button"
+          onClick={() => dispute({ token, entryId: claim.entryId }).catch((e) => alert(e.message))}
+          title={isMyFoulReceived ? "Dispute this foul" : "Didn't happen"}
+          style={{
+            width: 30,
+            height: 26,
+            borderRadius: 6,
+            background: C.coralDeep,
+            color: C.white,
+            border: 0,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 800,
+            fontSize: 12,
+            cursor: "pointer",
+            padding: 0,
+          }}
+        >
+          ✗
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ClaimRow({ claim, mySlug, token }) {
   const statusLabel = claim.status === "verified"
     ? "verified"
     : claim.status === "disputed"
@@ -53,7 +173,7 @@ function ClaimRow({ claim }) {
       display: "flex",
       alignItems: "center",
       gap: 10,
-      padding: "8px 0",
+      padding: "10px 0",
       borderBottom: `1px solid ${C.sandDark}`,
       opacity: claim.status === "disputed" ? 0.55 : 1,
     }}>
@@ -76,30 +196,38 @@ function ClaimRow({ claim }) {
       )}
       <div style={{
         flex: 1,
+        minWidth: 0,
         fontFamily: "Nunito, sans-serif",
         fontSize: 13,
         color: C.dark,
         textDecoration: claim.status === "disputed" ? "line-through" : "none",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
       }}>
         {claim.label}
+        <div style={{
+          fontFamily: "Nunito, sans-serif",
+          fontWeight: 700,
+          fontSize: 10,
+          color: statusColor,
+          textTransform: "lowercase",
+          marginTop: 2,
+        }}>
+          {statusLabel}
+        </div>
       </div>
-      <div style={{
-        fontFamily: "Nunito, sans-serif",
-        fontWeight: 700,
-        fontSize: 11,
-        color: statusColor,
-        textTransform: "lowercase",
-      }}>
-        {statusLabel}
-      </div>
+      <ActionButtons claim={claim} mySlug={mySlug} token={token} />
     </div>
   );
 }
 
 export default function PlayerDayDrawer({ open, slug, dailyKey, dayLabel, onClose }) {
+  const session = useSession();
+  const token = session?.token;
+  const mySlug = session?.slug;
   const data = useQuery(
     api.players.getPlayerDay,
-    open && slug ? { slug, dailyKey } : "skip",
+    open && slug ? { slug, dailyKey, token } : "skip",
   );
   const holidayMap = useHolidayNameMap();
   const flowHistory = useQuery(api.flowVotes.getFlowHistory, {});
@@ -164,7 +292,7 @@ export default function PlayerDayDrawer({ open, slug, dailyKey, dayLabel, onClos
           {data.claims.length === 0 ? (
             <EmptyRow>No claims {dailyKey ? "today" : "yet"}.</EmptyRow>
           ) : (
-            data.claims.map((c) => <ClaimRow key={c.entryId} claim={c} />)
+            data.claims.map((c) => <ClaimRow key={c.entryId} claim={c} mySlug={mySlug} token={token} />)
           )}
 
           <SectionTitle>Vouches received</SectionTitle>
@@ -189,7 +317,7 @@ export default function PlayerDayDrawer({ open, slug, dailyKey, dayLabel, onClos
           {data.fouls.length === 0 ? (
             <EmptyRow>No fouls {dailyKey ? "today" : "yet"}.</EmptyRow>
           ) : (
-            data.fouls.map((f) => <ClaimRow key={f.entryId} claim={f} />)
+            data.fouls.map((f) => <ClaimRow key={f.entryId} claim={f} mySlug={mySlug} token={token} />)
           )}
         </>
       )}

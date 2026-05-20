@@ -156,12 +156,97 @@ export const myRoomNumber = query({
   },
 });
 
+const MAX_CATCHPHRASE_LENGTH = 60;
+
+function normalizeCatchphrase(raw: string): string {
+  const trimmed = raw.trim().replace(/\s+/g, " ");
+  if (trimmed.length === 0) {
+    throw new Error("Catchphrase cannot be empty");
+  }
+  if (trimmed.length > MAX_CATCHPHRASE_LENGTH) {
+    throw new Error(`Catchphrase must be ${MAX_CATCHPHRASE_LENGTH} characters or fewer`);
+  }
+  return trimmed;
+}
+
+export const setMyCatchphrase = mutation({
+  args: { token: v.string(), catchphrase: v.string() },
+  handler: async (ctx, { token, catchphrase }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (!session) throw new Error("not logged in");
+
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_slug", (q) => q.eq("slug", session.playerSlug))
+      .unique();
+    if (!player) throw new Error("unknown player");
+
+    const clean = normalizeCatchphrase(catchphrase);
+    await ctx.db.patch(player._id, { catchphrase: clean });
+    return { catchphrase: clean };
+  },
+});
+
+export const clearMyCatchphrase = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (!session) throw new Error("not logged in");
+
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_slug", (q) => q.eq("slug", session.playerSlug))
+      .unique();
+    if (!player) throw new Error("unknown player");
+
+    await ctx.db.patch(player._id, { catchphrase: undefined });
+  },
+});
+
+export const catchphraseMap = query({
+  args: {},
+  handler: async (ctx) => {
+    const players = await ctx.db.query("players").collect();
+    const map: Record<string, string> = {};
+    for (const p of players) {
+      if (p.catchphrase && p.catchphrase.length > 0) {
+        map[p.slug] = p.catchphrase;
+      }
+    }
+    return map;
+  },
+});
+
+export const myCatchphrase = query({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (!session) return null;
+
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_slug", (q) => q.eq("slug", session.playerSlug))
+      .unique();
+    return player?.catchphrase ?? null;
+  },
+});
+
 export const getPlayerDay = query({
   args: {
     slug: v.string(),
     dailyKey: v.optional(v.string()),
+    token: v.optional(v.string()),
   },
-  handler: async (ctx, { slug, dailyKey }) => {
+  handler: async (ctx, { slug, dailyKey, token }) => {
     const entriesQuery = dailyKey
       ? ctx.db
           .query("entries")
@@ -174,6 +259,15 @@ export const getPlayerDay = query({
 
     const entries = await entriesQuery.collect();
     entries.sort((a, b) => a.createdAt - b.createdAt);
+
+    let mySlug: string | null = null;
+    if (token) {
+      const session = await ctx.db
+        .query("sessions")
+        .withIndex("by_token", (q) => q.eq("token", token))
+        .unique();
+      mySlug = session?.playerSlug ?? null;
+    }
 
     const challenges = await ctx.db.query("challenges").collect();
     const challengeMap = new Map(challenges.map((c) => [c.challengeId, c]));
@@ -199,15 +293,26 @@ export const getPlayerDay = query({
           label = def?.action ?? e.negativeId;
           labelIcon = def?.icon ?? "";
         }
+        let myReaction: "vouch" | "dispute" | null = null;
+        if (mySlug) {
+          const reaction = await ctx.db
+            .query("entryReactions")
+            .withIndex("by_entry_and_player", (q) => q.eq("entryId", e._id).eq("playerSlug", mySlug!))
+            .unique();
+          myReaction = reaction?.reaction ?? null;
+        }
         return {
           entryId: e._id,
           type: e.type,
+          subjectSlug: e.subjectSlug,
+          appliedBySlug: e.appliedBySlug ?? null,
           label,
           labelIcon,
           photoUrl,
           points: e.points,
           status: e.status,
           createdAt: e.createdAt,
+          myReaction,
         };
       }),
     );
