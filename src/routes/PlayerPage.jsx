@@ -71,6 +71,8 @@ export default function PlayerPage() {
   const allVotes = useQuery(api.activityVotes.listAll) ?? [];
   const castVoteMutation = useMutation(api.activityVotes.castVote);
   const holidayMap = useHolidayNameMap();
+  const flowHistory = useQuery(api.flowVotes.getFlowHistory, {});
+  const flowWins = flowHistory?.lifetime?.[slug] ?? 0;
 
   useHomeStyleAssets();
 
@@ -248,6 +250,40 @@ export default function PlayerPage() {
           >
             {player.bio}
           </p>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 16px",
+              background: C.white,
+              borderRadius: 12,
+              marginTop: 16,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'Dela Gothic One', sans-serif",
+                fontSize: 28,
+                color: C.gold,
+                lineHeight: 1,
+              }}
+            >
+              👑 {flowWins}
+            </div>
+            <div
+              style={{
+                fontFamily: "Nunito, sans-serif",
+                fontSize: 11,
+                color: C.textBody,
+                letterSpacing: 0.6,
+                textTransform: "uppercase",
+                fontWeight: 800,
+              }}
+            >
+              Flow State wins
+            </div>
+          </div>
         </Reveal>
       </section>
 
