@@ -37,7 +37,12 @@ export default function PostCard({ post, isAdmin }) {
           <Avatar player={player ?? fallbackPlayer} size="md" />
           <div>
             <div style={{ fontWeight: 800, color: player?.color ?? C.dark, fontSize: 14 }}>{post.authorHolidayName}</div>
-            <div style={{ fontSize: 12, color: C.textBody }}>{formatRelative(post.createdAt)}</div>
+            {post.authorCatchphrase && (
+              <div style={{ fontSize: 11, color: C.textBody, fontStyle: "italic", opacity: 0.75, lineHeight: 1.2, marginTop: 1 }}>
+                “{post.authorCatchphrase}”
+              </div>
+            )}
+            <div style={{ fontSize: 12, color: C.textBody, marginTop: 1 }}>{formatRelative(post.createdAt)}</div>
           </div>
         </div>
         {canDelete && (

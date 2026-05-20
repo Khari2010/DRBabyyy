@@ -520,6 +520,19 @@ export default function HomePage() {
   const catchphraseMap = useQuery(api.players.catchphraseMap) ?? {};
   const reactiveSession = useSession();
 
+  const todaysEnergy = (() => {
+    const withCatchphrase = PLAYERS.filter((p) => !p.mystery && catchphraseMap[p.slug]);
+    if (withCatchphrase.length === 0) return null;
+    const start = Date.UTC(new Date().getUTCFullYear(), 0, 0);
+    const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate());
+    const dayOfYear = Math.floor((today - start) / 86_400_000);
+    const picked = withCatchphrase[dayOfYear % withCatchphrase.length];
+    return {
+      name: displayName(picked.slug, holidayMap, picked.name),
+      catchphrase: catchphraseMap[picked.slug],
+    };
+  })();
+
   // Auto-redirect logged-in users to their player page
   useEffect(() => {
     if (reactiveSession?.slug) {
@@ -576,6 +589,35 @@ export default function HomePage() {
           <h1 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(52px, 14vw, 110px)", lineHeight: 0.9, color: C.white, opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s", textShadow: `4px 4px 0 ${C.coral}66` }}>PUNTA</h1>
           <h1 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(52px, 14vw, 110px)", lineHeight: 0.9, background: `linear-gradient(135deg, ${C.yellow}, ${C.coral}, ${C.turquoise})`, backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s", animation: loaded ? "shimmer 5s linear infinite" : "none" }}>CANA</h1>
           <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.8)", marginTop: 20, letterSpacing: 0.5, opacity: loaded ? 1 : 0, transition: "all 0.6s ease 0.6s" }}>6 friends. 12 days. 1 island. No mercy.</p>
+          {todaysEnergy && (
+            <div style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              marginTop: 18,
+              padding: "8px 16px",
+              background: "rgba(255,255,255,0.12)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              borderRadius: 999,
+              border: "1px solid rgba(255,255,255,0.18)",
+              maxWidth: "92vw",
+              opacity: loaded ? 1 : 0,
+              transform: loaded ? "translateY(0)" : "translateY(20px)",
+              transition: "all 0.6s ease 0.9s",
+            }}>
+              <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 10, fontWeight: 900, color: "rgba(255,255,255,0.65)", letterSpacing: 2, textTransform: "uppercase" }}>
+                Today's energy
+              </span>
+              <span style={{ width: 1, height: 14, background: "rgba(255,255,255,0.25)" }} />
+              <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, fontWeight: 800, color: C.white, letterSpacing: 0.5 }}>
+                {todaysEnergy.name.toUpperCase()}
+              </span>
+              <span style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 13, fontStyle: "italic", color: "rgba(255,255,255,0.92)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "55vw" }}>
+                “{todaysEnergy.catchphrase}”
+              </span>
+            </div>
+          )}
           <div style={{
             textAlign: "center", color: C.white,
             fontFamily: "'Dela Gothic One', sans-serif",

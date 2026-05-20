@@ -254,6 +254,21 @@ export default function PlayerPage() {
           >
             {player.bio}
           </p>
+          {catchphraseMap[slug] && (
+            <div
+              style={{
+                marginTop: 18,
+                fontFamily: "'Dela Gothic One', sans-serif",
+                fontSize: 16,
+                fontStyle: "italic",
+                color: player.color,
+                opacity: 0.9,
+                letterSpacing: 0.2,
+              }}
+            >
+              “{catchphraseMap[slug]}”
+            </div>
+          )}
           <div
             style={{
               display: "inline-flex",

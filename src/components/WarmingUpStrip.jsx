@@ -8,7 +8,7 @@ function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
 }
 
-export default function WarmingUpStrip({ rows, holidayMap, onTap, onFoul, mySlug }) {
+export default function WarmingUpStrip({ rows, holidayMap, catchphraseMap, onTap, onFoul, mySlug }) {
   if (!rows.length) return null;
 
   return (
@@ -58,6 +58,7 @@ export default function WarmingUpStrip({ rows, holidayMap, onTap, onFoul, mySlug
           const p = playerBySlug(row.slug);
           const name = displayName(row.slug, holidayMap, p?.name);
           const isMe = mySlug === row.slug;
+          const catchphrase = catchphraseMap?.[row.slug];
           return (
             <div
               key={row.slug}
@@ -74,18 +75,33 @@ export default function WarmingUpStrip({ rows, holidayMap, onTap, onFoul, mySlug
               }}
             >
               {p && <Avatar player={p} size="sm" />}
-              <div style={{
-                flex: 1,
-                minWidth: 0,
-                fontFamily: "Nunito, sans-serif",
-                fontWeight: 700,
-                fontSize: 13,
-                color: C.textBody,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}>
-                {name}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontFamily: "Nunito, sans-serif",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  color: C.textBody,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}>
+                  {name}
+                </div>
+                {catchphrase && (
+                  <div style={{
+                    fontFamily: "Nunito, sans-serif",
+                    fontSize: 10,
+                    fontStyle: "italic",
+                    color: C.textBody,
+                    opacity: 0.6,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    marginTop: 1,
+                  }}>
+                    “{catchphrase}”
+                  </div>
+                )}
               </div>
               {onFoul && !isMe && (
                 <button

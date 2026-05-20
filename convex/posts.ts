@@ -108,6 +108,7 @@ export const list = query({
       return {
         ...post,
         authorHolidayName: author?.holidayName ?? post.authorSlug,
+        authorCatchphrase: author?.catchphrase ?? null,
         photoUrl,
         reactionCounts,
         viewerReactions,

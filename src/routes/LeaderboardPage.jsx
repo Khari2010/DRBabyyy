@@ -31,10 +31,11 @@ function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
 }
 
-function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero, onTap, isFlowWinner }) {
+function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, catchphraseMap, isZero, onTap, isFlowWinner }) {
   const p = playerBySlug(row.slug);
   const isTop3 = rank <= 3;
   const medal = ["🥇", "🥈", "🥉"][rank - 1];
+  const catchphrase = catchphraseMap?.[row.slug];
 
   return (
     <div
@@ -80,6 +81,23 @@ function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero, onTap, 
             </span>
           )}
         </div>
+        {catchphrase && (
+          <div
+            style={{
+              fontFamily: "Nunito, sans-serif",
+              fontSize: 11,
+              fontStyle: "italic",
+              color: C.textBody,
+              opacity: 0.7,
+              marginTop: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            “{catchphrase}”
+          </div>
+        )}
         {isZero ? (
           <div style={{
             fontSize: 11, color: C.textBody, fontFamily: "Nunito, sans-serif",
@@ -172,6 +190,7 @@ export default function LeaderboardPage() {
   const session = useSession();
   const loggedIn = !!session;
   const holidayMap = useHolidayNameMap();
+  const catchphraseMap = useQuery(api.players.catchphraseMap) ?? {};
   const [foulTarget, setFoulTarget] = useState(null);
   const handleFoul = loggedIn ? setFoulTarget : null;
 
@@ -317,6 +336,7 @@ export default function LeaderboardPage() {
                     row={leader}
                     isMe={session?.slug === leader.slug}
                     holidayMap={holidayMap}
+                    catchphraseMap={catchphraseMap}
                     isFlowWinner={leader.slug === flowState?.winnerSlug && tab === "daily"}
                     stampLabel={stampLabel}
                     onTap={setDrawerSlug}
@@ -333,6 +353,7 @@ export default function LeaderboardPage() {
                         isMe={session?.slug === row.slug}
                         isLast={i === chasing.length - 1}
                         holidayMap={holidayMap}
+                    catchphraseMap={catchphraseMap}
                         isZero={false}
                         onTap={setDrawerSlug}
                         onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
@@ -344,6 +365,7 @@ export default function LeaderboardPage() {
                 <WarmingUpStrip
                   rows={warmingUp}
                   holidayMap={holidayMap}
+                    catchphraseMap={catchphraseMap}
                   mySlug={session?.slug}
                   onTap={setDrawerSlug}
                   onFoul={handleFoul}
