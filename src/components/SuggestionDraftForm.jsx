@@ -5,7 +5,7 @@ import { useSession } from "../lib/useSession.js";
 import { C } from "../data/colors.js";
 import { RADIUS } from "../data/design.js";
 
-const CATEGORIES = ["social", "drinks", "fitness", "content", "wild", "squad", "chill"];
+const CATEGORIES = ["social", "drinks", "fitness", "content", "wild", "squad", "beach", "shopping", "local", "food"];
 
 const inputBase = {
   fontFamily: "Nunito, sans-serif",
