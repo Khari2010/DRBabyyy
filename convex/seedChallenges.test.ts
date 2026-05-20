@@ -100,3 +100,60 @@ describe("seedChallenges.repriceChallenges", () => {
     ).resolves.not.toThrow();
   });
 });
+
+import { SEED_CHALLENGES } from "./_seedData/challenges";
+
+describe("SEED_CHALLENGES (data sanity)", () => {
+  it("contains exactly 52 entries", () => {
+    expect(SEED_CHALLENGES.length).toBe(52);
+  });
+
+  it("does not contain any retired challengeIds", () => {
+    const retiredIds = new Set([
+      "gianni-bike",
+      "shower-with",
+      "scavenger-hunt",
+      "ocean-sunrise",
+      "ocean-midnight",
+      "swim-up-bar",
+      "pinacolada-coconut",
+      "tostones",
+      "hair-braids",
+      "crew-swim-up",
+      "matching-dinner",
+      "horseback-beach",
+    ]);
+    const seedIds = new Set(SEED_CHALLENGES.map((c) => c.challengeId));
+    for (const id of retiredIds) {
+      expect(seedIds.has(id), `seed should not include ${id}`).toBe(false);
+    }
+  });
+
+  it("contains all 8 new challenges with the correct points", () => {
+    const expected: Record<string, number> = {
+      "fake-proposal": 150,
+      "sanatana-shot": 25,
+      "julio-tiktok": 35,
+      "grumpy-couple-smile": 60,
+      "tabo-bar-shot": 60,
+      "sports-bar-pool": 15,
+      "gym-first": 10,
+      "close-sports-bar": 50,
+    };
+    for (const [id, points] of Object.entries(expected)) {
+      const row = SEED_CHALLENGES.find((c) => c.challengeId === id);
+      expect(row, `missing ${id}`).toBeDefined();
+      expect(row?.points, `wrong points for ${id}`).toBe(points);
+    }
+  });
+
+  it("has spanish-convo at 30 points (repriced from 50)", () => {
+    const row = SEED_CHALLENGES.find((c) => c.challengeId === "spanish-convo");
+    expect(row?.points).toBe(30);
+  });
+
+  it("has unique challengeIds", () => {
+    const ids = SEED_CHALLENGES.map((c) => c.challengeId);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});
