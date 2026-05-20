@@ -25,11 +25,23 @@ describe("postReactions.toggle", () => {
     expect(rows.length).toBe(0);
   });
 
-  it("rejects emojis outside the allow-list", async () => {
+  it("accepts emojis from the system keyboard (no allow-list)", async () => {
     const t = convexTest(schema);
     await seedPlayer(t, "khari");
     const postId = await t.mutation(api.posts.create, { token: "tok-khari", text: "p" });
-    await expect(t.mutation(api.postReactions.toggle, { token: "tok-khari", postId, emoji: "💩" }))
+    await t.mutation(api.postReactions.toggle, { token: "tok-khari", postId, emoji: "💩" });
+    const rows = await t.run((ctx) => ctx.db.query("postReactions").collect());
+    expect(rows.length).toBe(1);
+    expect(rows[0].emoji).toBe("💩");
+  });
+
+  it("rejects empty or overlong emoji input", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "khari");
+    const postId = await t.mutation(api.posts.create, { token: "tok-khari", text: "p" });
+    await expect(t.mutation(api.postReactions.toggle, { token: "tok-khari", postId, emoji: "   " }))
+      .rejects.toThrow(/reaction not allowed/);
+    await expect(t.mutation(api.postReactions.toggle, { token: "tok-khari", postId, emoji: "x".repeat(64) }))
       .rejects.toThrow(/reaction not allowed/);
   });
 
