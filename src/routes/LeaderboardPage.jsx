@@ -22,6 +22,8 @@ import PlayerDayDrawer from "../components/PlayerDayDrawer.jsx";
 import FlowStateVoteCard from "../components/FlowStateVoteCard.jsx";
 import DaySummaryCard from "../components/DaySummaryCard.jsx";
 import WheelTabPane from "../components/WheelTabPane.jsx";
+import PodiumHero from "../components/PodiumHero.jsx";
+import WarmingUpStrip from "../components/WarmingUpStrip.jsx";
 
 const ACCENT = C.gold;
 
@@ -283,32 +285,72 @@ export default function LeaderboardPage() {
         {tab === "daily" && <FlowStateVoteCard />}
 
         <Reveal>
-          <Card padding={0} style={{ overflow: "hidden" }}>
-            {rowsLoading ? (
-              [0, 1, 2, 3].map((i) => (
+          {rowsLoading ? (
+            <Card padding={0} style={{ overflow: "hidden" }}>
+              {[0, 1, 2, 3].map((i) => (
                 <BoardRowSkeleton key={i} isLast={i === 3} />
-              ))
-            ) : rows.length === 0 ? (
-              <div style={{ padding: 24, textAlign: "center", color: C.textBody, ...BODY }}>
-                No claims yet
-              </div>
-            ) : (
-              rows.map((row, i) => (
-                <BoardRow
-                  key={row.slug}
-                  row={row}
-                  rank={i + 1}
-                  isMe={session?.slug === row.slug}
-                  isLast={i === rows.length - 1}
+              ))}
+            </Card>
+          ) : (() => {
+            const scoring = rows.filter((r) => !r.isZero);
+            const warmingUp = rows.filter((r) => r.isZero);
+            const leader = scoring[0] ?? null;
+            const chasing = scoring.slice(1);
+            const stampLabel = tab === "daily"
+              ? `Day ${currentDayNumber}\n20 May`
+              : "Trip\ntotal";
+
+            if (!leader && warmingUp.length === 0) {
+              return (
+                <Card padding={0} style={{ overflow: "hidden" }}>
+                  <div style={{ padding: 24, textAlign: "center", color: C.textBody, ...BODY }}>
+                    No claims yet
+                  </div>
+                </Card>
+              );
+            }
+
+            return (
+              <>
+                {leader && (
+                  <PodiumHero
+                    row={leader}
+                    isMe={session?.slug === leader.slug}
+                    holidayMap={holidayMap}
+                    isFlowWinner={leader.slug === flowState?.winnerSlug && tab === "daily"}
+                    stampLabel={stampLabel}
+                    onTap={setDrawerSlug}
+                    onFoul={handleFoul && leader.slug !== session?.slug ? handleFoul : null}
+                  />
+                )}
+                {chasing.length > 0 && (
+                  <Card padding={0} style={{ overflow: "hidden" }}>
+                    {chasing.map((row, i) => (
+                      <BoardRow
+                        key={row.slug}
+                        row={row}
+                        rank={i + 2}
+                        isMe={session?.slug === row.slug}
+                        isLast={i === chasing.length - 1}
+                        holidayMap={holidayMap}
+                        isZero={false}
+                        onTap={setDrawerSlug}
+                        onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
+                        isFlowWinner={row.slug === flowState?.winnerSlug && tab === "daily"}
+                      />
+                    ))}
+                  </Card>
+                )}
+                <WarmingUpStrip
+                  rows={warmingUp}
                   holidayMap={holidayMap}
-                  isZero={!!row.isZero}
+                  mySlug={session?.slug}
                   onTap={setDrawerSlug}
-                  onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
-                  isFlowWinner={row.slug === flowState?.winnerSlug && tab === "daily"}
+                  onFoul={handleFoul}
                 />
-              ))
-            )}
-          </Card>
+              </>
+            );
+          })()}
         </Reveal>
       </SectionBand>
 
