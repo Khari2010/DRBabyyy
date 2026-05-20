@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
-import { FORFEITS } from "../data/forfeits.js";
 import { PLAYERS } from "../data/players.js";
 import WheelOfFortune from "./games/WheelOfFortune.jsx";
 import DailyScavengerReveal from "./DailyScavengerReveal.jsx";
@@ -13,7 +12,7 @@ import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 import Card from "./primitives/Card.jsx";
 import Avatar from "./primitives/Avatar.jsx";
 
-function DeductPicker({ loserSlug, rolloverId }) {
+function DeductPicker({ loserSlug, rolloverId, onComplete }) {
   const session = useSession();
   const token = session?.token;
   const apply = useMutation(api.entries.applyForfeitDeduct);
@@ -37,8 +36,28 @@ function DeductPicker({ loserSlug, rolloverId }) {
 
   if (done) {
     return (
-      <div style={{ ...BODY, padding: 16 }}>
-        {nameOf(loserSlug)} deducted 50 from {nameOf(picked)}.
+      <div>
+        <div style={{ ...BODY, padding: 16 }}>
+          {nameOf(loserSlug)} deducted 50 from {nameOf(picked)}.
+        </div>
+        <button
+          type="button"
+          onClick={onComplete}
+          style={{
+            marginTop: 12,
+            padding: "10px 18px",
+            borderRadius: RADIUS.md,
+            background: C.gold,
+            color: C.dark,
+            border: 0,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 800,
+            fontSize: 14,
+            cursor: "pointer",
+          }}
+        >
+          Continue 👑 ▶
+        </button>
       </div>
     );
   }
@@ -85,7 +104,6 @@ export default function RevealFlow({ rollover, onSlotDone }) {
     api.flowVotes.getFlowVoteState,
     session?.token ? { token: session.token } : {},
   );
-  const recordForfeit = useMutation(api.rollovers.recordForfeit);
   const holidayMap = useHolidayNameMap();
   const nameOf = (slug) => displayName(slug, holidayMap);
   const [stage, setStage] = useState(1);
@@ -93,17 +111,6 @@ export default function RevealFlow({ rollover, onSlotDone }) {
   const newDailyKey = `day-${rollover.dayNumber + 1}`;
   const slotActive = isDailyScavengerActive(newDailyKey);
   const isFirstReveal = newDailyKey === "day-2";
-
-  const onSpinResult = async (f) => {
-    if (!token) return;
-    try {
-      await recordForfeit({
-        token, rolloverId: rollover._id, forfeitId: f.id, forfeitLabel: f.label,
-      });
-    } catch (err) {
-      alert(err.message);
-    }
-  };
 
   const loserPlayer = PLAYERS.find((p) => p.slug === rollover.loserSlug);
 
@@ -243,44 +250,15 @@ export default function RevealFlow({ rollover, onSlotDone }) {
             {nameOf(rollover.loserSlug)}, your fate:
           </h3>
           {rollover.forfeitId === "deduct" ? (
-            <DeductPicker loserSlug={rollover.loserSlug} rolloverId={rollover._id} />
-          ) : rollover.forfeitId ? (
-            <div>
-              <div style={{ fontSize: 40, margin: 16 }}>
-                {FORFEITS.find((f) => f.id === rollover.forfeitId)?.icon}
-              </div>
-              <div
-                style={{
-                  fontFamily: "'Dela Gothic One', sans-serif",
-                  fontSize: "clamp(18px, 4vw, 24px)",
-                  color: C.dark,
-                }}
-              >
-                {rollover.forfeitLabel}
-              </div>
-              <button
-                type="button"
-                onClick={() => setStage(4)}
-                style={{
-                  marginTop: 20,
-                  padding: "12px 20px",
-                  borderRadius: RADIUS.md,
-                  background: C.gold,
-                  color: C.dark,
-                  border: 0,
-                  fontFamily: "Nunito, sans-serif",
-                  fontWeight: 800,
-                  fontSize: 14,
-                  cursor: "pointer",
-                }}
-              >
-                Continue to Flow State 👑 ▶
-              </button>
-            </div>
+            <DeductPicker
+              loserSlug={rollover.loserSlug}
+              rolloverId={rollover._id}
+              onComplete={() => setStage(4)}
+            />
           ) : (
             <WheelOfFortune
               target={rollover.forfeitId}
-              onResult={rollover.forfeitId ? () => {} : onSpinResult}
+              onResult={() => setStage(4)}
             />
           )}
         </div>
