@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, requireAdmin } from "./helpers";
+import { internal } from "./_generated/api";
 
 const MAX_TEXT = 280;
 
@@ -19,7 +20,7 @@ export const add = mutation({
       text: trimmed,
       createdAt: Date.now(),
     });
-    // PUSH_SCHEDULE: wired up in Task 7 once internal.pushNotifications exists.
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.sendForComment, { commentId });
     return commentId;
   },
 });

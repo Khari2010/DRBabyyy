@@ -2,6 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { requireSession, requireAdmin } from "./helpers";
+import { internal } from "./_generated/api";
 
 const MAX_TEXT = 500;
 
@@ -26,7 +27,7 @@ export const create = mutation({
       photoStorageId,
       createdAt: Date.now(),
     });
-    // PUSH_SCHEDULE: wired up in Task 7 once internal.pushNotifications exists.
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.sendForPost, { postId });
     return postId;
   },
 });
