@@ -27,7 +27,7 @@ export const claim = mutation({
     if (bonusKey === "crowd+money") points += 100;
     if (bonusKey === "everyone") points += 30;
 
-    await ctx.db.insert("entries", {
+    const entryId = await ctx.db.insert("entries", {
       type: "challenge",
       subjectSlug: playerSlug,
       challengeId,
@@ -39,6 +39,7 @@ export const claim = mutation({
       dailyKey: state.currentDailyKey,
       createdAt: Date.now(),
     });
+    return entryId;
   },
 });
 

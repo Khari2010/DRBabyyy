@@ -8,7 +8,7 @@ import { BODY } from "../data/design.js";
 import Card from "./primitives/Card.jsx";
 import Pill from "./primitives/Pill.jsx";
 import ChallengeCard from "./ChallengeCard.jsx";
-import ClaimModal from "./ClaimModal.jsx";
+import ClaimSheet from "./ClaimSheet.jsx";
 
 export default function ChallengesSection() {
   const { gamesLive, currentDayNumber } = useGameState();
@@ -78,7 +78,7 @@ export default function ChallengesSection() {
           <ChallengeCard key={c.challengeId} challenge={c} onClaim={setActive} />
         ))}
       </div>
-      {active !== null && <ClaimModal challenge={active} onClose={() => setActive(null)} />}
+      {active !== null && <ClaimSheet challenge={active} onClose={() => setActive(null)} />}
       {mine.length > 0 && (
         <div style={{ marginTop: 16 }}>
           <div style={{
