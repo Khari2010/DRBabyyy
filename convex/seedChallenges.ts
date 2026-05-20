@@ -2,6 +2,9 @@ import { internalMutation } from "./_generated/server";
 import { SEED_CHALLENGES } from "./_seedData/challenges";
 import { deriveDifficulty } from "./helpers";
 
+// Run retireChallengeIds / repriceChallenges only while gameState.gamesLive === false.
+// Live entries against retired or repriced rows would have already-locked daily totals.
+
 export const RETIRE_CHALLENGE_IDS = [
   "gianni-bike",
   "shower-with",
