@@ -139,4 +139,38 @@ describe("flowVotes.castFlowVote", () => {
     expect(award?.points).toBe(10);
     expect(award?.dailyKey).toBe("day-1");
   });
+
+  it("records flowTieCandidates instead of a winner when votes tie", async () => {
+    const t = convexTest(schema);
+    await seedCrew(t); // khari, kai, camara
+    // 1 vote for khari, 1 for kai, 1 for camara → all tied at 1.
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-khari", voteeSlug: "kai" });
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-kai", voteeSlug: "camara" });
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-camara", voteeSlug: "khari" });
+    const row = await t.run((ctx) => ctx.db.query("rollovers").first());
+    expect(row?.flowWinnerSlug).toBeUndefined();
+    expect(row?.flowTieCandidates?.sort()).toEqual(["camara", "kai", "khari"]);
+    const award = await t.run((ctx) =>
+      ctx.db.query("entries").filter((q) => q.eq(q.field("type"), "flowWin")).first(),
+    );
+    expect(award).toBeNull();
+  });
+
+  it("two-way tie records exactly the two candidates", async () => {
+    const t = convexTest(schema);
+    await seedCrew(t);
+    // Add a 4th crew member.
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "didi", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "didi", token: "tok-didi", createdAt: Date.now() });
+    });
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-khari", voteeSlug: "kai" });
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-kai", voteeSlug: "khari" });
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-camara", voteeSlug: "khari" });
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-didi", voteeSlug: "kai" });
+    // khari: 2, kai: 2 → two-way tie.
+    const row = await t.run((ctx) => ctx.db.query("rollovers").first());
+    expect(row?.flowTieCandidates?.sort()).toEqual(["kai", "khari"]);
+    expect(row?.flowWinnerSlug).toBeUndefined();
+  });
 });
