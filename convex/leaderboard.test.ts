@@ -163,3 +163,25 @@ describe("leaderboard.getRecentActivity joined labels", () => {
     expect(rows[0].labelIcon).toBe("");
   });
 });
+
+describe("leaderboard scoring — flowWin", () => {
+  it("includes flowWin rows in subject totals", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("entries", {
+        type: "challenge", subjectSlug: "khari", challengeId: "x",
+        points: 5, status: "verified", vouchCount: 1, disputeCount: 0,
+        dailyKey: "day-1", createdAt: Date.now(),
+      });
+      await ctx.db.insert("entries", {
+        type: "flowWin", subjectSlug: "khari",
+        points: 10, status: "verified", vouchCount: 0, disputeCount: 0,
+        dailyKey: "day-1", createdAt: Date.now(),
+      });
+    });
+    const rows = await t.query(api.leaderboard.getDaily, { dailyKey: "day-1" });
+    const khari = rows.find((r) => r.slug === "khari");
+    expect(khari?.total).toBe(15);
+  });
+});
