@@ -3,7 +3,7 @@ import { api } from "../../convex/_generated/api";
 import { PLAYERS } from "../data/players.js";
 import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 import { C } from "../data/colors.js";
-import { RADIUS, HEADING, BODY, MICRO_LABEL } from "../data/design.js";
+import { HEADING, BODY, MICRO_LABEL } from "../data/design.js";
 import BottomSheet from "./primitives/BottomSheet.jsx";
 import Avatar from "./primitives/Avatar.jsx";
 
