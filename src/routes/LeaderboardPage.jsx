@@ -27,7 +27,7 @@ function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
 }
 
-function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap }) {
+function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero }) {
   const p = playerBySlug(row.slug);
   const isTop3 = rank <= 3;
   const medal = ["🥇", "🥈", "🥉"][rank - 1];
@@ -38,13 +38,14 @@ function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap }) {
       padding: "12px 14px",
       borderBottom: isLast ? undefined : `1px solid ${C.sandDark}`,
       background: isMe ? `${p?.color ?? C.coral}08` : "transparent",
+      opacity: isZero ? 0.55 : 1,
     }}>
       <div style={{
         width: 28, textAlign: "center",
         fontFamily: "'Dela Gothic One', sans-serif",
         fontSize: 18, color: C.textBody,
       }}>
-        {medal ?? rank}
+        {isZero ? "" : (medal ?? rank)}
       </div>
       {p ? <Avatar player={p} size="sm" /> : <div style={{ width: 24 }} />}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -55,7 +56,9 @@ function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap }) {
         <div style={{
           fontSize: 11, color: C.textBody, fontFamily: "Nunito, sans-serif",
         }}>
-          {row.claimCount} claim{row.claimCount === 1 ? "" : "s"} · {row.verifiedCount} 🛡
+          {isZero
+            ? "no claims yet"
+            : `${row.claimCount} claim${row.claimCount === 1 ? "" : "s"} · ${row.verifiedCount} 🛡`}
         </div>
       </div>
       <div style={{
@@ -133,7 +136,21 @@ export default function LeaderboardPage() {
   const activity = activityRaw ?? [];
   const rowsLoading = (tab === "daily" ? dailyRaw : holidayRaw) === undefined;
   const activityLoading = !!session?.token && activityRaw === undefined;
-  const rows = tab === "daily" ? daily : holiday;
+  const rowsBase = tab === "daily" ? daily : holiday;
+  const rows = useMemo(() => {
+    const scoringSlugs = new Set(rowsBase.map((r) => r.slug));
+    const zeros = PLAYERS
+      .filter((p) => !scoringSlugs.has(p.slug))
+      .map((p) => ({
+        slug: p.slug,
+        total: 0,
+        claimCount: 0,
+        verifiedCount: 0,
+        earliestAt: Infinity,
+        isZero: true,
+      }));
+    return [...rowsBase, ...zeros];
+  }, [rowsBase]);
 
   const lastClosedDay = currentDayNumber > 1 ? currentDayNumber - 1 : null;
   const lastClosed = useQuery(
@@ -283,6 +300,7 @@ export default function LeaderboardPage() {
                   isMe={session?.slug === row.slug}
                   isLast={i === rows.length - 1}
                   holidayMap={holidayMap}
+                  isZero={!!row.isZero}
                   onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
                 />
               ))
