@@ -66,9 +66,14 @@ export default function WheelOfFortune({ onResult, target } = {}) {
     if (pendingIndex.current != null) {
       const winner = FORFEITS[pendingIndex.current];
       setResult(winner);
-      if (typeof onResult === "function") {
-        onResult(winner);
-      }
+    }
+  };
+
+  const dismissResult = () => {
+    const winner = result;
+    setResult(null);
+    if (winner && typeof onResult === "function") {
+      onResult(winner);
     }
   };
 
@@ -168,7 +173,7 @@ export default function WheelOfFortune({ onResult, target } = {}) {
         {spinning ? "Spinning…" : "Spin the wheel"}
       </button>
 
-      {result && <ResultModal forfeit={result} onClose={() => setResult(null)} />}
+      {result && <ResultModal forfeit={result} onClose={dismissResult} />}
     </div>
   );
 }
