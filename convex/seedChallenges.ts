@@ -62,7 +62,20 @@ export const seedGameState = internalMutation({
 export const retireChallengeIds = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const idsToRetire = ["gianni-bike"];
+    const idsToRetire = [
+      "gianni-bike",
+      "shower-with",
+      "scavenger-hunt",
+      "ocean-sunrise",
+      "ocean-midnight",
+      "swim-up-bar",
+      "pinacolada-coconut",
+      "tostones",
+      "hair-braids",
+      "crew-swim-up",
+      "matching-dinner",
+      "horseback-beach",
+    ];
     for (const id of idsToRetire) {
       const existing = await ctx.db
         .query("challenges")
