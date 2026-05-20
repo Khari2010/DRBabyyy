@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useSession } from "../../lib/useSession.js";
 import { formatRelative } from "../../lib/formatRelative.js";
@@ -9,12 +9,8 @@ import ReactionRow from "./ReactionRow.jsx";
 import ReplyThread from "./ReplyThread.jsx";
 import PhotoLightbox from "../PhotoLightbox.jsx";
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, isAdmin }) {
   const session = useSession();
-  const isAdmin = useQuery(
-    api.admin.isAdmin,
-    session?.token ? { token: session.token } : "skip",
-  ) === true;
   const remove = useMutation(api.posts.remove);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);

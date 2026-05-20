@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useSession } from "../../lib/useSession.js";
+import { compressImage } from "../../lib/compressImage.js";
 import { C } from "../../data/colors.js";
 import { RADIUS, SHADOW } from "../../data/design.js";
 
@@ -35,8 +36,9 @@ export default function PostComposer() {
     try {
       let photoStorageId;
       if (draftFile) {
+        const compressed = await compressImage(draftFile);
         const uploadUrl = await generateUploadUrl({ token: session.token });
-        const res = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": draftFile.type }, body: draftFile });
+        const res = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": "image/jpeg" }, body: compressed });
         const { storageId } = await res.json();
         photoStorageId = storageId;
       }

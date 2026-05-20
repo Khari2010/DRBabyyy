@@ -4,10 +4,16 @@ import NotificationsBanner from "../components/wall/NotificationsBanner.jsx";
 import PostCard from "../components/wall/PostCard.jsx";
 import { useSession } from "../lib/useSession.js";
 import { useWallPagination } from "../lib/useWallPagination.js";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { C } from "../data/colors.js";
 
 export default function WallPage() {
   const session = useSession();
+  const isAdmin = useQuery(
+    api.admin.isAdmin,
+    session?.token ? { token: session.token } : "skip",
+  ) === true;
   const { results, status, sentinelRef } = useWallPagination(session?.token);
 
   return (
@@ -21,7 +27,7 @@ export default function WallPage() {
         <NotificationsBanner />
         <PostComposer />
         {(results ?? []).map((post) => (
-          <PostCard key={post._id} post={post} />
+          <PostCard key={post._id} post={post} isAdmin={isAdmin} />
         ))}
         {status === "Exhausted" && results.length === 0 && (
           <div style={{ textAlign: "center", color: C.textBody, padding: 40 }}>

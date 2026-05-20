@@ -9,17 +9,18 @@ export function useWallPagination(token) {
     { initialNumItems: 15 },
   );
   const sentinelRef = useRef(null);
+  const { status, loadMore } = result;
 
   useEffect(() => {
     const node = sentinelRef.current;
     if (!node) return;
-    if (result.status !== "CanLoadMore") return;
+    if (status !== "CanLoadMore") return;
     const obs = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting) result.loadMore(10);
+      if (entries[0]?.isIntersecting) loadMore(10);
     }, { rootMargin: "300px" });
     obs.observe(node);
     return () => obs.disconnect();
-  }, [result, result.status]);
+  }, [status, loadMore]);
 
   return { ...result, sentinelRef };
 }

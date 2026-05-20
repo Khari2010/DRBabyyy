@@ -17,8 +17,11 @@ export default function ReactionRow({ postId, reactionCounts, viewerReactions })
     () => new Map((reactionCounts ?? []).map((r) => [r.emoji, r.count])),
     [reactionCounts],
   );
-  const viewerSet = new Set(viewerReactions ?? []);
-  const visible = ALLOWED.filter((e) => (countMap.get(e) ?? 0) > 0 || viewerSet.has(e));
+  const viewerSet = useMemo(() => new Set(viewerReactions ?? []), [viewerReactions]);
+  const visible = useMemo(
+    () => ALLOWED.filter((e) => (countMap.get(e) ?? 0) > 0 || viewerSet.has(e)),
+    [countMap, viewerSet],
+  );
 
   async function tap(emoji) {
     if (!session) return;
