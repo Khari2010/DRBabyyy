@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { loadSession, clearSession } from "../lib/session.js";
-import { playerBySlug, V1_LOGIN_SLUGS } from "../data/players.js";
+import { playerBySlug, PLAYERS, V1_LOGIN_SLUGS } from "../data/players.js";
 import { flightsForPlayer } from "../data/flights.js";
 import { C } from "../data/colors.js";
 import AdventuresPanel from "../components/AdventuresPanel.jsx";
@@ -15,6 +15,7 @@ import LockscreenGenerator from "../components/LockscreenGenerator.jsx";
 import { useHolidayNameMap } from "../lib/displayName.js";
 import YourItineraryHome from "../components/YourItineraryHome.jsx";
 import TheCrew from "../components/TheCrew.jsx";
+import { ProfileCard, ProfileModal } from "../components/PlayerProfile.jsx";
 import Reveal from "../components/Reveal.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
@@ -72,6 +73,8 @@ export default function PlayerPage() {
   const allVotes = useQuery(api.activityVotes.listAll) ?? [];
   const castVoteMutation = useMutation(api.activityVotes.castVote);
   const holidayMap = useHolidayNameMap();
+  const catchphraseMap = useQuery(api.players.catchphraseMap) ?? {};
+  const [expandedPlayer, setExpandedPlayer] = useState(null);
   const flowHistory = useQuery(api.flowVotes.getFlowHistory, {});
   const flowWins = flowHistory?.lifetime?.[slug] ?? 0;
 
@@ -365,6 +368,39 @@ export default function PlayerPage() {
         </div>
       </section>
 
+      {/* ── MEET THE PLAYERS ─────────────────────────────────────────────── */}
+      <section id="players" style={{ padding: "80px 0 60px", background: C.sand }}>
+        <Reveal>
+          <SectionHeader
+            label="The Lineup"
+            title="Meet the Players"
+            tagline="Tap any card to see their bio, catchphrase and flights."
+            accent={C.coral}
+          />
+        </Reveal>
+        <div
+          className="no-scrollbar"
+          style={{
+            display: "flex",
+            gap: 16,
+            overflowX: "auto",
+            padding: "8px 28px 32px",
+            scrollSnapType: "x mandatory",
+            justifyContent: "center",
+          }}
+        >
+          {PLAYERS.map((p, i) => (
+            <ProfileCard
+              key={p.id}
+              player={p}
+              index={i}
+              onOpen={() => setExpandedPlayer(p.id)}
+              holidayMap={holidayMap}
+            />
+          ))}
+        </div>
+      </section>
+
       {/* ── THE CREW ─────────────────────────────────────────────────────── */}
       <section id="crew" style={{ padding: "80px 0 60px", background: C.white }}>
         <Reveal>
@@ -404,6 +440,13 @@ export default function PlayerPage() {
         PUNTA CANA '26 • ROYALTON CHIC • 🌊
       </footer>
       <BottomNav />
+
+      <ProfileModal
+        player={PLAYERS.find((p) => p.id === expandedPlayer) || null}
+        onClose={() => setExpandedPlayer(null)}
+        holidayMap={holidayMap}
+        catchphraseMap={catchphraseMap}
+      />
     </div>
   );
 }
