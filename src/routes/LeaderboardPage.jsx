@@ -53,13 +53,33 @@ function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero }) {
           fontFamily: "Nunito, sans-serif", fontWeight: 800,
           fontSize: 14, color: C.dark,
         }}>{displayName(row.slug, holidayMap, p?.name)}</div>
-        <div style={{
-          fontSize: 11, color: C.textBody, fontFamily: "Nunito, sans-serif",
-        }}>
-          {isZero
-            ? "no claims yet"
-            : `${row.claimCount} claim${row.claimCount === 1 ? "" : "s"} · ${row.verifiedCount} 🛡`}
-        </div>
+        {isZero ? (
+          <div style={{
+            fontSize: 11, color: C.textBody, fontFamily: "Nunito, sans-serif",
+            marginTop: 2,
+          }}>
+            no claims yet
+          </div>
+        ) : (
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            padding: "2px 8px",
+            borderRadius: 999,
+            background: row.verifiedCount === row.claimCount
+              ? `${C.green}22`
+              : C.sandDark,
+            color: row.verifiedCount === row.claimCount
+              ? C.green
+              : C.textBody,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 700,
+            fontSize: 11,
+            marginTop: 2,
+          }}>
+            {row.verifiedCount} of {row.claimCount} verified
+          </div>
+        )}
       </div>
       <div style={{
         fontFamily: "'Dela Gothic One', sans-serif",
