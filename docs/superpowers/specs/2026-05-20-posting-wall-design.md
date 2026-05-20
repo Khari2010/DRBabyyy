@@ -1,7 +1,7 @@
 # Posting Wall + PWA Push Notifications — Design Spec
 
 **Date:** 2026-05-20
-**Status:** Designed, awaiting review
+**Status:** Implemented — see plan `docs/superpowers/plans/2026-05-20-posting-wall.md`. Pending production deploy + iPhone E2E push smoke (T20).
 **Target ship:** Pre-trip — live now as a hype tool, runs through the trip
 
 ## 1. Purpose
