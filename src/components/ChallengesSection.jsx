@@ -102,6 +102,9 @@ export default function ChallengesSection() {
   const mineToday = activity.filter(
     (e) => e.subjectSlug === mySlug && e.dailyKey === currentDailyKey,
   );
+  const claimedTodayIds = new Set(
+    mineToday.map((e) => e.challengeId).filter(Boolean)
+  );
   const totalToday = mineToday.reduce(
     (sum, e) => (e.status === "disputed" ? sum : sum + e.points),
     0,
@@ -293,7 +296,12 @@ export default function ChallengesSection() {
       {/* CHALLENGE GRID */}
       <div style={{ display: "grid", gap: 8 }}>
         {shownChallenges.map((c) => (
-          <ChallengeCard key={c.challengeId} challenge={c} onClaim={handleCardTap} />
+          <ChallengeCard
+            key={c.challengeId}
+            challenge={c}
+            done={claimedTodayIds.has(c.challengeId)}
+            onClaim={handleCardTap}
+          />
         ))}
       </div>
 

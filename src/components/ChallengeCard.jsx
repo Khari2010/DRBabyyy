@@ -13,24 +13,59 @@ const DIFFICULTY_LABEL = {
   wild: "Wild",
 };
 
-export default function ChallengeCard({ challenge, onClaim }) {
+export default function ChallengeCard({ challenge, onClaim, done = false }) {
   const dColor = DIFFICULTY_COLOR[challenge.difficulty] ?? C.dark;
   return (
     <button
       type="button"
       data-claim="true"
       onClick={() => onClaim(challenge)}
-      style={{ all: "unset", display: "block", cursor: "pointer", width: "100%" }}
+      style={{
+        all: "unset",
+        display: "block",
+        cursor: "pointer",
+        width: "100%",
+        opacity: done ? 0.5 : 1,
+        transition: "opacity 0.2s ease",
+      }}
     >
       <Card padding={14}>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <div style={{ fontSize: 28, lineHeight: 1 }}>{challenge.icon}</div>
+          <div style={{ fontSize: 28, lineHeight: 1, position: "relative" }}>
+            {challenge.icon}
+            {done && (
+              <span
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  right: -6,
+                  bottom: -2,
+                  fontSize: 11,
+                  background: C.green,
+                  color: C.white,
+                  borderRadius: 999,
+                  width: 18,
+                  height: 18,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  lineHeight: 1,
+                  fontWeight: 900,
+                }}
+              >
+                ✓
+              </span>
+            )}
+          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontFamily: "'Dela Gothic One', sans-serif",
               fontSize: 16,
               color: C.dark,
               lineHeight: 1.2,
+              textDecoration: done ? "line-through" : "none",
+              textDecorationThickness: "2px",
+              textDecorationColor: C.sandDark,
             }}>
               {challenge.title}
             </div>
