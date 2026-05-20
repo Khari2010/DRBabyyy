@@ -108,7 +108,8 @@ export default function AdminPage() {
   const navigate = useNavigate();
   const isAdmin = useQuery(api.admin.isAdmin, token ? { token } : "skip");
   const state = useGameState();
-  const trigger = useMutation(api.rollovers.trigger);
+  const lockDay = useMutation(api.rollovers.lockDay);
+  const advance = useMutation(api.rollovers.advance);
   const undoLast = useMutation(api.rollovers.undoLast);
   const resetGame = useMutation(api.admin.resetGame);
   const breakTie = useMutation(api.admin.adminBreakFlowTie);
@@ -158,14 +159,23 @@ export default function AdminPage() {
     );
   }
 
-  const handleRollover = async () => {
+  const handleLockDay = async () => {
+    if (!window.confirm(`Lock Day ${state.currentDayNumber}? This computes the loser, picks the forfeit, and opens the Reveal flow on the Board.`)) return;
+    try {
+      await lockDay({ token });
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleAdvance = async () => {
     const label = state.gamesLive
-      ? `Lock Day ${state.currentDayNumber}, reveal the loser, and start Day ${state.currentDayNumber + 1}?`
+      ? `Start Day ${state.currentDayNumber + 1}? This advances past today.`
       : "Start the games (Day 1)?";
     if (!window.confirm(label)) return;
     const wasLive = state.gamesLive;
     try {
-      await trigger({ token });
+      await advance({ token });
       if (wasLive) navigate("/leaderboard");
     } catch (err) {
       alert(err.message);
@@ -208,14 +218,23 @@ export default function AdminPage() {
             </div>
             <div style={{ ...BODY, fontSize: 13, marginBottom: 14 }}>
               {state.gamesLive
-                ? "Fallback — End Day lives on the Board now. Use this if the Board takeover is unavailable."
+                ? "Two-step close: Lock today's scores (picks the loser and forfeit), then advance after Flow State is resolved."
                 : "Tap to kick off Day 1 and unlock claiming."}
             </div>
-            <ActionButton onClick={handleRollover} variant="primary">
-              {state.gamesLive
-                ? `Manual rollover (fallback) → Day ${state.currentDayNumber + 1}`
-                : "Start the games"}
-            </ActionButton>
+            {state.gamesLive ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <ActionButton onClick={handleLockDay} variant="primary">
+                  🔒 Lock Day {state.currentDayNumber}
+                </ActionButton>
+                <ActionButton onClick={handleAdvance} variant="primary">
+                  ▶ Start Day {state.currentDayNumber + 1}
+                </ActionButton>
+              </div>
+            ) : (
+              <ActionButton onClick={handleAdvance} variant="primary">
+                Start the games
+              </ActionButton>
+            )}
           </Card>
         </Reveal>
 
