@@ -3,7 +3,7 @@ import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, getGameState, requireAdmin } from "./helpers";
 import { NEGATIVE_POINTS_CONST } from "./_seedData/challenges";
-import { SCAVENGER_ITEMS } from "../src/data/scavenger.js";
+import { itemById as scavengerItemById } from "../src/data/scavenger.js";
 
 export const claim = mutation({
   args: {
@@ -167,10 +167,6 @@ export const unclaim = mutation({
 
 const SCAVENGER_BONUS = { 1: 5, 2: 3, 3: 0 } as const;
 
-function scavengerItemById(id: string) {
-  return SCAVENGER_ITEMS.find((i: { id: string }) => i.id === id);
-}
-
 export const claimScavenger = mutation({
   args: {
     token: v.string(),
@@ -199,7 +195,7 @@ export const claimScavenger = mutation({
     const rank = Math.min(validCount + 1, 3);
     const bonus = SCAVENGER_BONUS[rank as 1 | 2 | 3];
 
-    await ctx.db.insert("entries", {
+    return await ctx.db.insert("entries", {
       type: "scavenger",
       subjectSlug: playerSlug,
       points: (item as { points: number }).points + bonus,

@@ -401,6 +401,39 @@ describe("entries.claimScavenger", () => {
       t.mutation(api.entries.claimScavenger, { token: "tok-kai", scavengerItemId: "no-such-thing", photoStorageId: sid }),
     ).rejects.toThrow("unknown item");
   });
+
+  it("ignores disputed entries when assigning rank", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "khari", "tok-khari");
+    await seedGameLive(t);
+
+    const sid1 = await t.run((ctx) => ctx.storage.store(new Blob(["a"])));
+    const sid2 = await t.run((ctx) => ctx.storage.store(new Blob(["b"])));
+
+    // Kai claims first (rank 1) then their entry is marked disputed manually.
+    await t.mutation(api.entries.claimScavenger, {
+      token: "tok-kai", scavengerItemId: "coconut", photoStorageId: sid1,
+    });
+    await t.run(async (ctx) => {
+      const row = await ctx.db
+        .query("entries")
+        .withIndex("by_subject", (q) => q.eq("subjectSlug", "kai"))
+        .first();
+      if (row) await ctx.db.patch(row._id, { status: "disputed" });
+    });
+
+    // Khari claims after — should still be rank 1 because the only active count is 0.
+    await t.mutation(api.entries.claimScavenger, {
+      token: "tok-khari", scavengerItemId: "coconut", photoStorageId: sid2,
+    });
+
+    const khariRow = await t.run((ctx) =>
+      ctx.db.query("entries").withIndex("by_subject", (q) => q.eq("subjectSlug", "khari")).first(),
+    );
+    expect(khariRow!.scavengerRank).toBe(1);
+    expect(khariRow!.points).toBe(10); // 5 + 5 first bonus
+  });
 });
 
 describe("entries.unclaim", () => {
