@@ -25,10 +25,12 @@ export default function EntryRow({ entry }) {
     ? challenges.find((c) => c.challengeId === entry.challengeId)
     : null;
   const isMine = mySlug && entry.subjectSlug === mySlug;
-  const canReact = !!token && !entry.myReaction && entry.status === "active" && !isMine;
+  const canReact = !!token && !entry.myReaction && entry.status === "active" && !isMine && entry.type !== "scavenger";
 
   const label = entry.type === "challenge"
     ? `claimed: ${challenge?.title ?? entry.challengeId} (${entry.points >= 0 ? "+" : ""}${entry.points})`
+    : entry.type === "scavenger"
+    ? `found: ${entry.label ?? entry.scavengerItemId} (+${entry.points})`
     : `got fouled: ${entry.negativeId} (${entry.points})`;
 
   const badge = entry.status === "verified" ? "🛡" : entry.status === "disputed" ? "⚠️" : null;
@@ -43,6 +45,15 @@ export default function EntryRow({ entry }) {
       opacity: entry.status === "disputed" ? 0.5 : 1,
     }}>
       {subject && <Avatar player={subject} size="sm" />}
+      {entry.type === "scavenger" && entry.photoUrl && (
+        <img
+          src={entry.photoUrl}
+          alt=""
+          style={{
+            width: 36, height: 36, borderRadius: 8, objectFit: "cover",
+          }}
+        />
+      )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontFamily: "Nunito, sans-serif",
