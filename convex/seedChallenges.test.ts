@@ -3,6 +3,7 @@ import { convexTest } from "convex-test";
 import schema from "./schema";
 import { internal } from "./_generated/api";
 import { RETIRE_CHALLENGE_IDS } from "./seedChallenges";
+import { SEED_CHALLENGES } from "./_seedData/challenges";
 
 describe("seedChallenges.retireChallengeIds", () => {
   it("retires every id in the retirement list and leaves others active", async () => {
@@ -101,30 +102,14 @@ describe("seedChallenges.repriceChallenges", () => {
   });
 });
 
-import { SEED_CHALLENGES } from "./_seedData/challenges";
-
 describe("SEED_CHALLENGES (data sanity)", () => {
   it("contains exactly 52 entries", () => {
     expect(SEED_CHALLENGES.length).toBe(52);
   });
 
   it("does not contain any retired challengeIds", () => {
-    const retiredIds = new Set([
-      "gianni-bike",
-      "shower-with",
-      "scavenger-hunt",
-      "ocean-sunrise",
-      "ocean-midnight",
-      "swim-up-bar",
-      "pinacolada-coconut",
-      "tostones",
-      "hair-braids",
-      "crew-swim-up",
-      "matching-dinner",
-      "horseback-beach",
-    ]);
     const seedIds = new Set(SEED_CHALLENGES.map((c) => c.challengeId));
-    for (const id of retiredIds) {
+    for (const id of RETIRE_CHALLENGE_IDS) {
       expect(seedIds.has(id), `seed should not include ${id}`).toBe(false);
     }
   });
@@ -147,7 +132,7 @@ describe("SEED_CHALLENGES (data sanity)", () => {
     }
   });
 
-  it("has spanish-convo at 30 points (repriced from 50)", () => {
+  it("seed data has spanish-convo at 30 points", () => {
     const row = SEED_CHALLENGES.find((c) => c.challengeId === "spanish-convo");
     expect(row?.points).toBe(30);
   });

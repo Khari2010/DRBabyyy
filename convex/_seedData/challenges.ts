@@ -60,14 +60,14 @@ export const SEED_CHALLENGES = [
   { challengeId: "skinny-dip", title: "Skinny Dip in the Ocean", icon: "🍑", points: 150, category: "wild" },
   { challengeId: "every-bar", title: "Hit Every Resort Bar in One Day", icon: "🍻", points: 50, category: "wild" },
 
-  // ── Trip-specific (added 2026-05-20) ────────────────────────────────
+  // ── Trip-specific (added 2026-05-20) ───────────────────────────────
   { challengeId: "fake-proposal", title: "Fake Proposal", icon: "💍", points: 150, category: "wild" },
   { challengeId: "sanatana-shot", title: "Get Sanatana to Do a Shot with You", icon: "🥃", points: 25, category: "social" },
   { challengeId: "julio-tiktok", title: "Get Julio to Make a TikTok with You", icon: "🎬", points: 35, category: "content" },
   { challengeId: "grumpy-couple-smile", title: "Grumpy Couple Smile Together (photo)", icon: "👫", points: 60, category: "social" },
   { challengeId: "tabo-bar-shot", title: "At Tabo, 5+ at the Bar Shot With You", icon: "🍹", points: 60, category: "social" },
   { challengeId: "sports-bar-pool", title: "Challenge a Stranger to Pool (Sports Bar)", icon: "🎱", points: 15, bonus: "+15 if you win", category: "social" },
-  { challengeId: "gym-first", title: "First Crew Member to the Gym (per day)", icon: "🏃", points: 10, category: "fitness" },
+  { challengeId: "gym-first", title: "First Crew Member to the Gym (per day)", icon: "🏋️", points: 10, category: "fitness" },
   { challengeId: "close-sports-bar", title: "Close the Sports Bar", icon: "🍻", points: 50, category: "wild" },
 ] as const satisfies readonly SeedChallenge[];
 
