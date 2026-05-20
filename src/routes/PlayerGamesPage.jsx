@@ -49,6 +49,33 @@ function useCountUp(value, durationMs = 600) {
   return display;
 }
 
+function TodayValue({ value, accent }) {
+  const display = useCountUp(typeof value === "number" ? value : 0);
+  const [pulseKey, setPulseKey] = useState(0);
+  const prevRef = useRef(value);
+  useEffect(() => {
+    if (value !== prevRef.current) {
+      setPulseKey((k) => k + 1);
+      prevRef.current = value;
+    }
+  }, [value]);
+
+  return (
+    <div
+      key={pulseKey}
+      style={{
+        fontFamily: "'Dela Gothic One', sans-serif",
+        fontSize: 40,
+        color: accent ?? C.dark,
+        lineHeight: 1,
+        animation: pulseKey > 0 ? "drStatPulse 0.5s cubic-bezier(0.16,1,0.3,1)" : undefined,
+      }}
+    >
+      {typeof display === "number" ? (display >= 0 ? `+${display}` : display) : display}
+    </div>
+  );
+}
+
 function Stat({ label, value, accent, pulseOnChange = false }) {
   const numericDisplay = useCountUp(typeof value === "number" ? value : 0);
   const [pulseKey, setPulseKey] = useState(0);
@@ -94,9 +121,12 @@ function Stat({ label, value, accent, pulseOnChange = false }) {
   );
 }
 
-function DashboardHero({ player, dailyTotal, holidayTotal, rank }) {
+function DashboardHero({ player, dailyTotal, holidayTotal, rank, crewSize }) {
   const { gamesLive, currentDayNumber } = useGameState();
   const remaining = daysRemaining();
+  const isPristine = dailyTotal === 0 && holidayTotal === 0;
+  const todayAccent = dailyTotal >= 0 ? C.green : C.coralDeep;
+  const holidayAccent = holidayTotal >= 0 ? C.green : C.coralDeep;
   return (
     <Card tint={player?.color ?? C.gold} padding={20} style={{
       boxShadow: `0 4px 20px ${player?.color ?? C.flow}30, 0 0 0 1px ${player?.color ?? C.flow}15`,
@@ -116,14 +146,32 @@ function DashboardHero({ player, dailyTotal, holidayTotal, rank }) {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-        <Stat label="Today" value={dailyTotal} accent={dailyTotal >= 0 ? C.green : C.coralDeep} pulseOnChange />
-        <Stat label="Holiday" value={holidayTotal} accent={holidayTotal >= 0 ? C.green : C.coralDeep} />
-        <Stat label="Rank" value={rank ? `#${rank}` : "—"} />
+      {/* TODAY — emphasized as a full-width block with a larger value */}
+      <div style={{
+        marginTop: 16,
+        background: "rgba(255,255,255,0.92)",
+        borderRadius: 14,
+        padding: "14px 16px",
+      }}>
+        <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 4 }}>Today</div>
+        <TodayValue value={dailyTotal} accent={todayAccent} />
+      </div>
+
+      {/* HOLIDAY + RANK — secondary row, smaller */}
+      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+        <Stat label="Holiday" value={holidayTotal} accent={holidayAccent} />
+        <Stat
+          label="Rank"
+          value={rank && crewSize ? `#${rank} of ${crewSize}` : "—"}
+        />
       </div>
 
       <div style={{ ...BODY, fontSize: 12, marginTop: 12, color: C.textBody }}>
-        {remaining > 0 ? `${remaining} day${remaining === 1 ? "" : "s"} of trip remaining` : "Trip in progress"}
+        {isPristine
+          ? "Tap a challenge to start scoring."
+          : remaining > 0
+            ? `${remaining} day${remaining === 1 ? "" : "s"} of trip remaining`
+            : "Trip in progress"}
       </div>
     </Card>
   );
@@ -168,6 +216,7 @@ export default function PlayerGamesPage() {
             dailyTotal={dailyRow?.total ?? 0}
             holidayTotal={holidayRow?.total ?? 0}
             rank={rank >= 0 ? rank + 1 : null}
+            crewSize={holiday.length || null}
           />
         </Reveal>
       </SectionBand>
