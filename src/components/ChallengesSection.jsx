@@ -21,6 +21,7 @@ const DIFFICULTY_COLOR = {
 
 const SORT_OPTIONS = [
   { key: "default", label: "Default" },
+  { key: "hot", label: "🔥 Hot" },
   { key: "pointsDesc", label: "Most points" },
   { key: "pointsAsc", label: "Least points" },
   { key: "newest", label: "Newest" },
@@ -70,6 +71,18 @@ export default function ChallengesSection() {
     setShowAll(false);
   }, [searchTerm, sortKey, filters]);
 
+  const heatMap = useMemo(() => {
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    const map = new Map();
+    for (const e of activity) {
+      if (e.type !== "challenge" || !e.challengeId) continue;
+      if (e.createdAt < oneDayAgo) continue;
+      if (e.status === "disputed") continue;
+      map.set(e.challengeId, (map.get(e.challengeId) ?? 0) + 1);
+    }
+    return map;
+  }, [activity]);
+
   const visibleChallenges = useMemo(() => {
     let filtered = challenges.filter((c) => filters.has(c.difficulty));
     const q = searchTerm.trim().toLowerCase();
@@ -79,8 +92,16 @@ export default function ChallengesSection() {
         (c.category ?? "").toLowerCase().includes(q)
       );
     }
+    if (sortKey === "hot") {
+      return [...filtered].sort((a, b) => {
+        const ha = heatMap.get(a.challengeId) ?? 0;
+        const hb = heatMap.get(b.challengeId) ?? 0;
+        if (hb !== ha) return hb - ha;
+        return b.points - a.points;
+      });
+    }
     return sortChallenges(filtered, sortKey);
-  }, [challenges, filters, sortKey, searchTerm]);
+  }, [challenges, filters, sortKey, searchTerm, heatMap]);
 
   const hasSearch = searchTerm.trim().length > 0;
   const truncated = !showAll && !hasSearch && visibleChallenges.length > TRUNCATE_AT;
