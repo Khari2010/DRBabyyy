@@ -21,6 +21,7 @@ import EndDayTakeover from "../components/EndDayTakeover.jsx";
 import PlayerDayDrawer from "../components/PlayerDayDrawer.jsx";
 import FlowStateVoteCard from "../components/FlowStateVoteCard.jsx";
 import DaySummaryCard from "../components/DaySummaryCard.jsx";
+import WheelPreviewCard from "../components/WheelPreviewCard.jsx";
 
 const ACCENT = C.gold;
 
@@ -279,6 +280,10 @@ export default function LeaderboardPage() {
         </Reveal>
 
         {tab === "daily" && <FlowStateVoteCard />}
+
+        <Reveal>
+          <WheelPreviewCard />
+        </Reveal>
 
         <Reveal>
           <Card padding={0} style={{ overflow: "hidden" }}>
