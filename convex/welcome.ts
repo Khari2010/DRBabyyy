@@ -96,3 +96,13 @@ export const markLockscreenSeen = mutation({
     await ctx.db.patch(row._id, { lockscreenSeen: true });
   },
 });
+
+export const markScavengerVisited = mutation({
+  args: { token: v.string(), slug: v.string() },
+  handler: async (ctx, { token, slug }) => {
+    await requireSelf(ctx, token, slug);
+    const row = await ensureProgressRow(ctx, slug);
+    if (row.visitedScavenger) return;
+    await ctx.db.patch(row._id, { visitedScavenger: true });
+  },
+});

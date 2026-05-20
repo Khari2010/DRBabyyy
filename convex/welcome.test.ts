@@ -227,3 +227,33 @@ describe("welcome.markLockscreenSeen", () => {
     ).rejects.toThrow(/invalid session/);
   });
 });
+
+describe("welcome.markScavengerVisited", () => {
+  it("sets visitedScavenger=true and is idempotent", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    await seedSession(t, "kai", "tok");
+
+    await t.mutation(api.welcome.markScavengerVisited, { token: "tok", slug: "kai" });
+    await t.mutation(api.welcome.markScavengerVisited, { token: "tok", slug: "kai" });
+
+    const result = await t.query(api.welcome.getProgress, { slug: "kai" });
+    expect(result.items.find((i) => i.id === "scavengerVisit")?.done).toBe(true);
+
+    await t.run(async (ctx) => {
+      const rows = await ctx.db.query("playerProgress").collect();
+      expect(rows).toHaveLength(1);
+    });
+  });
+
+  it("rejects when token doesn't match slug", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    await seedPlayer(t, "candice");
+    await seedSession(t, "candice", "candice-tok");
+
+    await expect(
+      t.mutation(api.welcome.markScavengerVisited, { token: "candice-tok", slug: "kai" }),
+    ).rejects.toThrow(/not your progress/);
+  });
+});
