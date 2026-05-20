@@ -35,6 +35,7 @@ import type * as scavenger from "../scavenger.js";
 import type * as seed from "../seed.js";
 import type * as seedChallenges from "../seedChallenges.js";
 import type * as suggestions from "../suggestions.js";
+import type * as welcome from "../welcome.js";
 
 import type {
   ApiFromModules,
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   seedChallenges: typeof seedChallenges;
   suggestions: typeof suggestions;
+  welcome: typeof welcome;
 }>;
 
 /**

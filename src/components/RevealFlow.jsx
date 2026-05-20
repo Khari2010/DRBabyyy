@@ -102,7 +102,9 @@ export default function RevealFlow({ rollover, onSlotDone }) {
   const board = useQuery(api.leaderboard.getDaily, { dailyKey: rollover.dailyKey }) ?? [];
   const flowState = useQuery(
     api.flowVotes.getFlowVoteState,
-    session?.token ? { token: session.token } : {},
+    session?.token
+      ? { token: session.token, dayNumber: rollover.dayNumber }
+      : { dayNumber: rollover.dayNumber },
   );
   const holidayMap = useHolidayNameMap();
   const nameOf = (slug) => displayName(slug, holidayMap);

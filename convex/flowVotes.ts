@@ -129,8 +129,8 @@ export const clearFlowVote = mutation({
 });
 
 export const getFlowVoteState = query({
-  args: { token: v.optional(v.string()) },
-  handler: async (ctx, { token }) => {
+  args: { token: v.optional(v.string()), dayNumber: v.optional(v.number()) },
+  handler: async (ctx, { token, dayNumber }) => {
     const state = await getGameState(ctx);
     if (!state) {
       return { phase: "closed" as const, myVoteSlug: null, tally: {}, votedCount: 0, totalCrew: 0 };
@@ -138,14 +138,16 @@ export const getFlowVoteState = query({
     const players = await ctx.db.query("players").collect();
     const totalCrew = players.length;
 
+    const lookupDayNumber = dayNumber ?? state.currentDayNumber;
     const rollover = await ctx.db
       .query("rollovers")
-      .withIndex("by_day_number", (q) => q.eq("dayNumber", state.currentDayNumber))
+      .withIndex("by_day_number", (q) => q.eq("dayNumber", lookupDayNumber))
       .first();
 
+    const lookupDailyKey = rollover?.dailyKey ?? state.currentDailyKey;
     const votes = await ctx.db
       .query("flowVotes")
-      .withIndex("by_daily_key", (q) => q.eq("dailyKey", state.currentDailyKey))
+      .withIndex("by_daily_key", (q) => q.eq("dailyKey", lookupDailyKey))
       .collect();
 
     const tally: Record<string, number> = {};
