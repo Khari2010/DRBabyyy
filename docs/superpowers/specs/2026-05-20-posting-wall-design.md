@@ -239,7 +239,7 @@ New tab in `src/components/BottomNav.jsx` between Home and Games:
 - `PhotoLightbox.jsx` — photo zoom (already in scavenger).
 - `src/data/design.js` tokens, `src/components/primitives/` for surface primitives.
 - Storage upload pattern from scavenger / `convex/scavenger.ts`.
-- Existing relative-time helper (or a tiny new `formatRelative.js` if none is reusable).
+- A new `src/lib/formatRelative.js` helper (the codebase has no existing relative-time util — kept tiny: "Xs / Xm / Xh / Yesterday / MMM D").
 
 ## 8. Error handling & edge cases
 
