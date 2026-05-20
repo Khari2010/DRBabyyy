@@ -3,7 +3,8 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
 import { useGameState } from "../lib/useGameState.js";
-import { SCAVENGER_ITEMS, SCAVENGER_CATEGORIES } from "../data/scavenger.js";
+import { SCAVENGER_ITEMS, SCAVENGER_CATEGORIES, itemById } from "../data/scavenger.js";
+import { dailyItemsFor, isDailyScavengerActive } from "../data/dailyScavenger.js";
 import { C } from "../data/colors.js";
 import { EYEBROW, HEADING, BODY, MICRO_LABEL, RADIUS } from "../data/design.js";
 import Card from "./primitives/Card.jsx";
@@ -34,10 +35,15 @@ export default function ScavengerSection() {
   const todayFinds = mine.filter((e) => e.dailyKey === currentDailyKey && e.status !== "disputed");
   const todayPoints = todayFinds.reduce((s, e) => s + e.points, 0);
 
+  const dailyMode = isDailyScavengerActive(currentDailyKey);
+  const dailyItemIds = dailyMode ? (dailyItemsFor(currentDailyKey) ?? []) : null;
+  const dailyItems = dailyMode ? dailyItemIds.map((id) => itemById(id)).filter(Boolean) : null;
+
   const visible = useMemo(() => {
+    if (dailyMode) return dailyItems;
     if (category === "all") return SCAVENGER_ITEMS;
     return SCAVENGER_ITEMS.filter((i) => i.category === category);
-  }, [category]);
+  }, [category, dailyMode, dailyItems]);
 
   if (!gamesLive) {
     return (
@@ -76,19 +82,51 @@ export default function ScavengerSection() {
         </span>
       </div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-        <Pill active={category === "all"} accent={C.gold} onClick={() => setCategory("all")}>All</Pill>
-        {SCAVENGER_CATEGORIES.map((c) => (
-          <Pill
-            key={c.id}
-            active={category === c.id}
-            accent={c.color}
-            onClick={() => setCategory(c.id)}
-          >
-            {c.icon} {c.label}
-          </Pill>
-        ))}
-      </div>
+      {!dailyMode && (
+        <div style={{
+          padding: "10px 14px",
+          background: `${C.gold}15`,
+          border: `1px dashed ${C.gold}55`,
+          borderRadius: RADIUS.md,
+          color: C.dark,
+          fontFamily: "Nunito, sans-serif",
+          fontSize: 13,
+          marginBottom: 12,
+        }}>
+          <strong>Practice round</strong> — Day 1 finds don't count toward your Holiday total.
+        </div>
+      )}
+
+      {dailyMode && (
+        <div style={{
+          padding: "10px 14px",
+          background: `${C.turquoise}12`,
+          border: `1px dashed ${C.turquoise}55`,
+          borderRadius: RADIUS.md,
+          color: C.dark,
+          fontFamily: "Nunito, sans-serif",
+          fontSize: 13,
+          marginBottom: 12,
+        }}>
+          <strong>Today's hunt:</strong> 4 items, one per category.
+        </div>
+      )}
+
+      {!dailyMode && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+          <Pill active={category === "all"} accent={C.gold} onClick={() => setCategory("all")}>All</Pill>
+          {SCAVENGER_CATEGORIES.map((c) => (
+            <Pill
+              key={c.id}
+              active={category === c.id}
+              accent={c.color}
+              onClick={() => setCategory(c.id)}
+            >
+              {c.icon} {c.label}
+            </Pill>
+          ))}
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
         {visible.map((item) => (
