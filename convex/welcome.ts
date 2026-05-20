@@ -116,3 +116,13 @@ export const markLeaderboardVisited = mutation({
     await ctx.db.patch(row._id, { visitedLeaderboard: true });
   },
 });
+
+export const hide = mutation({
+  args: { token: v.string(), slug: v.string() },
+  handler: async (ctx, { token, slug }) => {
+    await requireSelf(ctx, token, slug);
+    const row = await ensureProgressRow(ctx, slug);
+    if (row.welcomeHidden) return;
+    await ctx.db.patch(row._id, { welcomeHidden: true });
+  },
+});

@@ -287,3 +287,33 @@ describe("welcome.markLeaderboardVisited", () => {
     ).rejects.toThrow(/not your progress/);
   });
 });
+
+describe("welcome.hide", () => {
+  it("sets welcomeHidden=true and is idempotent", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    await seedSession(t, "kai", "tok");
+
+    await t.mutation(api.welcome.hide, { token: "tok", slug: "kai" });
+    await t.mutation(api.welcome.hide, { token: "tok", slug: "kai" });
+
+    const result = await t.query(api.welcome.getProgress, { slug: "kai" });
+    expect(result.hidden).toBe(true);
+
+    await t.run(async (ctx) => {
+      const rows = await ctx.db.query("playerProgress").collect();
+      expect(rows).toHaveLength(1);
+    });
+  });
+
+  it("rejects when token doesn't match slug", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    await seedPlayer(t, "candice");
+    await seedSession(t, "candice", "candice-tok");
+
+    await expect(
+      t.mutation(api.welcome.hide, { token: "candice-tok", slug: "kai" }),
+    ).rejects.toThrow(/not your progress/);
+  });
+});
