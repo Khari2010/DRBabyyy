@@ -66,3 +66,60 @@ export const _getSubscriptionsForComment = internalQuery({
     return subs.filter((s) => recipientSlugs.has(s.playerSlug));
   },
 });
+
+async function holidayName(ctx: any, slug: string): Promise<string> {
+  const p = await ctx.db
+    .query("players")
+    .withIndex("by_slug", (q: any) => q.eq("slug", slug))
+    .unique();
+  return p?.holidayName ?? slug;
+}
+
+export const _getEntryNotification = internalQuery({
+  args: {
+    entryId: v.id("entries"),
+    event: v.union(v.literal("vouch"), v.literal("dispute"), v.literal("forfeit-applied")),
+    actorSlug: v.string(),
+  },
+  handler: async (ctx, { entryId, event, actorSlug }) => {
+    const entry = await ctx.db.get(entryId);
+    if (!entry) return null;
+
+    const isNegative = entry.type === "negative";
+    let recipientSlug: string | null = null;
+    if (event === "dispute" && isNegative) {
+      recipientSlug = entry.appliedBySlug ?? null;
+    } else {
+      recipientSlug = entry.subjectSlug;
+    }
+    if (!recipientSlug || recipientSlug === actorSlug) return null;
+    if (recipientSlug === "system") return null;
+
+    const actorName = await holidayName(ctx, actorSlug);
+    let body: string;
+    if (event === "vouch") {
+      body = isNegative
+        ? `😬 ${actorName} verified the foul against you`
+        : `👍 ${actorName} vouched your claim`;
+    } else if (event === "dispute") {
+      if (isNegative) {
+        const targetName = await holidayName(ctx, entry.subjectSlug);
+        body = `❌ ${actorName} disputed your foul against ${targetName}`;
+      } else {
+        body = `❌ ${actorName} disputed your claim`;
+      }
+    } else {
+      body = `📉 ${actorName} took ${Math.abs(entry.points)} points from you (forfeit)`;
+    }
+
+    return { recipientSlug, body, url: "/leaderboard", tag: `entry-${entryId}` };
+  },
+});
+
+export const _getSubscriptionsForSlug = internalQuery({
+  args: { recipientSlug: v.string() },
+  handler: async (ctx, { recipientSlug }) => {
+    const all = await ctx.db.query("pushSubscriptions").collect();
+    return all.filter((s) => s.playerSlug === recipientSlug);
+  },
+});

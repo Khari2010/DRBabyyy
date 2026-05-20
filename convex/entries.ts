@@ -2,6 +2,7 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, getGameState, requireAdmin } from "./helpers";
+import { internal } from "./_generated/api";
 import { NEGATIVE_POINTS_CONST } from "./_seedData/challenges";
 import { itemById as scavengerItemById } from "../src/data/scavenger.js";
 import { dailyItemsFor, isDailyScavengerActive } from "../src/data/dailyScavenger.js";
@@ -82,6 +83,12 @@ export const vouch = mutation({
       patch.resolvedAt = Date.now();
     }
     await ctx.db.patch(entryId, patch);
+
+    await ctx.scheduler.runAfter(0, internal.pushNotificationsActions.sendForEntryEvent, {
+      entryId,
+      event: "vouch",
+      actorSlug: playerSlug,
+    });
   },
 });
 
@@ -126,6 +133,12 @@ export const dispute = mutation({
       patch.resolvedAt = Date.now();
     }
     await ctx.db.patch(entryId, patch);
+
+    await ctx.scheduler.runAfter(0, internal.pushNotificationsActions.sendForEntryEvent, {
+      entryId,
+      event: "dispute",
+      actorSlug: playerSlug,
+    });
   },
 });
 
@@ -162,7 +175,7 @@ export const applyForfeitDeduct = mutation({
     await requireAdmin(ctx, playerSlug);
     const state = await getGameState(ctx);
     if (!state || !state.gamesLive) throw new Error("games not live");
-    await ctx.db.insert("entries", {
+    const entryId = await ctx.db.insert("entries", {
       type: "negative",
       subjectSlug: targetSlug,
       appliedBySlug: "system",
@@ -174,6 +187,11 @@ export const applyForfeitDeduct = mutation({
       dailyKey: state.currentDailyKey,
       createdAt: Date.now(),
       resolvedAt: Date.now(),
+    });
+    await ctx.scheduler.runAfter(0, internal.pushNotificationsActions.sendForEntryEvent, {
+      entryId,
+      event: "forfeit-applied",
+      actorSlug: playerSlug,
     });
   },
 });

@@ -75,3 +75,29 @@ export const sendForComment = internalAction({
     await fanout(ctx, subs, payload);
   },
 });
+
+export const sendForEntryEvent = internalAction({
+  args: {
+    entryId: v.id("entries"),
+    event: v.union(v.literal("vouch"), v.literal("dispute"), v.literal("forfeit-applied")),
+    actorSlug: v.string(),
+  },
+  handler: async (ctx, { entryId, event, actorSlug }) => {
+    const info = await ctx.runQuery(internal.pushNotificationsQueries._getEntryNotification, {
+      entryId,
+      event,
+      actorSlug,
+    });
+    if (!info) return;
+    const subs = await ctx.runQuery(internal.pushNotificationsQueries._getSubscriptionsForSlug, {
+      recipientSlug: info.recipientSlug,
+    });
+    const payload = {
+      title: "DR Baby",
+      body: info.body,
+      url: info.url,
+      tag: info.tag,
+    };
+    await fanout(ctx, subs, payload);
+  },
+});
