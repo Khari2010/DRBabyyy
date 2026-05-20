@@ -1,5 +1,5 @@
 // Challenges keyed by id with a category for grouping in the /games dashboard.
-// Categories: social, drinks, fitness, content, wild, squad, chill, beach,
+// Categories: social, drinks, fitness, content, wild, squad, beach,
 // shopping, local, food.
 export const CHALLENGES = [
   // Universal (Khari's final list, 32 entries)
@@ -45,7 +45,7 @@ export const CHALLENGES = [
   { id: 38, title: "Eat La Bandera", icon: "🍛", points: 15, category: "food" },
   { id: 39, title: "Smoke a Dominican Cigar", icon: "🚬", points: 15, category: "local" },
   { id: 40, title: "Buy Larimar or Amber", icon: "💎", points: 25, category: "shopping" },
-  { id: 41, title: "Negotiate Below 50% of Asking", icon: "🤝", points: 30, category: "shopping" },
+  { id: 41, title: "Negotiate Below 50% of Asking", icon: "💰", points: 30, category: "shopping" },
   { id: 42, title: "Whole Crew in the Ocean", icon: "🌊", points: 30, category: "squad" },
   { id: 43, title: "Skinny Dip in the Ocean", icon: "🍑", points: 150, category: "wild" },
   { id: 44, title: "Hit Every Resort Bar in One Day", icon: "🍻", points: 50, category: "wild" },
@@ -77,7 +77,6 @@ export const CHALLENGE_CATEGORIES = [
   { id: "content", label: "Content", icon: "📹", blurb: "Camera ready." },
   { id: "wild", label: "Wild", icon: "🔥", blurb: "High stakes only." },
   { id: "squad", label: "Squad", icon: "👯", blurb: "With the crew." },
-  { id: "chill", label: "Chill", icon: "🌴", blurb: "Easy points." },
   { id: "beach", label: "Beach", icon: "🏖️", blurb: "Sand, sun, salt." },
   { id: "shopping", label: "Shopping", icon: "🛍️", blurb: "Score the swag." },
   { id: "local", label: "Local", icon: "🇩🇴", blurb: "Dominican texture." },

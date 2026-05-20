@@ -55,7 +55,7 @@ export const SEED_CHALLENGES = [
   { challengeId: "la-bandera", title: "Eat La Bandera", icon: "🍛", points: 15, category: "food" },
   { challengeId: "cigar", title: "Smoke a Dominican Cigar", icon: "🚬", points: 15, category: "local" },
   { challengeId: "larimar", title: "Buy Larimar or Amber", icon: "💎", points: 25, category: "shopping" },
-  { challengeId: "negotiate-half", title: "Negotiate Below 50% of Asking", icon: "🤝", points: 30, category: "shopping" },
+  { challengeId: "negotiate-half", title: "Negotiate Below 50% of Asking", icon: "💰", points: 30, category: "shopping" },
   { challengeId: "crew-ocean", title: "Whole Crew in the Ocean", icon: "🌊", points: 30, category: "squad" },
   { challengeId: "skinny-dip", title: "Skinny Dip in the Ocean", icon: "🍑", points: 150, category: "wild" },
   { challengeId: "every-bar", title: "Hit Every Resort Bar in One Day", icon: "🍻", points: 50, category: "wild" },
