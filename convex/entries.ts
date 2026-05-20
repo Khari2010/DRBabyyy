@@ -52,6 +52,9 @@ export const vouch = mutation({
     const entry = await ctx.db.get(entryId);
     if (!entry) throw new Error("unknown entry");
     if (entry.subjectSlug === playerSlug) throw new Error("cannot react to own entry");
+    if (entry.type === "negative" && entry.appliedBySlug === playerSlug) {
+      throw new Error("cannot vouch your own foul");
+    }
 
     const state = await getGameState(ctx);
     const rollover = await ctx.db
@@ -88,7 +91,14 @@ export const dispute = mutation({
     const { playerSlug } = await requireSession(ctx, token);
     const entry = await ctx.db.get(entryId);
     if (!entry) throw new Error("unknown entry");
-    if (entry.subjectSlug === playerSlug) throw new Error("cannot react to own entry");
+    // The subject can defend themselves against a foul, but cannot dispute
+    // a positive claim they made about themselves.
+    if (entry.subjectSlug === playerSlug && entry.type !== "negative") {
+      throw new Error("cannot react to own entry");
+    }
+    if (entry.type === "negative" && entry.appliedBySlug === playerSlug) {
+      throw new Error("cannot dispute your own foul — remove it instead");
+    }
 
     const state = await getGameState(ctx);
     const rollover = await ctx.db
@@ -177,6 +187,28 @@ export const unclaim = mutation({
     if (entry.subjectSlug !== playerSlug) throw new Error("not your entry");
     if (entry.status !== "active") throw new Error("already resolved");
     if (Date.now() - entry.createdAt > 60_000) throw new Error("too late to undo");
+
+    const reactions = await ctx.db
+      .query("entryReactions")
+      .withIndex("by_entry", (q) => q.eq("entryId", entryId))
+      .collect();
+    for (const r of reactions) await ctx.db.delete(r._id);
+
+    await ctx.db.delete(entryId);
+  },
+});
+
+// Logger removes their own foul. Unlike unclaim, no time limit — but only
+// works while the foul is still active (no vouches landed yet).
+export const removeNegative = mutation({
+  args: { token: v.string(), entryId: v.id("entries") },
+  handler: async (ctx, { token, entryId }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    const entry = await ctx.db.get(entryId);
+    if (!entry) throw new Error("unknown entry");
+    if (entry.type !== "negative") throw new Error("not a foul entry");
+    if (entry.appliedBySlug !== playerSlug) throw new Error("not your foul to remove");
+    if (entry.status !== "active") throw new Error("already resolved — ask an admin");
 
     const reactions = await ctx.db
       .query("entryReactions")

@@ -24,14 +24,24 @@ export default function EntryRow({ entry }) {
   const challenge = entry.challengeId
     ? challenges.find((c) => c.challengeId === entry.challengeId)
     : null;
-  const isMine = mySlug && entry.subjectSlug === mySlug;
-  const canReact = !!token && !entry.myReaction && entry.status === "active" && !isMine && entry.type !== "scavenger";
+  const removeNegative = useMutation(api.entries.removeNegative);
+
+  const isFoul = entry.type === "negative";
+  const isMyFoulLogged = isFoul && mySlug && entry.appliedBySlug === mySlug;
+  const isMyClaim = !isFoul && mySlug && entry.subjectSlug === mySlug;
+  const isMyFoulReceived = isFoul && mySlug && entry.subjectSlug === mySlug;
+  // Third parties get full vouch + dispute. Victim of a foul gets dispute only.
+  const canVouch = !!token && !entry.myReaction && entry.status === "active"
+    && !isMyClaim && !isMyFoulLogged && !isMyFoulReceived && entry.type !== "scavenger";
+  const canDispute = !!token && !entry.myReaction && entry.status === "active"
+    && !isMyClaim && !isMyFoulLogged && entry.type !== "scavenger";
+  const canRemoveFoul = !!token && isMyFoulLogged && entry.status === "active";
 
   const label = entry.type === "challenge"
     ? `claimed: ${challenge?.title ?? entry.challengeId} (${entry.points >= 0 ? "+" : ""}${entry.points})`
     : entry.type === "scavenger"
     ? `found: ${entry.label ?? entry.scavengerItemId} (+${entry.points})`
-    : `got fouled: ${entry.negativeId} (${entry.points})`;
+    : `got fouled: ${entry.label ?? entry.negativeId} (${entry.points})`;
 
   const badge = entry.status === "verified" ? "🛡" : entry.status === "disputed" ? "⚠️" : null;
 
@@ -63,39 +73,63 @@ export default function EntryRow({ entry }) {
         }}>
           <strong>{playerName(entry.subjectSlug)}</strong> {label} {badge}
         </div>
-        {canReact && (
+        {(canVouch || canDispute) && (
           <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+            {canVouch && (
+              <button
+                onClick={() => vouch({ token, entryId: entry._id }).catch((e) => alert(e.message))}
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  background: C.green,
+                  color: C.white,
+                  border: 0,
+                  fontFamily: "Nunito, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 11,
+                  cursor: "pointer",
+                }}
+              >
+                ✓ I saw it
+              </button>
+            )}
+            {canDispute && (
+              <button
+                onClick={() => dispute({ token, entryId: entry._id }).catch((e) => alert(e.message))}
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  background: C.coralDeep,
+                  color: C.white,
+                  border: 0,
+                  fontFamily: "Nunito, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 11,
+                  cursor: "pointer",
+                }}
+              >
+                {isMyFoulReceived ? "✗ Dispute" : "✗ Didn't happen"}
+              </button>
+            )}
+          </div>
+        )}
+        {canRemoveFoul && (
+          <div style={{ marginTop: 6 }}>
             <button
-              onClick={() => vouch({ token, entryId: entry._id }).catch((e) => alert(e.message))}
+              onClick={() => removeNegative({ token, entryId: entry._id }).catch((e) => alert(e.message))}
               style={{
                 padding: "4px 10px",
                 borderRadius: 6,
-                background: C.green,
-                color: C.white,
-                border: 0,
+                background: "transparent",
+                color: C.coralDeep,
+                border: `1px solid ${C.coralDeep}`,
                 fontFamily: "Nunito, sans-serif",
                 fontWeight: 800,
                 fontSize: 11,
                 cursor: "pointer",
               }}
             >
-              ✓ I saw it
-            </button>
-            <button
-              onClick={() => dispute({ token, entryId: entry._id }).catch((e) => alert(e.message))}
-              style={{
-                padding: "4px 10px",
-                borderRadius: 6,
-                background: C.coralDeep,
-                color: C.white,
-                border: 0,
-                fontFamily: "Nunito, sans-serif",
-                fontWeight: 800,
-                fontSize: 11,
-                cursor: "pointer",
-              }}
-            >
-              ✗ Didn't happen
+              Undo foul
             </button>
           </div>
         )}
