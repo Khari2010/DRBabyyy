@@ -3,8 +3,10 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useSession } from "../../lib/useSession.js";
 import { formatRelative } from "../../lib/formatRelative.js";
+import { playerBySlug } from "../../data/players.js";
 import { C } from "../../data/colors.js";
 import { RADIUS } from "../../data/design.js";
+import Avatar from "../primitives/Avatar.jsx";
 
 const MAX = 280;
 
@@ -18,18 +20,32 @@ export default function ReplyThread({ postId, commentCount, isAdmin }) {
   const [busy, setBusy] = useState(false);
 
   if (!open) {
+    const label = commentCount > 0
+      ? `${commentCount} ${commentCount === 1 ? "reply" : "replies"}`
+      : "Reply";
     return (
       <button
         onClick={() => setOpen(true)}
         style={{
-          background: "transparent",
-          border: "none",
-          color: C.textBody,
-          padding: "6px 0 0",
+          marginTop: 8,
+          background: C.sand,
+          border: `1px solid ${C.sandDark}`,
+          borderRadius: RADIUS.pill,
+          padding: "4px 10px",
           fontSize: 13,
+          fontWeight: 600,
+          color: C.textBody,
           cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          lineHeight: 1,
         }}
-      >▸ {commentCount > 0 ? `${commentCount} ${commentCount === 1 ? "reply" : "replies"}` : "Reply"}</button>
+        aria-label={commentCount > 0 ? `Show ${label}` : "Add reply"}
+      >
+        <span style={{ fontSize: 14 }}>💬</span>
+        <span>{label}</span>
+      </button>
     );
   }
 
@@ -51,24 +67,31 @@ export default function ReplyThread({ postId, commentCount, isAdmin }) {
 
   return (
     <div style={{ marginTop: 8, paddingLeft: 12, borderLeft: `2px solid ${C.sandDark}` }}>
-      {(comments ?? []).map((c) => (
-        <div key={c._id} style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 12, color: C.textBody, display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontWeight: 700, color: C.dark }}>{c.authorHolidayName}</span>
-            <span>
-              {formatRelative(c.createdAt)}
-              {(c.authorSlug === session?.slug || isAdmin) && (
-                <button
-                  onClick={async () => { await remove({ token: session.token, commentId: c._id }); }}
-                  style={{ marginLeft: 8, background: "transparent", border: "none", color: C.textBody, cursor: "pointer" }}
-                  aria-label="Delete reply"
-                >×</button>
-              )}
-            </span>
+      {(comments ?? []).map((c) => {
+        const cp = playerBySlug(c.authorSlug);
+        const fallback = { name: c.authorHolidayName, emoji: "👤", color: C.dark };
+        return (
+          <div key={c._id} style={{ marginBottom: 10, display: "flex", gap: 8 }}>
+            <Avatar player={cp ?? fallback} size="sm" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, color: C.textBody, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <span style={{ fontWeight: 800, color: cp?.color ?? C.dark }}>{c.authorHolidayName}</span>
+                <span>
+                  {formatRelative(c.createdAt)}
+                  {(c.authorSlug === session?.slug || isAdmin) && (
+                    <button
+                      onClick={async () => { await remove({ token: session.token, commentId: c._id }); }}
+                      style={{ marginLeft: 8, background: "transparent", border: "none", color: C.textBody, cursor: "pointer" }}
+                      aria-label="Delete reply"
+                    >×</button>
+                  )}
+                </span>
+              </div>
+              <div style={{ fontSize: 14, color: C.dark, lineHeight: 1.4 }}>{c.text}</div>
+            </div>
           </div>
-          <div style={{ fontSize: 14, color: C.dark }}>{c.text}</div>
-        </div>
-      ))}
+        );
+      })}
       <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
         <input
           value={draft}

@@ -59,16 +59,23 @@ export default function ReactionRow({ postId, reactionCounts, viewerReactions })
       <button
         onClick={() => setPickerOpen((v) => !v)}
         style={{
-          background: "transparent",
-          border: `1px dashed ${C.sandDark}`,
+          background: C.sand,
+          border: `1px solid ${C.sandDark}`,
           borderRadius: RADIUS.pill,
           padding: "4px 10px",
-          fontSize: 13,
+          fontSize: 14,
           cursor: "pointer",
           color: C.textBody,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 2,
+          lineHeight: 1,
         }}
         aria-label="Add reaction"
-      >+ react</button>
+      >
+        <span style={{ fontSize: 14 }}>🙂</span>
+        <span style={{ fontSize: 14, fontWeight: 700, marginLeft: 2 }}>+</span>
+      </button>
       {pickerOpen && (
         <div style={{
           flexBasis: "100%",

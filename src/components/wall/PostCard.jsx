@@ -3,8 +3,10 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useSession } from "../../lib/useSession.js";
 import { formatRelative } from "../../lib/formatRelative.js";
+import { playerBySlug } from "../../data/players.js";
 import { C } from "../../data/colors.js";
 import { RADIUS, SHADOW } from "../../data/design.js";
+import Avatar from "../primitives/Avatar.jsx";
 import ReactionRow from "./ReactionRow.jsx";
 import ReplyThread from "./ReplyThread.jsx";
 import PhotoLightbox from "../PhotoLightbox.jsx";
@@ -16,7 +18,8 @@ export default function PostCard({ post, isAdmin }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const canDelete = session?.slug === post.authorSlug || isAdmin;
-  const initial = (post.authorHolidayName || post.authorSlug)[0]?.toUpperCase() ?? "?";
+  const player = playerBySlug(post.authorSlug);
+  const fallbackPlayer = { name: post.authorHolidayName, emoji: "👤", color: C.coral };
 
   return (
     <article
@@ -31,13 +34,9 @@ export default function PostCard({ post, isAdmin }) {
     >
       <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 16, background: C.coral, color: "white",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: 800,
-          }}>{initial}</div>
+          <Avatar player={player ?? fallbackPlayer} size="md" />
           <div>
-            <div style={{ fontWeight: 800, color: C.dark, fontSize: 14 }}>{post.authorHolidayName}</div>
+            <div style={{ fontWeight: 800, color: player?.color ?? C.dark, fontSize: 14 }}>{post.authorHolidayName}</div>
             <div style={{ fontSize: 12, color: C.textBody }}>{formatRelative(post.createdAt)}</div>
           </div>
         </div>

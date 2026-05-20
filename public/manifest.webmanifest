@@ -1,7 +1,7 @@
 {
   "name": "DR Baby '26",
   "short_name": "DR Baby",
-  "start_url": "/wall",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#FEF9EF",
