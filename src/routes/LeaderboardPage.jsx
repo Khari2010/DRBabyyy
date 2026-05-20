@@ -212,6 +212,8 @@ export default function LeaderboardPage() {
   // `claimCount` across rows for total entry count.
   const currentDayEntryCount = daily.reduce((sum, row) => sum + row.claimCount, 0);
 
+  const dailyPlayingCount = daily.length;
+
   const trigger = useMutation(api.rollovers.trigger);
   const [endDayConfirm, setEndDayConfirm] = useState(false);
   const [endDayPending, setEndDayPending] = useState(false);
@@ -244,7 +246,13 @@ export default function LeaderboardPage() {
           <SectionHeader
             label={gamesLive ? `Day ${currentDayNumber}` : "Pre-trip"}
             title="Leaderboard"
-            tagline={loggedIn ? null : "Log in to see activity, vouches, and forfeit history."}
+            tagline={
+              !loggedIn
+                ? "Log in to see activity, vouches, and forfeit history."
+                : tab === "daily" && gamesLive
+                ? `${dailyPlayingCount} of ${PLAYERS.length} crew playing · ${currentDayEntryCount} claim${currentDayEntryCount === 1 ? "" : "s"} today`
+                : null
+            }
             accent={ACCENT}
             compact
           />
