@@ -144,6 +144,59 @@ export const lockDay = mutation({
   },
 });
 
+export const advance = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+    const state = await getGameState(ctx);
+    if (!state) throw new Error("gameState not seeded");
+
+    const now = Date.now();
+
+    // Kickoff: pre-trip → Day 1
+    if (!state.gamesLive) {
+      await ctx.db.patch(state._id, {
+        gamesLive: true,
+        currentDayNumber: 1,
+        currentDailyKey: "day-1",
+        updatedAt: now,
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 1,
+        dailyKey: "day-1",
+        triggeredBySlug: playerSlug,
+        triggeredAt: now,
+      });
+      return;
+    }
+
+    // Normal advance: requires current day be locked AND Flow State resolved
+    const current = await ctx.db
+      .query("rollovers")
+      .withIndex("by_day_number", (q) => q.eq("dayNumber", state.currentDayNumber))
+      .first();
+    if (!current?.closedAt) throw new Error("lock the day first");
+    if (!current.flowWinnerSlug) {
+      throw new Error("Flow State not resolved — resolve flow state before advancing");
+    }
+
+    const newDay = state.currentDayNumber + 1;
+    const newDailyKey = `day-${newDay}`;
+    await ctx.db.patch(state._id, {
+      currentDayNumber: newDay,
+      currentDailyKey: newDailyKey,
+      updatedAt: now,
+    });
+    await ctx.db.insert("rollovers", {
+      dayNumber: newDay,
+      dailyKey: newDailyKey,
+      triggeredBySlug: playerSlug,
+      triggeredAt: now,
+    });
+  },
+});
+
 export const recordForfeit = mutation({
   args: {
     token: v.string(),

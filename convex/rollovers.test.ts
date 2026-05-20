@@ -210,6 +210,64 @@ describe("rollovers.lockDay", () => {
   });
 });
 
+describe("rollovers.advance", () => {
+  it("kickoff: pre-trip → Day 1 (no lock required)", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t); // gamesLive=false at this point
+    await t.mutation(api.rollovers.advance, { token: "tok-khari" });
+    const state = await t.run((ctx) => ctx.db.query("gameState").first());
+    expect(state?.gamesLive).toBe(true);
+    expect(state?.currentDayNumber).toBe(1);
+    expect(state?.currentDailyKey).toBe("day-1");
+    const rows = await t.run((ctx) => ctx.db.query("rollovers").collect());
+    expect(rows.length).toBe(1);
+    expect(rows[0].dayNumber).toBe(1);
+  });
+
+  it("refuses to advance when current day is not locked", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.advance, { token: "tok-khari" }); // kickoff → Day 1
+    await expect(t.mutation(api.rollovers.advance, { token: "tok-khari" }))
+      .rejects.toThrow(/lock the day first/);
+  });
+
+  it("refuses to advance when day is locked but Flow State is not resolved", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.advance, { token: "tok-khari" }); // kickoff
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    // closedAt is set, but flowWinnerSlug is not
+    await expect(t.mutation(api.rollovers.advance, { token: "tok-khari" }))
+      .rejects.toThrow(/resolve flow state|flow.*not resolved/i);
+  });
+
+  it("advances when day is locked AND flowWinnerSlug is set", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.advance, { token: "tok-khari" });
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    await t.run(async (ctx) => {
+      const row = await ctx.db.query("rollovers").withIndex("by_day_number", (q) => q.eq("dayNumber", 1)).first();
+      await ctx.db.patch(row!._id, { flowWinnerSlug: "khari", flowResolvedAt: Date.now() });
+    });
+    await t.mutation(api.rollovers.advance, { token: "tok-khari" });
+    const state = await t.run((ctx) => ctx.db.query("gameState").first());
+    expect(state?.currentDayNumber).toBe(2);
+    expect(state?.currentDailyKey).toBe("day-2");
+    const rows = await t.run((ctx) => ctx.db.query("rollovers").collect());
+    expect(rows.length).toBe(2);
+    expect(rows.find((r) => r.dayNumber === 2)).toBeDefined();
+  });
+
+  it("refuses non-admin", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await expect(t.mutation(api.rollovers.advance, { token: "tok-camara" }))
+      .rejects.toThrow(/admin only/);
+  });
+});
+
 describe("rollovers.undoLast", () => {
   it("removes the most recent rollover and reverses gameState to previous day", async () => {
     const t = convexTest(schema);
