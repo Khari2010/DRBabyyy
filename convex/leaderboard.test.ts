@@ -48,7 +48,7 @@ describe("leaderboard.getHoliday", () => {
     const t = convexTest(schema);
     await seedEntries(t);
     const board = await t.query(api.leaderboard.getHoliday, {});
-    expect(board.find((r) => r.slug === "khari")?.total).toBe(620); // 120 + 500
+    expect(board.find((r) => r.slug === "khari")?.total).toBe(500); // day-1 excluded (practice round), day-2 only
   });
 });
 
@@ -161,6 +161,29 @@ describe("leaderboard.getRecentActivity joined labels", () => {
     const rows = await t.query(api.leaderboard.getRecentActivity, { limit: 10 });
     expect(rows[0].label).toBe("deleted-challenge");
     expect(rows[0].labelIcon).toBe("");
+  });
+});
+
+describe("leaderboard.getHoliday — Day 1 practice exclusion", () => {
+  it("excludes day-1 entries from Holiday aggregation", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", {
+        type: "challenge", subjectSlug: "khari", challengeId: "kiss-someone",
+        points: 100, status: "active", vouchCount: 0, disputeCount: 0,
+        dailyKey: "day-1", createdAt: 1,
+      });
+      await ctx.db.insert("entries", {
+        type: "challenge", subjectSlug: "khari", challengeId: "run-1km",
+        points: 20, status: "active", vouchCount: 0, disputeCount: 0,
+        dailyKey: "day-2", createdAt: 2,
+      });
+    });
+
+    const holiday = await t.query(api.leaderboard.getHoliday, {});
+    const khari = holiday.find((r) => r.slug === "khari");
+    expect(khari?.total).toBe(20);
+    expect(khari?.claimCount).toBe(1);
   });
 });
 

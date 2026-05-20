@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import { NEGATIVE_POINTS_CONST } from "./_seedData/challenges";
 import { SCAVENGER_ITEMS } from "../src/data/scavenger.js";
 
+const PRACTICE_DAILY_KEYS = new Set(["day-1"]);
+
 type Row = { slug: string; total: number; claimCount: number; verifiedCount: number; earliestAt: number };
 
 function aggregate(entries: Array<{ subjectSlug: string; points: number; status: string; createdAt: number }>): Row[] {
@@ -38,7 +40,8 @@ export const getHoliday = query({
   args: {},
   handler: async (ctx) => {
     const entries = await ctx.db.query("entries").collect();
-    return aggregate(entries);
+    const counted = entries.filter((e) => !PRACTICE_DAILY_KEYS.has(e.dailyKey));
+    return aggregate(counted);
   },
 });
 
