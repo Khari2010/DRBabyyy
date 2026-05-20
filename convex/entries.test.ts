@@ -204,6 +204,28 @@ describe("entries.dispute", () => {
     expect(after?.status).toBe("verified");
     expect(after?.disputeCount).toBe(1);
   });
+
+  it("rejects disputing after the day rolls over", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "kyanna", "tok-kyanna");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("gameState", {
+        gamesLive: true,
+        currentDayNumber: 2,
+        currentDailyKey: "day-2",
+        updatedAt: Date.now(),
+      });
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge", subjectSlug: "kai", challengeId: "x",
+        points: 10, status: "active", vouchCount: 0, disputeCount: 0,
+        dailyKey: "day-1", createdAt: Date.now(),
+      });
+    });
+    await expect(t.mutation(api.entries.dispute, { token: "tok-kyanna", entryId }))
+      .rejects.toThrow(/day is locked/);
+  });
 });
 
 describe("entries.logNegative", () => {
