@@ -70,11 +70,12 @@ function BoardRow({ row, rank, onFoul, isMe }) {
           onClick={() => onFoul({ slug: row.slug, name: p?.name ?? row.slug })}
           title="Log a foul"
           style={{
-            padding: "4px 8px", marginLeft: 4,
+            padding: "0 14px", marginLeft: 4, minHeight: 44,
             fontFamily: "Nunito, sans-serif", fontWeight: 800,
-            fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase",
+            fontSize: 12, letterSpacing: 0.5, textTransform: "uppercase",
             borderRadius: RADIUS.sm, border: 0, background: C.coralDeep, color: C.white,
             cursor: "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
           }}
         >
           Foul
