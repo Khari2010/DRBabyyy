@@ -17,6 +17,7 @@ import YourItineraryHome from "../components/YourItineraryHome.jsx";
 import TheCrew from "../components/TheCrew.jsx";
 import { ProfileCard, ProfileModal } from "../components/PlayerProfile.jsx";
 import Reveal from "../components/Reveal.jsx";
+import WelcomeChecklist from "../components/WelcomeChecklist.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 
@@ -292,7 +293,12 @@ export default function PlayerPage() {
       </section>
 
       {/* ── HOLIDAY NAME + LOCKSCREEN (self-edit) ────────────────────────── */}
-      <section style={{ padding: "32px 16px 24px", background: C.sand }}>
+      <section id="profile" style={{ padding: "32px 16px 24px", background: C.sand }}>
+        <div style={{ maxWidth: 720, margin: "0 auto 12px" }}>
+          <Reveal>
+            <WelcomeChecklist slug={slug} token={session.token} player={player} />
+          </Reveal>
+        </div>
         <Reveal>
           <HolidayNameEditor
             token={session.token}
