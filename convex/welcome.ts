@@ -106,3 +106,13 @@ export const markScavengerVisited = mutation({
     await ctx.db.patch(row._id, { visitedScavenger: true });
   },
 });
+
+export const markLeaderboardVisited = mutation({
+  args: { token: v.string(), slug: v.string() },
+  handler: async (ctx, { token, slug }) => {
+    await requireSelf(ctx, token, slug);
+    const row = await ensureProgressRow(ctx, slug);
+    if (row.visitedLeaderboard) return;
+    await ctx.db.patch(row._id, { visitedLeaderboard: true });
+  },
+});
