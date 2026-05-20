@@ -13,6 +13,7 @@ import Reveal from "../components/Reveal.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ProposedRow from "../components/ProposedRow.jsx";
+import AdminScavengerQueue from "../components/AdminScavengerQueue.jsx";
 
 const ACCENT = C.coralDeep;
 
@@ -276,6 +277,21 @@ export default function AdminPage() {
               </div>
             )}
           </Card>
+        </Reveal>
+      </SectionBand>
+
+      <SectionBand bg="sand" pad="40px 0" innerMaxWidth={520}>
+        <Reveal>
+          <SectionHeader
+            label="Admin · Photo audit"
+            title="Scavenger photos"
+            tagline="Tap a photo to inspect. Reject only what's faked or clearly wrong."
+            accent={ACCENT}
+            compact
+          />
+        </Reveal>
+        <Reveal>
+          <AdminScavengerQueue />
         </Reveal>
       </SectionBand>
 
