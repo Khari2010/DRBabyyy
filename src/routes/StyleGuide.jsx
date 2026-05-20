@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { C } from "../data/colors.js";
 import {
   RADIUS,
@@ -19,6 +19,7 @@ import Card from "../components/primitives/Card.jsx";
 import Avatar from "../components/primitives/Avatar.jsx";
 import Pill from "../components/primitives/Pill.jsx";
 import SectionBand from "../components/primitives/SectionBand.jsx";
+import BottomSheet from "../components/primitives/BottomSheet.jsx";
 import WheelOfFortune from "../components/games/WheelOfFortune.jsx";
 
 // Loads the same fonts + reset styles the home + player pages rely on so
@@ -97,6 +98,7 @@ export default function StyleGuide() {
 
   const colorEntries = Object.entries(C);
   const accentEntries = Object.entries(SECTION_ACCENTS);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   return (
     <div style={{ background: C.sand, minHeight: "100vh" }}>
@@ -395,6 +397,72 @@ export default function StyleGuide() {
             </div>
           </Card>
         </Reveal>
+      </SectionBand>
+
+      {/* BottomSheet */}
+      <SectionBand bg="white">
+        <Reveal>
+          <SectionHeader
+            label="Overlays"
+            title="BottomSheet"
+            tagline="Slides up from the bottom. Backdrop click or Escape closes. First focusable element receives focus on open."
+            accent={C.turquoise}
+          />
+        </Reveal>
+        <Reveal delay={0.05}>
+          <Card>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                onClick={() => setSheetOpen(true)}
+                style={{
+                  fontFamily: "Nunito, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 13,
+                  padding: "10px 20px",
+                  borderRadius: RADIUS.pill,
+                  border: "none",
+                  background: C.turquoise,
+                  color: C.white,
+                  cursor: "pointer",
+                  letterSpacing: 0.5,
+                }}
+              >
+                Open sheet
+              </button>
+              <div style={{ ...BODY, fontSize: 13 }}>
+                Press Esc or click the backdrop to close.
+              </div>
+            </div>
+            <Caption>&lt;BottomSheet open onClose&gt; — drag handle, slide-up animation, backdrop dim</Caption>
+          </Card>
+        </Reveal>
+        <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+          <div style={{ ...HEADING.h3, color: C.dark, fontSize: 22, marginBottom: 12 }}>
+            Sheet contents
+          </div>
+          <div style={{ ...BODY, marginBottom: 20 }}>
+            This sheet slides up from the bottom. Click the backdrop, press{" "}
+            <strong>Escape</strong>, or use the button below to close it.
+            Clicking inside the sheet doesn't close it.
+          </div>
+          <button
+            onClick={() => setSheetOpen(false)}
+            style={{
+              fontFamily: "Nunito, sans-serif",
+              fontWeight: 800,
+              fontSize: 13,
+              padding: "10px 20px",
+              borderRadius: RADIUS.pill,
+              border: "none",
+              background: C.dark,
+              color: C.white,
+              cursor: "pointer",
+              width: "100%",
+            }}
+          >
+            Close
+          </button>
+        </BottomSheet>
       </SectionBand>
 
       {/* Section examples — rhythm */}
