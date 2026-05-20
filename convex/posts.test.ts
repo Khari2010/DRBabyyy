@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { api } from "./_generated/api";
+import { paginationOptsValidator } from "convex/server"; // not used at runtime — just for parity
 
 async function seedPlayer(t, slug, isAdmin = false) {
   await t.run(async (ctx) => {
@@ -111,5 +112,51 @@ describe("posts.generateUploadUrl", () => {
     const t = convexTest(schema);
     await expect(t.mutation(api.posts.generateUploadUrl, { token: "bogus" }))
       .rejects.toThrow(/invalid session/);
+  });
+});
+
+describe("posts.list", () => {
+  it("returns posts newest-first with enriched fields", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "khari");
+    await t.run(async (ctx) => {
+      await ctx.db.patch(
+        (await ctx.db.query("players").withIndex("by_slug", (q) => q.eq("slug", "khari")).unique())!._id,
+        { holidayName: "Sunshine" },
+      );
+    });
+    const olderId = await t.mutation(api.posts.create, { token: "tok-khari", text: "first" });
+    // tick the clock by inserting directly so the second post is newer
+    const newerId = await t.mutation(api.posts.create, { token: "tok-khari", text: "second" });
+    await t.run(async (ctx) => {
+      await ctx.db.insert("postReactions", { postId: newerId, playerSlug: "khari", emoji: "🔥", at: Date.now() });
+      await ctx.db.insert("postComments", { postId: newerId, authorSlug: "khari", text: "self-reply", createdAt: Date.now() });
+    });
+
+    const page = await t.query(api.posts.list, {
+      token: "tok-khari",
+      paginationOpts: { numItems: 10, cursor: null },
+    });
+
+    expect(page.page.length).toBe(2);
+    expect(page.page[0]._id).toBe(newerId);
+    expect(page.page[1]._id).toBe(olderId);
+    expect(page.page[0].authorHolidayName).toBe("Sunshine");
+    const fireCount = page.page[0].reactionCounts.find((r) => r.emoji === "🔥");
+    expect(fireCount?.count).toBe(1);
+    expect(page.page[0].viewerReactions).toContain("🔥");
+    expect(page.page[0].commentCount).toBe(1);
+    expect(page.page[1].commentCount).toBe(0);
+  });
+
+  it("returns null photoUrl when there is no photo", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "khari");
+    await t.mutation(api.posts.create, { token: "tok-khari", text: "no photo" });
+    const page = await t.query(api.posts.list, {
+      token: "tok-khari",
+      paginationOpts: { numItems: 10, cursor: null },
+    });
+    expect(page.page[0].photoUrl).toBeNull();
   });
 });
