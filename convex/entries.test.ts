@@ -331,6 +331,76 @@ describe("entries.claimScavenger", () => {
     expect(rows[0].status).toBe("active");
     expect(rows[0].photoStorageId).toBe(storageId);
   });
+
+  it("gives rank=2 with +3 bonus to the second finder", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "khari", "tok-khari");
+    await seedGameLive(t);
+    const sid1 = await t.run((ctx) => ctx.storage.store(new Blob(["a"])));
+    const sid2 = await t.run((ctx) => ctx.storage.store(new Blob(["b"])));
+    await t.mutation(api.entries.claimScavenger, { token: "tok-kai", scavengerItemId: "coconut", photoStorageId: sid1 });
+    await t.mutation(api.entries.claimScavenger, { token: "tok-khari", scavengerItemId: "coconut", photoStorageId: sid2 });
+
+    const rows = await t.run((ctx) =>
+      ctx.db.query("entries").withIndex("by_subject", (q) => q.eq("subjectSlug", "khari")).collect(),
+    );
+    expect(rows[0].scavengerRank).toBe(2);
+    expect(rows[0].points).toBe(8); // 5 + 3
+  });
+
+  it("gives rank=3 with no bonus to the third+ finder", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "khari", "tok-khari");
+    await seedSession(t, "adan", "tok-adan");
+    await seedGameLive(t);
+    const sid = () => t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    await t.mutation(api.entries.claimScavenger, { token: "tok-kai", scavengerItemId: "coconut", photoStorageId: await sid() });
+    await t.mutation(api.entries.claimScavenger, { token: "tok-khari", scavengerItemId: "coconut", photoStorageId: await sid() });
+    await t.mutation(api.entries.claimScavenger, { token: "tok-adan", scavengerItemId: "coconut", photoStorageId: await sid() });
+
+    const rows = await t.run((ctx) =>
+      ctx.db.query("entries").withIndex("by_subject", (q) => q.eq("subjectSlug", "adan")).collect(),
+    );
+    expect(rows[0].scavengerRank).toBe(3);
+    expect(rows[0].points).toBe(5); // base only
+  });
+
+  it("rejects duplicate active claim by the same player", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedGameLive(t);
+    const sid = await t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    await t.mutation(api.entries.claimScavenger, { token: "tok-kai", scavengerItemId: "coconut", photoStorageId: sid });
+    await expect(
+      t.mutation(api.entries.claimScavenger, { token: "tok-kai", scavengerItemId: "coconut", photoStorageId: sid }),
+    ).rejects.toThrow("already claimed");
+  });
+
+  it("rejects when games are not live", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await t.run(async (ctx) => {
+      await ctx.db.insert("gameState", {
+        gamesLive: false, currentDayNumber: 0, currentDailyKey: "pre-trip", updatedAt: Date.now(),
+      });
+    });
+    const sid = await t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    await expect(
+      t.mutation(api.entries.claimScavenger, { token: "tok-kai", scavengerItemId: "coconut", photoStorageId: sid }),
+    ).rejects.toThrow("games not live");
+  });
+
+  it("rejects unknown item id", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedGameLive(t);
+    const sid = await t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    await expect(
+      t.mutation(api.entries.claimScavenger, { token: "tok-kai", scavengerItemId: "no-such-thing", photoStorageId: sid }),
+    ).rejects.toThrow("unknown item");
+  });
 });
 
 describe("entries.unclaim", () => {
