@@ -203,4 +203,39 @@ export default defineSchema({
   })
     .index("by_daily_key", ["dailyKey"])
     .index("by_daily_and_voter", ["dailyKey", "voterSlug"]),
+
+  // ── NEW: POSTING WALL SYSTEM ───────────────────────────────────────
+  posts: defineTable({
+    authorSlug: v.string(),
+    text: v.string(),
+    photoStorageId: v.optional(v.id("_storage")),
+    createdAt: v.number(),
+  }).index("by_created_at", ["createdAt"]),
+
+  postComments: defineTable({
+    postId: v.id("posts"),
+    authorSlug: v.string(),
+    text: v.string(),
+    createdAt: v.number(),
+  }).index("by_post", ["postId"]),
+
+  postReactions: defineTable({
+    postId: v.id("posts"),
+    playerSlug: v.string(),
+    emoji: v.string(),
+    at: v.number(),
+  })
+    .index("by_post", ["postId"])
+    .index("by_post_and_player", ["postId", "playerSlug"]),
+
+  pushSubscriptions: defineTable({
+    playerSlug: v.string(),
+    endpoint: v.string(),
+    p256dh: v.string(),
+    auth: v.string(),
+    userAgent: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_player", ["playerSlug"])
+    .index("by_endpoint", ["endpoint"]),
 });
