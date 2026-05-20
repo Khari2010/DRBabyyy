@@ -17,7 +17,7 @@ import EntryRow from "../components/EntryRow.jsx";
 import FoulModal from "../components/FoulModal.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
-import RevealFlow from "../components/RevealFlow.jsx";
+import EndDayTakeover from "../components/EndDayTakeover.jsx";
 import { showToast } from "../lib/useToast.js";
 
 const ACCENT = C.gold;
@@ -121,16 +121,20 @@ export default function LeaderboardPage() {
   const trigger = useMutation(api.rollovers.trigger);
   const [endDayConfirm, setEndDayConfirm] = useState(false);
   const [endDayPending, setEndDayPending] = useState(false);
+  const [takeoverOpen, setTakeoverOpen] = useState(false);
+  const [takeoverDay, setTakeoverDay] = useState(null);
 
   const canEndDay = !!isAdmin && gamesLive && currentDayEntryCount > 0 && !endDayPending;
 
   const handleEndDay = async () => {
     if (!session?.token) return;
     setEndDayPending(true);
+    const closingDay = currentDayNumber;
     try {
       await trigger({ token: session.token });
       setEndDayConfirm(false);
-      showToast({ message: `Day ${currentDayNumber} closed.`, accent: C.gold });
+      setTakeoverDay(closingDay);
+      setTakeoverOpen(true);
     } catch (err) {
       showToast({ message: err.message || "End Day failed", accent: C.coralDeep });
     } finally {
@@ -152,9 +156,37 @@ export default function LeaderboardPage() {
           />
         </Reveal>
 
-        {loggedIn && pendingReveal && lastClosed && (
+        {isAdmin && pendingReveal && lastClosed && (
           <Reveal>
-            <RevealFlow rollover={lastClosed} />
+            <button
+              type="button"
+              onClick={() => {
+                setTakeoverDay(lastClosed.dayNumber);
+                setTakeoverOpen(true);
+              }}
+              style={{
+                width: "100%",
+                marginBottom: 16,
+                padding: "14px 18px",
+                borderRadius: RADIUS.md,
+                background: C.coralDeep,
+                color: C.white,
+                border: 0,
+                fontFamily: "Nunito, sans-serif",
+                fontWeight: 800,
+                fontSize: 14,
+                letterSpacing: 0.3,
+                textAlign: "left",
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <span>Day {lastClosed.dayNumber} is unresolved — open the wheel</span>
+              <span aria-hidden="true">▶</span>
+            </button>
           </Reveal>
         )}
 
@@ -334,6 +366,15 @@ export default function LeaderboardPage() {
           </button>
         </div>
       </BottomSheet>
+
+      <EndDayTakeover
+        open={takeoverOpen}
+        dayNumber={takeoverDay}
+        onClose={() => {
+          setTakeoverOpen(false);
+          setTakeoverDay(null);
+        }}
+      />
 
       {foulTarget && (
         <FoulModal
