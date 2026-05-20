@@ -94,6 +94,56 @@ export const trigger = mutation({
   },
 });
 
+export const lockDay = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+    const state = await getGameState(ctx);
+    if (!state) throw new Error("gameState not seeded");
+    if (!state.gamesLive) throw new Error("games not live");
+
+    const closingKey = state.currentDailyKey;
+    const closingDay = state.currentDayNumber;
+
+    const existing = await ctx.db
+      .query("rollovers")
+      .withIndex("by_day_number", (q) => q.eq("dayNumber", closingDay))
+      .first();
+    if (existing?.closedAt) throw new Error("day already locked");
+
+    // Compute loser (lowest score among non-disputed entries)
+    const entries = await ctx.db
+      .query("entries")
+      .withIndex("by_daily_key", (q) => q.eq("dailyKey", closingKey))
+      .collect();
+    const totals = new Map<string, number>();
+    for (const e of entries) {
+      if (e.status === "disputed") continue;
+      totals.set(e.subjectSlug, (totals.get(e.subjectSlug) ?? 0) + e.points);
+    }
+    let loserSlug: string | undefined;
+    let loserTotal = Infinity;
+    for (const [slug, total] of totals.entries()) {
+      if (total < loserTotal) { loserSlug = slug; loserTotal = total; }
+    }
+
+    const now = Date.now();
+    if (existing) {
+      await ctx.db.patch(existing._id, { loserSlug, closedAt: now });
+    } else {
+      await ctx.db.insert("rollovers", {
+        dayNumber: closingDay,
+        dailyKey: closingKey,
+        triggeredBySlug: playerSlug,
+        triggeredAt: now,
+        loserSlug,
+        closedAt: now,
+      });
+    }
+  },
+});
+
 export const recordForfeit = mutation({
   args: {
     token: v.string(),

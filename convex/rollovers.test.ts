@@ -150,6 +150,66 @@ describe("rollovers.get", () => {
   });
 });
 
+describe("rollovers.lockDay", () => {
+  it("sets loserSlug + closedAt on the closing day rollover; does NOT advance gameState", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    // Bootstrap to Day 1 via existing trigger (kickoff path)
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    // Seed entries so there's a clear loser
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "khari", challengeId: "x", points: 100, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+      await ctx.db.insert("entries", { type: "negative", subjectSlug: "camara", negativeId: "throw-up", appliedBySlug: "kai", points: -50, status: "verified", vouchCount: 1, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    const state = await t.run((ctx) => ctx.db.query("gameState").first());
+    expect(state?.currentDayNumber).toBe(1); // NOT advanced
+    const day1 = await t.run((ctx) =>
+      ctx.db.query("rollovers").withIndex("by_day_number", (q) => q.eq("dayNumber", 1)).first(),
+    );
+    expect(day1?.loserSlug).toBe("camara");
+    expect(day1?.closedAt).toBeDefined();
+  });
+
+  it("refuses non-admin", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await expect(t.mutation(api.rollovers.lockDay, { token: "tok-camara" }))
+      .rejects.toThrow(/admin only/);
+  });
+
+  it("refuses when day is already locked", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    await expect(t.mutation(api.rollovers.lockDay, { token: "tok-khari" }))
+      .rejects.toThrow(/already locked/);
+  });
+
+  it("refuses when games are not live", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    // gameState exists from setupAdmins but gamesLive=false; no trigger yet
+    await expect(t.mutation(api.rollovers.lockDay, { token: "tok-khari" }))
+      .rejects.toThrow(/games not live/);
+  });
+
+  it("locks an empty day with no loserSlug", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    // No entries at all
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    const day1 = await t.run((ctx) =>
+      ctx.db.query("rollovers").withIndex("by_day_number", (q) => q.eq("dayNumber", 1)).first(),
+    );
+    expect(day1?.closedAt).toBeDefined();
+    expect(day1?.loserSlug).toBeUndefined();
+  });
+});
+
 describe("rollovers.undoLast", () => {
   it("removes the most recent rollover and reverses gameState to previous day", async () => {
     const t = convexTest(schema);
