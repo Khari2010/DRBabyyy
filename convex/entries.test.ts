@@ -305,6 +305,34 @@ describe("entries.applyForfeitDeduct", () => {
   });
 });
 
+describe("entries.claimScavenger", () => {
+  it("inserts an entry with rank=1 and +5 bonus on first claim", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedGameLive(t);
+
+    const storageId = await t.run(async (ctx) => {
+      return await ctx.storage.store(new Blob(["x"], { type: "image/jpeg" }));
+    });
+
+    await t.mutation(api.entries.claimScavenger, {
+      token: "tok-kai",
+      scavengerItemId: "coconut",
+      photoStorageId: storageId,
+    });
+
+    const rows = await t.run((ctx) => ctx.db.query("entries").collect());
+    expect(rows.length).toBe(1);
+    expect(rows[0].type).toBe("scavenger");
+    expect(rows[0].subjectSlug).toBe("kai");
+    expect(rows[0].scavengerItemId).toBe("coconut");
+    expect(rows[0].scavengerRank).toBe(1);
+    expect(rows[0].points).toBe(10); // 5 base + 5 first-finder bonus
+    expect(rows[0].status).toBe("active");
+    expect(rows[0].photoStorageId).toBe(storageId);
+  });
+});
+
 describe("entries.unclaim", () => {
   it("deletes my active entry created within 60s", async () => {
     const t = convexTest(schema);

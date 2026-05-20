@@ -3,6 +3,7 @@ import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, getGameState, requireAdmin } from "./helpers";
 import { NEGATIVE_POINTS_CONST } from "./_seedData/challenges";
+import { SCAVENGER_ITEMS } from "../src/data/scavenger.js";
 
 export const claim = mutation({
   args: {
@@ -161,5 +162,55 @@ export const unclaim = mutation({
     for (const r of reactions) await ctx.db.delete(r._id);
 
     await ctx.db.delete(entryId);
+  },
+});
+
+const SCAVENGER_BONUS = { 1: 5, 2: 3, 3: 0 } as const;
+
+function scavengerItemById(id: string) {
+  return SCAVENGER_ITEMS.find((i: { id: string }) => i.id === id);
+}
+
+export const claimScavenger = mutation({
+  args: {
+    token: v.string(),
+    scavengerItemId: v.string(),
+    photoStorageId: v.id("_storage"),
+  },
+  handler: async (ctx, { token, scavengerItemId, photoStorageId }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    const state = await getGameState(ctx);
+    if (!state?.gamesLive) throw new Error("games not live");
+
+    const item = scavengerItemById(scavengerItemId);
+    if (!item) throw new Error("unknown item");
+
+    const existingActive = await ctx.db
+      .query("entries")
+      .withIndex("by_scavenger_item", (q) => q.eq("scavengerItemId", scavengerItemId))
+      .collect();
+
+    const mineActive = existingActive.find(
+      (e) => e.subjectSlug === playerSlug && e.status !== "disputed",
+    );
+    if (mineActive) throw new Error("already claimed");
+
+    const validCount = existingActive.filter((e) => e.status !== "disputed").length;
+    const rank = Math.min(validCount + 1, 3);
+    const bonus = SCAVENGER_BONUS[rank as 1 | 2 | 3];
+
+    await ctx.db.insert("entries", {
+      type: "scavenger",
+      subjectSlug: playerSlug,
+      points: (item as { points: number }).points + bonus,
+      status: "active",
+      vouchCount: 0,
+      disputeCount: 0,
+      dailyKey: state.currentDailyKey,
+      createdAt: Date.now(),
+      scavengerItemId,
+      photoStorageId,
+      scavengerRank: rank,
+    });
   },
 });
