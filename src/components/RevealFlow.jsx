@@ -79,6 +79,10 @@ export default function RevealFlow({ rollover }) {
   const session = useSession();
   const token = session?.token;
   const board = useQuery(api.leaderboard.getDaily, { dailyKey: rollover.dailyKey }) ?? [];
+  const flowState = useQuery(
+    api.flowVotes.getFlowVoteState,
+    session?.token ? { token: session.token } : {},
+  );
   const recordForfeit = useMutation(api.rollovers.recordForfeit);
   const holidayMap = useHolidayNameMap();
   const nameOf = (slug) => displayName(slug, holidayMap);
@@ -248,9 +252,86 @@ export default function RevealFlow({ rollover }) {
               >
                 {rollover.forfeitLabel}
               </div>
+              <button
+                type="button"
+                onClick={() => setStage(4)}
+                style={{
+                  marginTop: 20,
+                  padding: "12px 20px",
+                  borderRadius: RADIUS.md,
+                  background: C.gold,
+                  color: C.dark,
+                  border: 0,
+                  fontFamily: "Nunito, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                Continue to Flow State 👑 ▶
+              </button>
             </div>
           ) : (
             <WheelOfFortune onResult={onSpinResult} />
+          )}
+        </div>
+      )}
+
+      {stage === 4 && (
+        <div style={{ textAlign: "center" }}>
+          {flowState?.phase === "resolved" ? (
+            <>
+              <div
+                style={{
+                  fontFamily: "'Dela Gothic One', sans-serif",
+                  fontSize: 56,
+                  color: C.gold,
+                  animation: "flowCrownIn 600ms ease-out",
+                }}
+              >
+                👑
+              </div>
+              <div
+                style={{
+                  fontFamily: "Nunito, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 22,
+                  color: C.dark,
+                  marginTop: 8,
+                }}
+              >
+                {nameOf(flowState.winnerSlug)}
+              </div>
+              <div
+                style={{
+                  fontFamily: "Nunito, sans-serif",
+                  fontSize: 13,
+                  color: C.textBody,
+                  marginTop: 4,
+                }}
+              >
+                Max Flow State · +10
+              </div>
+              <style>{`@keyframes flowCrownIn { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }`}</style>
+            </>
+          ) : flowState?.phase === "tied" ? (
+            <div>
+              <h3 style={{ ...HEADING.h3, color: C.dark, marginBottom: 8 }}>
+                Tied — admin is picking
+              </h3>
+              <div style={{ ...BODY, color: C.textBody }}>
+                {(flowState.candidates ?? []).map((slug) => nameOf(slug)).join(" / ")}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <h3 style={{ ...HEADING.h3, color: C.dark, marginBottom: 8 }}>
+                Waiting on Flow State vote
+              </h3>
+              <div style={{ ...BODY, color: C.textBody }}>
+                {flowState?.votedCount ?? 0} of {flowState?.totalCrew ?? 0} voted
+              </div>
+            </div>
           )}
         </div>
       )}
