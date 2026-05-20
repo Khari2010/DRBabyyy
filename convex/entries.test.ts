@@ -477,6 +477,28 @@ describe("entries.rejectScavenger", () => {
     expect(adanAfter!.points).toBe(8);
   });
 
+  it("rejects when caller is not an admin", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "khari", "tok-khari");
+    await seedGameLive(t);
+    // Khari is NOT an admin in this test.
+
+    const sid = await t.run((ctx) => ctx.storage.store(new Blob(["x"])));
+    await t.mutation(api.entries.claimScavenger, {
+      token: "tok-kai", scavengerItemId: "coconut", photoStorageId: sid,
+    });
+    const kaiEntry = await t.run((ctx) =>
+      ctx.db.query("entries").withIndex("by_subject", (q) => q.eq("subjectSlug", "kai")).first(),
+    );
+
+    await expect(
+      t.mutation(api.entries.rejectScavenger, {
+        token: "tok-khari", entryId: kaiEntry!._id,
+      }),
+    ).rejects.toThrow();
+  });
+
   it("renumbers correctly when 4+ players share rank 3", async () => {
     const t = convexTest(schema);
     await seedSession(t, "kai", "tok-kai");

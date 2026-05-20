@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
+import { useGameState } from "../lib/useGameState.js";
 import { PLAYERS } from "../data/players.js";
 import { itemById } from "../data/scavenger.js";
 import { C } from "../data/colors.js";
@@ -124,9 +125,9 @@ export default function AdminScavengerQueue() {
     token ? { token, limit: 200 } : "skip",
   ) ?? [];
 
+  const { currentDailyKey } = useGameState();
   const scavengerRows = activity.filter((e) => e.type === "scavenger");
-  const todayKey = activity.find((e) => e.type === "scavenger")?.dailyKey;
-  const todays = scavengerRows.filter((e) => e.status !== "disputed" && e.dailyKey === todayKey);
+  const todays = scavengerRows.filter((e) => e.status !== "disputed" && e.dailyKey === currentDailyKey);
   const all = scavengerRows.filter((e) => e.status !== "disputed");
   const rejected = scavengerRows.filter((e) => e.status === "disputed");
   const rows = filter === "today" ? todays : filter === "rejected" ? rejected : all;

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
@@ -19,6 +19,12 @@ export default function ScavengerClaimSheet({ item, onClose }) {
   const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef(null);
 
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
   const finders = useQuery(api.scavenger.getItemFinders, item ? { scavengerItemId: item.id } : "skip") ?? [];
   const activeCount = finders.length;
   const nextRank = Math.min(activeCount + 1, 3);
@@ -31,6 +37,7 @@ export default function ScavengerClaimSheet({ item, onClose }) {
   const onPick = async (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (preview) URL.revokeObjectURL(preview);
     setFile(f);
     setPreview(URL.createObjectURL(f));
   };

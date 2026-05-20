@@ -96,7 +96,6 @@ export default function ScavengerSection() {
             key={item.id}
             item={item}
             mine={mineByItem.get(item.id) ?? null}
-            mySlug={mySlug}
             onTap={setActive}
           />
         ))}

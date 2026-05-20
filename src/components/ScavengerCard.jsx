@@ -1,25 +1,10 @@
 import { C } from "../data/colors.js";
 import { RADIUS, SHADOW, MICRO_LABEL } from "../data/design.js";
-import { PLAYERS } from "../data/players.js";
-import Avatar from "./primitives/Avatar.jsx";
 
 const DIFFICULTY_COLOR = { easy: C.green, medium: C.gold, wild: C.coralDeep };
 const MEDAL = { 1: "🥇", 2: "🥈" };
 
-function FindersStrip({ finders, mySlug }) {
-  const others = (finders ?? []).filter((f) => f.subjectSlug !== mySlug).slice(0, 3);
-  if (others.length === 0) return null;
-  return (
-    <div style={{ display: "flex", gap: 4, marginTop: 6, justifyContent: "center" }}>
-      {others.map((f) => {
-        const p = PLAYERS.find((pp) => pp.slug === f.subjectSlug);
-        return p ? <Avatar key={f._id} player={p} size="sm" /> : null;
-      })}
-    </div>
-  );
-}
-
-export default function ScavengerCard({ item, mine, finders, mySlug, onTap }) {
+export default function ScavengerCard({ item, mine, onTap }) {
   const status = !mine ? "unfound"
     : mine.status === "disputed" ? "rejected"
     : "found";
@@ -81,7 +66,6 @@ export default function ScavengerCard({ item, mine, finders, mySlug, onTap }) {
         }}>{medal}</span>
       )}
 
-      <FindersStrip finders={finders} mySlug={mySlug} />
     </button>
   );
 }

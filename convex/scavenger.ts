@@ -18,7 +18,11 @@ export const getMyFinds = query({
       .query("entries")
       .withIndex("by_subject", (q) => q.eq("subjectSlug", playerSlug))
       .collect();
-    return rows.filter((r) => r.type === "scavenger");
+    const scavengerRows = rows.filter((r) => r.type === "scavenger");
+    return await Promise.all(scavengerRows.map(async (e) => ({
+      ...e,
+      photoUrl: e.photoStorageId ? await ctx.storage.getUrl(e.photoStorageId) : null,
+    })));
   },
 });
 
