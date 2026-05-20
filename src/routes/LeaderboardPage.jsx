@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useQuery } from "convex/react";
+import { useEffect, useState, useMemo } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useGameState } from "../lib/useGameState.js";
 import { useSession } from "../lib/useSession.js";
@@ -170,6 +170,11 @@ export default function LeaderboardPage() {
   const [tab, setTab] = useState("daily");
   const { currentDailyKey, currentDayNumber, gamesLive } = useGameState();
   const session = useSession();
+  const markLeaderboardVisited = useMutation(api.welcome.markLeaderboardVisited);
+  useEffect(() => {
+    if (!session?.token || !session?.slug) return;
+    markLeaderboardVisited({ token: session.token, slug: session.slug }).catch(() => {});
+  }, [session?.token, session?.slug, markLeaderboardVisited]);
   const loggedIn = !!session;
   const holidayMap = useHolidayNameMap();
   const [foulTarget, setFoulTarget] = useState(null);
