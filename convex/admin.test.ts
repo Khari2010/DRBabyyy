@@ -167,3 +167,49 @@ describe("admin.adminBreakFlowTie", () => {
       .rejects.toThrow(/not a tied candidate/);
   });
 });
+
+describe("admin.adminForceCloseFlowVote", () => {
+  async function seedLockedDay(t: ReturnType<typeof convexTest>) {
+    await t.run(async (ctx) => {
+      for (const slug of ["khari", "kai", "camara"]) {
+        await ctx.db.insert("players", { slug, passcodeHash: null });
+        await ctx.db.insert("sessions", { playerSlug: slug, token: `tok-${slug}`, createdAt: Date.now() });
+      }
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
+      await ctx.db.insert("gameState", {
+        gamesLive: true, currentDayNumber: 1, currentDailyKey: "day-1", updatedAt: Date.now(),
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 1, dailyKey: "day-1", triggeredBySlug: "khari", triggeredAt: Date.now(),
+        loserSlug: "camara",
+      });
+    });
+  }
+
+  it("force-close with one vote: that vote wins outright", async () => {
+    const t = convexTest(schema);
+    await seedLockedDay(t);
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-kai", voteeSlug: "khari" });
+    await t.mutation(api.admin.adminForceCloseFlowVote, { token: "tok-khari" });
+    const row = await t.run((ctx) => ctx.db.query("rollovers").first());
+    expect(row?.flowWinnerSlug).toBe("khari");
+    expect(row?.flowForcedClose).toBe(true);
+  });
+
+  it("force-close with zero votes: candidates = all crew", async () => {
+    const t = convexTest(schema);
+    await seedLockedDay(t);
+    await t.mutation(api.admin.adminForceCloseFlowVote, { token: "tok-khari" });
+    const row = await t.run((ctx) => ctx.db.query("rollovers").first());
+    expect(row?.flowWinnerSlug).toBeUndefined();
+    expect(row?.flowTieCandidates?.sort()).toEqual(["camara", "kai", "khari"]);
+    expect(row?.flowForcedClose).toBe(true);
+  });
+
+  it("rejects non-admin", async () => {
+    const t = convexTest(schema);
+    await seedLockedDay(t);
+    await expect(t.mutation(api.admin.adminForceCloseFlowVote, { token: "tok-kai" }))
+      .rejects.toThrow(/admin only/);
+  });
+});

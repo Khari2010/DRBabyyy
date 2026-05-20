@@ -17,7 +17,7 @@ async function maybeResolveFlowWinner(
   await finaliseFlowResolution(ctx, rollover, votes, /* forced */ false);
 }
 
-async function finaliseFlowResolution(
+export async function finaliseFlowResolution(
   ctx: { db: any },
   rollover: Doc<"rollovers">,
   votes: Array<Doc<"flowVotes">>,

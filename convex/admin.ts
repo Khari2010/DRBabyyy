@@ -1,6 +1,7 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, requireAdmin, getGameState } from "./helpers";
+import { finaliseFlowResolution } from "./flowVotes";
 
 export const resetPasscode = internalMutation({
   args: { slug: v.string() },
@@ -69,6 +70,28 @@ export const resetGame = mutation({
         updatedAt: Date.now(),
       });
     }
+  },
+});
+
+export const adminForceCloseFlowVote = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+    const state = await getGameState(ctx);
+    if (!state) throw new Error("gameState not seeded");
+    const rollover = await ctx.db
+      .query("rollovers")
+      .withIndex("by_day_number", (q) => q.eq("dayNumber", state.currentDayNumber))
+      .first();
+    if (!rollover) throw new Error("no rollover for current day");
+    if (!rollover.loserSlug) throw new Error("day not locked");
+    if (rollover.flowWinnerSlug) throw new Error("already resolved");
+    const votes = await ctx.db
+      .query("flowVotes")
+      .withIndex("by_daily_key", (q) => q.eq("dailyKey", rollover.dailyKey))
+      .collect();
+    await finaliseFlowResolution(ctx, rollover, votes, /* forced */ true);
   },
 });
 
