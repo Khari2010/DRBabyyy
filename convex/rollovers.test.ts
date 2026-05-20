@@ -208,6 +208,34 @@ describe("rollovers.lockDay", () => {
     expect(day1?.closedAt).toBeDefined();
     expect(day1?.loserSlug).toBeUndefined();
   });
+
+  it("server-picks a forfeit and stores forfeitId + forfeitLabel + spunAt", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "khari", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    const row = await t.run((ctx) =>
+      ctx.db.query("rollovers").filter((q) => q.eq(q.field("dayNumber"), 1)).first());
+    expect(typeof row?.forfeitId).toBe("string");
+    expect(typeof row?.forfeitLabel).toBe("string");
+    expect(typeof row?.spunAt).toBe("number");
+  });
+
+  it("does not pick a forfeit on empty days (no loser)", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    // no entries
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    const row = await t.run((ctx) =>
+      ctx.db.query("rollovers").filter((q) => q.eq(q.field("dayNumber"), 1)).first());
+    expect(row?.closedAt).toBeTypeOf("number");
+    expect(row?.loserSlug).toBeUndefined();
+    expect(row?.forfeitId).toBeUndefined();
+  });
 });
 
 describe("rollovers.advance", () => {

@@ -1,9 +1,11 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, requireAdmin, getGameState } from "./helpers";
+import { FORFEITS } from "../src/data/forfeits.js";
 
-function nextDailyKey(dayNumber: number) {
-  return `day-${dayNumber}`;
+function pickForfeit() {
+  const i = Math.floor(Math.random() * FORFEITS.length);
+  return FORFEITS[i];
 }
 
 export const trigger = mutation({
@@ -16,6 +18,7 @@ export const trigger = mutation({
 
     const now = Date.now();
 
+    // Kickoff path: same as advance()
     if (!state.gamesLive) {
       await ctx.db.patch(state._id, {
         gamesLive: true,
@@ -41,11 +44,11 @@ export const trigger = mutation({
       .first();
     if (nextDayRollover) throw new Error("day already closed");
 
+    // Compute loser (same logic as lockDay)
     const entries = await ctx.db
       .query("entries")
       .withIndex("by_daily_key", (q) => q.eq("dailyKey", closingKey))
       .collect();
-
     const totals = new Map<string, number>();
     for (const e of entries) {
       if (e.status === "disputed") continue;
@@ -54,19 +57,23 @@ export const trigger = mutation({
     let loserSlug: string | undefined;
     let loserTotal = Infinity;
     for (const [slug, total] of totals.entries()) {
-      if (total < loserTotal) {
-        loserSlug = slug;
-        loserTotal = total;
-      }
+      if (total < loserTotal) { loserSlug = slug; loserTotal = total; }
     }
 
-    // Patch the existing rollover row for the closing day (inserted at kickoff).
-    const existingRollover = await ctx.db
+    // Patch existing rollover OR insert one — set closedAt + (synthetic) flowWinnerSlug.
+    // Marked with flowForcedClose: true so the synthetic resolution is obvious in data.
+    const existing = await ctx.db
       .query("rollovers")
       .withIndex("by_day_number", (q) => q.eq("dayNumber", closingDay))
       .first();
-    if (existingRollover) {
-      await ctx.db.patch(existingRollover._id, { loserSlug });
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        loserSlug,
+        closedAt: now,
+        flowWinnerSlug: loserSlug ?? playerSlug,
+        flowResolvedAt: now,
+        flowForcedClose: true,
+      });
     } else {
       await ctx.db.insert("rollovers", {
         dayNumber: closingDay,
@@ -74,17 +81,21 @@ export const trigger = mutation({
         triggeredBySlug: playerSlug,
         triggeredAt: now,
         loserSlug,
+        closedAt: now,
+        flowWinnerSlug: loserSlug ?? playerSlug,
+        flowResolvedAt: now,
+        flowForcedClose: true,
       });
     }
 
+    // Advance
     const newDay = closingDay + 1;
-    const newDailyKey = nextDailyKey(newDay);
+    const newDailyKey = `day-${newDay}`;
     await ctx.db.patch(state._id, {
       currentDayNumber: newDay,
       currentDailyKey: newDailyKey,
       updatedAt: now,
     });
-    // Insert a placeholder row for the new day (will be patched at next rollover).
     await ctx.db.insert("rollovers", {
       dayNumber: newDay,
       dailyKey: newDailyKey,
@@ -129,16 +140,27 @@ export const lockDay = mutation({
     }
 
     const now = Date.now();
+    // Empty day = no loser = no forfeit. Otherwise pick a forfeit server-side
+    // so every phone's wheel animates to the same answer.
+    const forfeit = loserSlug ? pickForfeit() : undefined;
+    const lockPatch: Record<string, any> = {
+      loserSlug,
+      closedAt: now,
+    };
+    if (forfeit) {
+      lockPatch.forfeitId = forfeit.id;
+      lockPatch.forfeitLabel = forfeit.label;
+      lockPatch.spunAt = now;
+    }
     if (existing) {
-      await ctx.db.patch(existing._id, { loserSlug, closedAt: now });
+      await ctx.db.patch(existing._id, lockPatch);
     } else {
       await ctx.db.insert("rollovers", {
         dayNumber: closingDay,
         dailyKey: closingKey,
         triggeredBySlug: playerSlug,
         triggeredAt: now,
-        loserSlug,
-        closedAt: now,
+        ...lockPatch,
       });
     }
   },
