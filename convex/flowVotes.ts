@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { Doc } from "./_generated/dataModel";
 import { requireSession, getGameState } from "./helpers";
@@ -125,5 +125,72 @@ export const clearFlowVote = mutation({
       )
       .unique();
     if (existing) await ctx.db.delete(existing._id);
+  },
+});
+
+export const getFlowVoteState = query({
+  args: { token: v.optional(v.string()) },
+  handler: async (ctx, { token }) => {
+    const state = await getGameState(ctx);
+    if (!state) {
+      return { phase: "closed" as const, myVoteSlug: null, tally: {}, votedCount: 0, totalCrew: 0 };
+    }
+    const players = await ctx.db.query("players").collect();
+    const totalCrew = players.length;
+
+    const rollover = await ctx.db
+      .query("rollovers")
+      .withIndex("by_day_number", (q) => q.eq("dayNumber", state.currentDayNumber))
+      .first();
+
+    const votes = await ctx.db
+      .query("flowVotes")
+      .withIndex("by_daily_key", (q) => q.eq("dailyKey", state.currentDailyKey))
+      .collect();
+
+    const tally: Record<string, number> = {};
+    for (const vote of votes) tally[vote.voteeSlug] = (tally[vote.voteeSlug] ?? 0) + 1;
+
+    let mySlug: string | null = null;
+    if (token) {
+      const session = await ctx.db.query("sessions").withIndex("by_token", (q) => q.eq("token", token)).unique();
+      mySlug = session?.playerSlug ?? null;
+    }
+    const myVote = mySlug
+      ? votes.find((vote) => vote.voterSlug === mySlug)?.voteeSlug ?? null
+      : null;
+
+    let phase: "closed" | "voting" | "tied" | "resolved";
+    if (!rollover || !rollover.loserSlug) phase = "closed";
+    else if (rollover.flowWinnerSlug) phase = "resolved";
+    else if (rollover.flowTieCandidates && rollover.flowTieCandidates.length > 0) phase = "tied";
+    else phase = "voting";
+
+    return {
+      phase,
+      myVoteSlug: myVote,
+      tally,
+      votedCount: votes.length,
+      totalCrew,
+      candidates: rollover?.flowTieCandidates ?? undefined,
+      winnerSlug: rollover?.flowWinnerSlug ?? undefined,
+    };
+  },
+});
+
+export const getFlowHistory = query({
+  args: {},
+  handler: async (ctx) => {
+    const rollovers = await ctx.db.query("rollovers").collect();
+    const lifetime: Record<string, number> = {};
+    const byDay = [];
+    for (const r of rollovers) {
+      if (r.flowWinnerSlug) {
+        lifetime[r.flowWinnerSlug] = (lifetime[r.flowWinnerSlug] ?? 0) + 1;
+        byDay.push({ dayNumber: r.dayNumber, dailyKey: r.dailyKey, winnerSlug: r.flowWinnerSlug, resolvedAt: r.flowResolvedAt ?? 0 });
+      }
+    }
+    byDay.sort((a, b) => a.dayNumber - b.dayNumber);
+    return { lifetime, byDay };
   },
 });

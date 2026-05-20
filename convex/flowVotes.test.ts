@@ -174,3 +174,92 @@ describe("flowVotes.castFlowVote", () => {
     expect(row?.flowWinnerSlug).toBeUndefined();
   });
 });
+
+describe("flowVotes.getFlowVoteState", () => {
+  it("returns phase=closed when day is not locked", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      for (const slug of ["khari", "kai"]) {
+        await ctx.db.insert("players", { slug, passcodeHash: null });
+        await ctx.db.insert("sessions", { playerSlug: slug, token: `tok-${slug}`, createdAt: Date.now() });
+      }
+      await ctx.db.insert("gameState", {
+        gamesLive: true, currentDayNumber: 1, currentDailyKey: "day-1", updatedAt: Date.now(),
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 1, dailyKey: "day-1", triggeredBySlug: "khari", triggeredAt: Date.now(),
+      });
+    });
+    const s = await t.query(api.flowVotes.getFlowVoteState, { token: "tok-kai" });
+    expect(s.phase).toBe("closed");
+    expect(s.votedCount).toBe(0);
+    expect(s.totalCrew).toBe(2);
+  });
+
+  it("returns phase=voting with tally + myVoteSlug after lockDay", async () => {
+    const t = convexTest(schema);
+    await seedCrew(t);
+    await t.mutation(api.flowVotes.castFlowVote, { token: "tok-kai", voteeSlug: "khari" });
+    const s = await t.query(api.flowVotes.getFlowVoteState, { token: "tok-kai" });
+    expect(s.phase).toBe("voting");
+    expect(s.myVoteSlug).toBe("khari");
+    expect(s.tally.khari).toBe(1);
+    expect(s.votedCount).toBe(1);
+    expect(s.totalCrew).toBe(3);
+  });
+
+  it("returns phase=tied when candidates are set", async () => {
+    const t = convexTest(schema);
+    await seedCrew(t);
+    await t.run(async (ctx) => {
+      const row = await ctx.db.query("rollovers").first();
+      await ctx.db.patch(row!._id, { flowTieCandidates: ["khari", "kai"] });
+    });
+    const s = await t.query(api.flowVotes.getFlowVoteState, { token: "tok-kai" });
+    expect(s.phase).toBe("tied");
+    expect(s.candidates?.sort()).toEqual(["kai", "khari"]);
+  });
+
+  it("returns phase=resolved with winnerSlug", async () => {
+    const t = convexTest(schema);
+    await seedCrew(t);
+    await t.run(async (ctx) => {
+      const row = await ctx.db.query("rollovers").first();
+      await ctx.db.patch(row!._id, { flowWinnerSlug: "khari", flowResolvedAt: Date.now() });
+    });
+    const s = await t.query(api.flowVotes.getFlowVoteState, { token: "tok-kai" });
+    expect(s.phase).toBe("resolved");
+    expect(s.winnerSlug).toBe("khari");
+  });
+});
+
+describe("flowVotes.getFlowHistory", () => {
+  it("returns past winners and lifetime tallies", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      for (const slug of ["khari", "kai"]) {
+        await ctx.db.insert("players", { slug, passcodeHash: null });
+      }
+      await ctx.db.insert("gameState", {
+        gamesLive: true, currentDayNumber: 3, currentDailyKey: "day-3", updatedAt: Date.now(),
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 1, dailyKey: "day-1", triggeredBySlug: "khari", triggeredAt: 1,
+        flowWinnerSlug: "khari", flowResolvedAt: 1,
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 2, dailyKey: "day-2", triggeredBySlug: "khari", triggeredAt: 2,
+        flowWinnerSlug: "kai", flowResolvedAt: 2,
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 3, dailyKey: "day-3", triggeredBySlug: "khari", triggeredAt: 3,
+        flowWinnerSlug: "khari", flowResolvedAt: 3,
+      });
+    });
+    const h = await t.query(api.flowVotes.getFlowHistory, {});
+    expect(h.lifetime.khari).toBe(2);
+    expect(h.lifetime.kai).toBe(1);
+    expect(h.byDay.find((d) => d.dayNumber === 1)?.winnerSlug).toBe("khari");
+    expect(h.byDay.find((d) => d.dayNumber === 2)?.winnerSlug).toBe("kai");
+  });
+});
