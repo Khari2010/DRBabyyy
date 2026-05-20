@@ -1,7 +1,21 @@
-// convex/seedChallenges.ts
 import { internalMutation } from "./_generated/server";
 import { SEED_CHALLENGES } from "./_seedData/challenges";
 import { deriveDifficulty } from "./helpers";
+
+export const RETIRE_CHALLENGE_IDS = [
+  "gianni-bike",
+  "shower-with",
+  "scavenger-hunt",
+  "ocean-sunrise",
+  "ocean-midnight",
+  "swim-up-bar",
+  "pinacolada-coconut",
+  "tostones",
+  "hair-braids",
+  "crew-swim-up",
+  "matching-dinner",
+  "horseback-beach",
+] as const;
 
 export const seedChallenges = internalMutation({
   args: {},
@@ -62,21 +76,7 @@ export const seedGameState = internalMutation({
 export const retireChallengeIds = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const idsToRetire = [
-      "gianni-bike",
-      "shower-with",
-      "scavenger-hunt",
-      "ocean-sunrise",
-      "ocean-midnight",
-      "swim-up-bar",
-      "pinacolada-coconut",
-      "tostones",
-      "hair-braids",
-      "crew-swim-up",
-      "matching-dinner",
-      "horseback-beach",
-    ];
-    for (const id of idsToRetire) {
+    for (const id of RETIRE_CHALLENGE_IDS) {
       const existing = await ctx.db
         .query("challenges")
         .withIndex("by_challenge_id", (q) => q.eq("challengeId", id))

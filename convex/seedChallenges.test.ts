@@ -1,30 +1,14 @@
-// convex/seedChallenges.test.ts
 import { describe, it, expect } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { internal } from "./_generated/api";
-
-const RETIRE_IDS = [
-  "gianni-bike",
-  "shower-with",
-  "scavenger-hunt",
-  "ocean-sunrise",
-  "ocean-midnight",
-  "swim-up-bar",
-  "pinacolada-coconut",
-  "tostones",
-  "hair-braids",
-  "crew-swim-up",
-  "matching-dinner",
-  "horseback-beach",
-];
+import { RETIRE_CHALLENGE_IDS } from "./seedChallenges";
 
 describe("seedChallenges.retireChallengeIds", () => {
   it("retires every id in the retirement list and leaves others active", async () => {
     const t = convexTest(schema);
     await t.run(async (ctx) => {
-      // Insert each id-to-retire as an active challenge.
-      for (const id of RETIRE_IDS) {
+      for (const id of RETIRE_CHALLENGE_IDS) {
         await ctx.db.insert("challenges", {
           challengeId: id,
           title: id,
@@ -35,7 +19,6 @@ describe("seedChallenges.retireChallengeIds", () => {
           status: "active",
         });
       }
-      // Insert a control row that must NOT be retired.
       await ctx.db.insert("challenges", {
         challengeId: "control-keep-me",
         title: "Keep Me",
@@ -50,7 +33,7 @@ describe("seedChallenges.retireChallengeIds", () => {
     await t.mutation(internal.seedChallenges.retireChallengeIds, {});
 
     const rows = await t.run((ctx) => ctx.db.query("challenges").collect());
-    for (const id of RETIRE_IDS) {
+    for (const id of RETIRE_CHALLENGE_IDS) {
       const r = rows.find((x) => x.challengeId === id);
       expect(r?.status, `expected ${id} retired`).toBe("retired");
     }
