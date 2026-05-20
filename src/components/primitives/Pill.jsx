@@ -24,6 +24,7 @@ export default function Pill({
   const Component = as;
   return (
     <Component
+      data-pill="true"
       onClick={onClick}
       style={{
         background: active ? accent : "rgba(0,0,0,0.04)",

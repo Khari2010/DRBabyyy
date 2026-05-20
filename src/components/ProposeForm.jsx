@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
+import { showToast } from "../lib/useToast.js";
 import { C } from "../data/colors.js";
 import { RADIUS } from "../data/design.js";
 
@@ -15,13 +16,13 @@ export default function ProposeForm() {
   const submit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
-    if (!token) { alert("Not logged in"); return; }
+    if (!token) { showToast({ message: "Not logged in", accent: C.coralDeep }); return; }
     setSubmitting(true);
     try {
       await create({ token, title });
       setTitle("");
     } catch (err) {
-      alert(err.message);
+      showToast({ message: err.message || "Couldn't suggest", accent: C.coralDeep });
     } finally {
       setSubmitting(false);
     }

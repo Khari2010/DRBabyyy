@@ -7,6 +7,13 @@ import ToastContainer from "./components/primitives/Toast.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    <style>{`
+      button[data-pill]:focus-visible,
+      button[data-claim]:focus-visible {
+        outline: 2px solid #00CEC9;
+        outline-offset: 2px;
+      }
+    `}</style>
     <ConvexProvider client={convex}>
       <App />
     </ConvexProvider>

@@ -18,6 +18,7 @@ export default function ChallengeCard({ challenge, onClaim }) {
   return (
     <button
       type="button"
+      data-claim="true"
       onClick={() => onClaim(challenge)}
       style={{ all: "unset", display: "block", cursor: "pointer", width: "100%" }}
     >
