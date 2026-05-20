@@ -55,6 +55,7 @@ export default defineSchema({
       v.literal("challenge"),
       v.literal("negative"),
       v.literal("scavenger"),
+      v.literal("flowWin"),
     ),
     subjectSlug: v.string(),
     appliedBySlug: v.optional(v.string()),
@@ -124,6 +125,10 @@ export default defineSchema({
     forfeitId: v.optional(v.string()),
     forfeitLabel: v.optional(v.string()),
     spunAt: v.optional(v.number()),
+    flowWinnerSlug: v.optional(v.string()),
+    flowResolvedAt: v.optional(v.number()),
+    flowTieCandidates: v.optional(v.array(v.string())),
+    flowForcedClose: v.optional(v.boolean()),
   }).index("by_day_number", ["dayNumber"]),
 
   gameState: defineTable({
@@ -186,4 +191,13 @@ export default defineSchema({
   })
     .index("by_day_and_item", ["dayDate", "itemKey"])
     .index("by_player_day_item", ["playerSlug", "dayDate", "itemKey"]),
+
+  flowVotes: defineTable({
+    dailyKey: v.string(),
+    voterSlug: v.string(),
+    voteeSlug: v.string(),
+    at: v.number(),
+  })
+    .index("by_daily_key", ["dailyKey"])
+    .index("by_daily_and_voter", ["dailyKey", "voterSlug"]),
 });
