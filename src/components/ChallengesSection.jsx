@@ -60,11 +60,20 @@ export default function ChallengesSection() {
   const [filters, setFilters] = useState(() => new Set(ALL_DIFFICULTIES));
   const [sortKey, setSortKey] = useState("default");
   const [claimsOpen, setClaimsOpen] = useState(true);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const visibleChallenges = useMemo(() => {
-    const filtered = challenges.filter((c) => filters.has(c.difficulty));
+    let filtered = challenges.filter((c) => filters.has(c.difficulty));
+    const q = searchTerm.trim().toLowerCase();
+    if (q) {
+      filtered = filtered.filter((c) =>
+        c.title.toLowerCase().includes(q) ||
+        (c.category ?? "").toLowerCase().includes(q)
+      );
+    }
     return sortChallenges(filtered, sortKey);
-  }, [challenges, filters, sortKey]);
+  }, [challenges, filters, sortKey, searchTerm]);
 
   if (!gamesLive) {
     return (
@@ -204,6 +213,30 @@ export default function ChallengesSection() {
           </Pill>
         ))}
         <span style={{ flex: 1 }} />
+        <button
+          type="button"
+          onClick={() => {
+            setSearchOpen((o) => {
+              const next = !o;
+              if (!next) setSearchTerm("");
+              return next;
+            });
+          }}
+          aria-label={searchOpen ? "Close search" : "Search challenges"}
+          aria-pressed={searchOpen}
+          style={{
+            background: searchOpen ? `${C.gold}25` : "rgba(0,0,0,0.04)",
+            border: "none",
+            borderRadius: RADIUS.pill,
+            padding: "6px 10px",
+            cursor: "pointer",
+            fontSize: 14,
+            lineHeight: 1,
+            color: searchOpen ? C.gold : C.textBody,
+          }}
+        >
+          🔍
+        </button>
         <select
           value={sortKey}
           onChange={(e) => setSortKey(e.target.value)}
@@ -222,6 +255,29 @@ export default function ChallengesSection() {
           {SORT_OPTIONS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
         </select>
       </div>
+
+      {searchOpen && (
+        <input
+          type="search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search by title or category…"
+          autoFocus
+          style={{
+            width: "100%",
+            padding: "10px 12px",
+            borderRadius: RADIUS.md,
+            border: `1px solid ${C.sandDark}`,
+            fontFamily: "Nunito, sans-serif",
+            fontSize: 14,
+            color: C.dark,
+            background: C.white,
+            outline: "none",
+            marginBottom: 12,
+            boxSizing: "border-box",
+          }}
+        />
+      )}
 
       {/* CHALLENGE GRID */}
       <div style={{ display: "grid", gap: 8 }}>
