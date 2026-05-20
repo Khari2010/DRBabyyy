@@ -167,6 +167,33 @@ describe("entries.vouch", () => {
     await expect(t.mutation(api.entries.vouch, { token: "tok-kyanna", entryId }))
       .rejects.toThrow(/day is locked/);
   });
+
+  it("rejects vouching after lockDay (gameState still at the same day)", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "kyanna", "tok-kyanna");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("gameState", {
+        gamesLive: true,
+        currentDayNumber: 1,
+        currentDailyKey: "day-1",
+        updatedAt: Date.now(),
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 1, dailyKey: "day-1",
+        triggeredBySlug: "khari", triggeredAt: Date.now(),
+        closedAt: Date.now(),
+      });
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge", subjectSlug: "kai", challengeId: "x",
+        points: 10, status: "active", vouchCount: 0, disputeCount: 0,
+        dailyKey: "day-1", createdAt: Date.now(),
+      });
+    });
+    await expect(t.mutation(api.entries.vouch, { token: "tok-kyanna", entryId }))
+      .rejects.toThrow(/day is locked/);
+  });
 });
 
 describe("entries.dispute", () => {
@@ -216,6 +243,33 @@ describe("entries.dispute", () => {
         currentDayNumber: 2,
         currentDailyKey: "day-2",
         updatedAt: Date.now(),
+      });
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge", subjectSlug: "kai", challengeId: "x",
+        points: 10, status: "active", vouchCount: 0, disputeCount: 0,
+        dailyKey: "day-1", createdAt: Date.now(),
+      });
+    });
+    await expect(t.mutation(api.entries.dispute, { token: "tok-kyanna", entryId }))
+      .rejects.toThrow(/day is locked/);
+  });
+
+  it("rejects disputing after lockDay (gameState still at the same day)", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    await seedSession(t, "kyanna", "tok-kyanna");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("gameState", {
+        gamesLive: true,
+        currentDayNumber: 1,
+        currentDailyKey: "day-1",
+        updatedAt: Date.now(),
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 1, dailyKey: "day-1",
+        triggeredBySlug: "khari", triggeredAt: Date.now(),
+        closedAt: Date.now(),
       });
       entryId = await ctx.db.insert("entries", {
         type: "challenge", subjectSlug: "kai", challengeId: "x",

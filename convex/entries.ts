@@ -54,7 +54,13 @@ export const vouch = mutation({
     if (entry.subjectSlug === playerSlug) throw new Error("cannot react to own entry");
 
     const state = await getGameState(ctx);
-    if (state && entry.dailyKey !== state.currentDailyKey) {
+    const rollover = await ctx.db
+      .query("rollovers")
+      .withIndex("by_daily_key", (q) => q.eq("dailyKey", entry.dailyKey))
+      .first();
+    const locked = !!rollover?.closedAt
+      || (state && entry.dailyKey !== state.currentDailyKey);
+    if (locked) {
       throw new Error("day is locked");
     }
 
@@ -85,7 +91,13 @@ export const dispute = mutation({
     if (entry.subjectSlug === playerSlug) throw new Error("cannot react to own entry");
 
     const state = await getGameState(ctx);
-    if (state && entry.dailyKey !== state.currentDailyKey) {
+    const rollover = await ctx.db
+      .query("rollovers")
+      .withIndex("by_daily_key", (q) => q.eq("dailyKey", entry.dailyKey))
+      .first();
+    const locked = !!rollover?.closedAt
+      || (state && entry.dailyKey !== state.currentDailyKey);
+    if (locked) {
       throw new Error("day is locked");
     }
 
