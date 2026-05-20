@@ -6,6 +6,8 @@ import { useSession } from "../lib/useSession.js";
 import { useGameState } from "../lib/useGameState.js";
 import { C } from "../data/colors.js";
 import { RADIUS, MICRO_LABEL, BODY } from "../data/design.js";
+import { PLAYERS } from "../data/players.js";
+import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 import SectionBand from "../components/primitives/SectionBand.jsx";
 import Card from "../components/primitives/Card.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
@@ -109,6 +111,13 @@ export default function AdminPage() {
   const trigger = useMutation(api.rollovers.trigger);
   const undoLast = useMutation(api.rollovers.undoLast);
   const resetGame = useMutation(api.admin.resetGame);
+  const breakTie = useMutation(api.admin.adminBreakFlowTie);
+  const forceClose = useMutation(api.admin.adminForceCloseFlowVote);
+  const flowState = useQuery(
+    api.flowVotes.getFlowVoteState,
+    token ? { token } : {},
+  );
+  const holidayMap = useHolidayNameMap();
 
   const allSuggestions = useQuery(api.suggestions.list, {}) ?? [];
   const proposed = allSuggestions.filter((s) => s.status === "proposed");
@@ -209,6 +218,78 @@ export default function AdminPage() {
             </ActionButton>
           </Card>
         </Reveal>
+
+        {flowState?.phase === "tied" && (
+          <Reveal>
+            <Card style={{ padding: 16, marginBottom: 12, border: `2px solid ${C.gold}` }}>
+              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 14, color: C.dark }}>
+                Tie: pick the Max Flow State winner
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+                {flowState.candidates?.map((slug) => {
+                  const p = PLAYERS.find((x) => x.slug === slug);
+                  return (
+                    <button
+                      key={slug}
+                      onClick={async () => {
+                        if (!token) return;
+                        try {
+                          await breakTie({ token, voteeSlug: slug });
+                        } catch (err) {
+                          alert(err.message);
+                        }
+                      }}
+                      style={{
+                        border: `1px solid ${C.sandDark}`,
+                        borderRadius: 999,
+                        padding: "8px 14px",
+                        fontFamily: "Nunito, sans-serif",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        background: C.white,
+                        color: C.dark,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {displayName(slug, holidayMap, p?.name)}
+                    </button>
+                  );
+                })}
+              </div>
+            </Card>
+          </Reveal>
+        )}
+
+        {flowState?.phase === "voting" && (
+          <Reveal>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!token) return;
+                if (!confirm("Force close Flow State vote with the votes cast so far?")) return;
+                try {
+                  await forceClose({ token });
+                } catch (err) {
+                  alert(err.message);
+                }
+              }}
+              style={{
+                marginBottom: 12,
+                padding: "10px 14px",
+                borderRadius: RADIUS.md,
+                background: C.gold,
+                color: C.dark,
+                border: 0,
+                fontFamily: "Nunito, sans-serif",
+                fontWeight: 800,
+                fontSize: 13,
+                cursor: "pointer",
+              }}
+            >
+              Force close Flow State vote
+            </button>
+          </Reveal>
+        )}
       </SectionBand>
 
       <SectionBand bg="white" pad="32px 0" innerMaxWidth={520}>
