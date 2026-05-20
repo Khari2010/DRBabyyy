@@ -67,13 +67,13 @@ describe("seedChallenges.retireChallengeIds", () => {
 });
 
 describe("seedChallenges.repriceChallenges", () => {
-  it("repriceChallenges sets spanish-convo to 30 and rederives difficulty", async () => {
+  it("sets spanish-convo to 30 and rederives difficulty", async () => {
     const t = convexTest(schema);
     await t.run(async (ctx) => {
       await ctx.db.insert("challenges", {
         challengeId: "spanish-convo",
-        title: "2-Minute Spanish Conversation",
-        icon: "🗣️",
+        title: "spanish-convo",
+        icon: "❓",
         points: 50,
         category: "local",
         difficulty: "medium",
@@ -90,10 +90,10 @@ describe("seedChallenges.repriceChallenges", () => {
         .unique()
     );
     expect(row?.points).toBe(30);
-    expect(row?.difficulty).toBe("medium"); // 30 → medium per deriveDifficulty
+    expect(row?.difficulty).toBe("medium");
   });
 
-  it("repriceChallenges is a no-op when target id is absent", async () => {
+  it("is a no-op when the target id is absent", async () => {
     const t = convexTest(schema);
     await expect(
       t.mutation(internal.seedChallenges.repriceChallenges, {}),

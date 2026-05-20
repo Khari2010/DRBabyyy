@@ -91,20 +91,15 @@ export const retireChallengeIds = internalMutation({
 export const repriceChallenges = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const repricings: Array<{ id: string; points: number }> = [
-      { id: "spanish-convo", points: 30 },
-    ];
-    for (const r of repricings) {
-      const existing = await ctx.db
-        .query("challenges")
-        .withIndex("by_challenge_id", (q) => q.eq("challengeId", r.id))
-        .unique();
-      if (existing) {
-        await ctx.db.patch(existing._id, {
-          points: r.points,
-          difficulty: deriveDifficulty(r.points),
-        });
-      }
+    const existing = await ctx.db
+      .query("challenges")
+      .withIndex("by_challenge_id", (q) => q.eq("challengeId", "spanish-convo"))
+      .unique();
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        points: 30,
+        difficulty: deriveDifficulty(30),
+      });
     }
   },
 });
