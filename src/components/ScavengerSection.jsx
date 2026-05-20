@@ -3,12 +3,10 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
 import { useGameState } from "../lib/useGameState.js";
-import { itemById } from "../data/scavenger.js";
 import { dailyItemsFor, isDailyScavengerActive } from "../data/dailyScavenger.js";
 import { C } from "../data/colors.js";
 import { EYEBROW, HEADING, BODY, MICRO_LABEL, RADIUS } from "../data/design.js";
 import Card from "./primitives/Card.jsx";
-import ScavengerCard from "./ScavengerCard.jsx";
 import ScavengerClaimSheet from "./ScavengerClaimSheet.jsx";
 import DailyScavengerReveal from "./DailyScavengerReveal.jsx";
 
@@ -21,49 +19,43 @@ export default function ScavengerSection() {
   const mine = useQuery(api.scavenger.getMyFinds, session?.token ? { token: session.token } : "skip") ?? [];
 
   const [active, setActive] = useState(null);
-  const [showReveal, setShowReveal] = useState(false);
+  const [skipIntro, setSkipIntro] = useState(true);
 
   const dailyMode = isDailyScavengerActive(currentDailyKey);
-  const dailyItemIds = dailyMode ? (dailyItemsFor(currentDailyKey) ?? []) : null;
-  const dailyItems = useMemo(
-    () => (dailyMode ? dailyItemIds.map((id) => itemById(id)).filter(Boolean) : []),
-    [dailyMode, dailyItemIds],
+  const dailyItemIds = useMemo(
+    () => (dailyMode ? (dailyItemsFor(currentDailyKey) ?? []) : []),
+    [dailyMode, currentDailyKey],
   );
 
-  const mineByItem = useMemo(() => {
+  const todayFindsByItem = useMemo(() => {
     const m = new Map();
     for (const e of mine) {
+      if (e.dailyKey !== currentDailyKey) continue;
       const prev = m.get(e.scavengerItemId);
       if (!prev || (prev.status === "disputed" && e.status !== "disputed")) {
         m.set(e.scavengerItemId, e);
       }
     }
     return m;
-  }, [mine]);
+  }, [mine, currentDailyKey]);
 
-  const todayFinds = mine.filter((e) => e.dailyKey === currentDailyKey && e.status !== "disputed");
+  const todayFinds = Array.from(todayFindsByItem.values()).filter((e) => e.status !== "disputed");
   const todayPoints = todayFinds.reduce((s, e) => s + e.points, 0);
 
   useEffect(() => {
     if (!dailyMode || !mySlug || !currentDailyKey) return;
     try {
       const last = window.localStorage.getItem(LS_KEY(mySlug));
-      if (last !== currentDailyKey) setShowReveal(true);
-    } catch {
-      // localStorage unavailable — skip the reveal silently
-    }
-  }, [dailyMode, mySlug, currentDailyKey]);
-
-  const dismissReveal = () => {
-    try {
-      if (mySlug && currentDailyKey) {
+      if (last === currentDailyKey) {
+        setSkipIntro(true);
+      } else {
+        setSkipIntro(false);
         window.localStorage.setItem(LS_KEY(mySlug), currentDailyKey);
       }
     } catch {
-      // ignore
+      setSkipIntro(true);
     }
-    setShowReveal(false);
-  };
+  }, [dailyMode, mySlug, currentDailyKey]);
 
   if (!gamesLive) {
     return (
@@ -92,6 +84,8 @@ export default function ScavengerSection() {
   }
 
   const isPracticeDay = currentDailyKey === "day-1";
+  const totalDailyItems = dailyItemIds.length;
+  const foundCount = todayFinds.length;
 
   return (
     <section style={{ margin: "16px 0" }}>
@@ -113,7 +107,7 @@ export default function ScavengerSection() {
         }}>+{todayPoints}</span>
         <span style={{ flex: 1 }} />
         <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody }}>
-          {todayFinds.length} of 4
+          {foundCount} of {totalDailyItems}
         </span>
       </div>
 
@@ -132,26 +126,15 @@ export default function ScavengerSection() {
         </div>
       )}
 
-      {showReveal ? (
-        <Card padding={0} style={{ overflow: "hidden", marginBottom: 12 }}>
-          <DailyScavengerReveal
-            dailyKey={currentDailyKey}
-            isFirstReveal={isPracticeDay}
-            onDone={dismissReveal}
-          />
-        </Card>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-          {dailyItems.map((item) => (
-            <ScavengerCard
-              key={item.id}
-              item={item}
-              mine={mineByItem.get(item.id) ?? null}
-              onTap={setActive}
-            />
-          ))}
-        </div>
-      )}
+      <Card padding={0} style={{ overflow: "hidden", marginBottom: 12 }}>
+        <DailyScavengerReveal
+          dailyKey={currentDailyKey}
+          interactive
+          skipIntro={skipIntro}
+          findsByItemId={todayFindsByItem}
+          onItemTap={setActive}
+        />
+      </Card>
 
       {active && <ScavengerClaimSheet item={active} onClose={() => setActive(null)} />}
     </section>

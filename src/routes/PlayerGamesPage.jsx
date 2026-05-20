@@ -4,8 +4,9 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { loadSession } from "../lib/session.js";
 import { V1_LOGIN_SLUGS, playerBySlug } from "../data/players.js";
-import { TRIP_END_DAY } from "../data/presence.js";
 import { useGameState } from "../lib/useGameState.js";
+
+const TRIP_TOTAL_DAYS = 4;
 import { C } from "../data/colors.js";
 import { SECTION_ACCENTS, BODY, MICRO_LABEL } from "../data/design.js";
 import SectionBand from "../components/primitives/SectionBand.jsx";
@@ -21,10 +22,9 @@ import SuggestCallout from "../components/SuggestCallout.jsx";
 
 const ACCENT = SECTION_ACCENTS.game;
 
-function daysRemaining() {
-  const now = new Date();
-  if (now.getMonth() !== 4) return 0;
-  return Math.max(0, TRIP_END_DAY - now.getDate());
+function daysRemaining(currentDayNumber) {
+  if (!currentDayNumber) return TRIP_TOTAL_DAYS;
+  return Math.max(0, TRIP_TOTAL_DAYS - currentDayNumber);
 }
 
 function useCountUp(value, durationMs = 600) {
@@ -124,7 +124,7 @@ function Stat({ label, value, accent, pulseOnChange = false }) {
 
 function DashboardHero({ player, dailyTotal, holidayTotal, rank, crewSize }) {
   const { gamesLive, currentDayNumber } = useGameState();
-  const remaining = daysRemaining();
+  const remaining = daysRemaining(currentDayNumber);
   const isPristine = dailyTotal === 0 && holidayTotal === 0;
   const todayAccent = dailyTotal >= 0 ? C.green : C.coralDeep;
   const holidayAccent = holidayTotal >= 0 ? C.green : C.coralDeep;

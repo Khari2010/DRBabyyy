@@ -9,7 +9,35 @@ const STAGGER_MS = 1000;
 const FIRST_REEL_DELAY_MS = 500;
 const TICK_INTERVAL_MS = 80;
 
-function Reel({ category, finalItem, locked }) {
+function Checkmark() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        top: 8,
+        right: 8,
+        width: 28,
+        height: 28,
+        borderRadius: "50%",
+        background: C.white,
+        color: C.green,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "'Dela Gothic One', sans-serif",
+        fontSize: 16,
+        lineHeight: 1,
+        boxShadow: `0 2px 8px rgba(0,0,0,0.25), 0 0 0 2px ${C.green}`,
+        animation: "drFindBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)",
+      }}
+    >
+      ✓
+    </div>
+  );
+}
+
+function Reel({ category, finalItem, locked, find, interactive, onClick }) {
   const cat = SCAVENGER_CATEGORIES.find((c) => c.id === category);
   const poolItems = itemsByCategory(category);
   const [tickIdx, setTickIdx] = useState(0);
@@ -21,30 +49,42 @@ function Reel({ category, finalItem, locked }) {
   }, [locked, poolItems.length]);
 
   const display = locked ? finalItem : poolItems[tickIdx % poolItems.length];
+  const claimed = locked && !!find && find.status !== "disputed";
+  const verified = claimed && find.status === "verified";
+  const tappable = interactive && locked && !claimed;
 
-  return (
-    <div
-      style={{
-        flex: 1,
-        background: cat?.color ?? C.dark,
-        color: C.white,
-        borderRadius: RADIUS.md,
-        padding: "16px 8px",
-        textAlign: "center",
-        minWidth: 70,
-        transition: "transform 0.3s ease",
-        transform: locked ? "scale(1.04)" : "scale(1)",
-        boxShadow: locked ? `0 4px 12px ${C.dark}33` : "none",
-      }}
-    >
+  const baseStyle = {
+    position: "relative",
+    flex: 1,
+    background: cat?.color ?? C.dark,
+    color: C.white,
+    borderRadius: RADIUS.md,
+    padding: "16px 8px 14px",
+    textAlign: "center",
+    minWidth: 70,
+    border: 0,
+    fontFamily: "Nunito, sans-serif",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease",
+    transform: locked && !claimed ? "scale(1.04)" : "scale(1)",
+    boxShadow: claimed
+      ? `0 0 0 2px ${C.green}, 0 6px 16px ${C.green}33`
+      : locked
+        ? `0 4px 12px ${C.dark}33`
+        : "none",
+    filter: claimed ? "saturate(0.85)" : "none",
+    cursor: tappable ? "pointer" : "default",
+  };
+
+  const Inner = (
+    <>
+      {claimed && <Checkmark />}
       <div style={{
-        fontFamily: "Nunito, sans-serif",
         fontSize: 11,
-        fontWeight: 700,
-        opacity: 0.85,
+        fontWeight: 800,
+        opacity: 0.9,
         marginBottom: 6,
         textTransform: "uppercase",
-        letterSpacing: 0.5,
+        letterSpacing: 0.7,
       }}>
         {cat?.label ?? category}
       </div>
@@ -52,24 +92,59 @@ function Reel({ category, finalItem, locked }) {
         {display?.icon ?? "❓"}
       </div>
       <div style={{
-        fontFamily: "Nunito, sans-serif",
         fontSize: 11,
-        fontWeight: 600,
+        fontWeight: 700,
         minHeight: 28,
         opacity: locked ? 1 : 0.7,
+        lineHeight: 1.2,
       }}>
         {locked ? display?.name : "—"}
       </div>
-    </div>
+      <div style={{
+        marginTop: 8,
+        fontSize: 9,
+        fontWeight: 800,
+        letterSpacing: 1.2,
+        textTransform: "uppercase",
+        opacity: locked ? 0.9 : 0,
+        minHeight: 12,
+      }}>
+        {claimed
+          ? (verified ? "Verified" : "Found")
+          : tappable ? "Tap to log" : ""}
+      </div>
+    </>
+  );
+
+  if (!tappable) {
+    return <div style={baseStyle}>{Inner}</div>;
+  }
+  return (
+    <button type="button" onClick={onClick} style={baseStyle}>
+      {Inner}
+    </button>
   );
 }
 
-export default function DailyScavengerReveal({ dailyKey, onDone, isFirstReveal = false }) {
+export default function DailyScavengerReveal({
+  dailyKey,
+  onDone,
+  isFirstReveal = false,
+  interactive = false,
+  skipIntro = false,
+  findsByItemId,
+  onItemTap,
+}) {
   const ids = dailyItemsFor(dailyKey);
-  const [lockedCount, setLockedCount] = useState(0);
+  const [lockedCount, setLockedCount] = useState(skipIntro && ids ? ids.length : 0);
 
   useEffect(() => {
     if (!ids) return;
+    if (skipIntro) {
+      setLockedCount(ids.length);
+      return;
+    }
+    setLockedCount(0);
     const timers = ids.map((_, i) =>
       setTimeout(
         () => setLockedCount((c) => Math.max(c, i + 1)),
@@ -77,7 +152,7 @@ export default function DailyScavengerReveal({ dailyKey, onDone, isFirstReveal =
       ),
     );
     return () => timers.forEach(clearTimeout);
-  }, [dailyKey]);
+  }, [dailyKey, skipIntro, ids]);
 
   if (!ids) return null;
 
@@ -92,14 +167,16 @@ export default function DailyScavengerReveal({ dailyKey, onDone, isFirstReveal =
       gap: 16,
       alignItems: "center",
     }}>
-      <div style={{
-        fontFamily: "'Dela Gothic One', sans-serif",
-        fontSize: 20,
-        textAlign: "center",
-        color: C.dark,
-      }}>
-        {isFirstReveal ? "The real game starts now." : "Today's hunt"}
-      </div>
+      {!interactive && (
+        <div style={{
+          fontFamily: "'Dela Gothic One', sans-serif",
+          fontSize: 20,
+          textAlign: "center",
+          color: C.dark,
+        }}>
+          {isFirstReveal ? "The real game starts now." : "Today's hunt"}
+        </div>
+      )}
       <div style={{
         display: "flex",
         gap: 8,
@@ -109,36 +186,49 @@ export default function DailyScavengerReveal({ dailyKey, onDone, isFirstReveal =
         {REEL_ORDER.map((cat, i) => {
           const item = finalItems[i];
           const matchesCategory = item?.category === cat;
+          const find = item && findsByItemId ? findsByItemId.get(item.id) : null;
           return (
             <Reel
               key={cat}
               category={cat}
               finalItem={matchesCategory ? item : null}
               locked={lockedCount > i}
+              find={find}
+              interactive={interactive}
+              onClick={item && onItemTap ? () => onItemTap(item) : undefined}
             />
           );
         })}
       </div>
-      <button
-        type="button"
-        onClick={onDone}
-        disabled={!allLocked}
-        style={{
-          marginTop: 8,
-          padding: "12px 28px",
-          borderRadius: RADIUS.md,
-          border: 0,
-          background: allLocked ? C.green : `${C.dark}55`,
-          color: C.white,
-          fontFamily: "Nunito, sans-serif",
-          fontWeight: 800,
-          fontSize: 14,
-          cursor: allLocked ? "pointer" : "not-allowed",
-          transition: "background 0.3s ease",
-        }}
-      >
-        Continue
-      </button>
+      {!interactive && (
+        <button
+          type="button"
+          onClick={onDone}
+          disabled={!allLocked}
+          style={{
+            marginTop: 8,
+            padding: "12px 28px",
+            borderRadius: RADIUS.md,
+            border: 0,
+            background: allLocked ? C.green : `${C.dark}55`,
+            color: C.white,
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 800,
+            fontSize: 14,
+            cursor: allLocked ? "pointer" : "not-allowed",
+            transition: "background 0.3s ease",
+          }}
+        >
+          Continue
+        </button>
+      )}
+      <style>{`
+        @keyframes drFindBounce {
+          0%   { transform: scale(0); opacity: 0; }
+          60%  { transform: scale(1.25); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

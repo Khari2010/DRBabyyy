@@ -2,18 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
+import { useGameState } from "../lib/useGameState.js";
 import { compressImage } from "../lib/compressImage.js";
 import { showToast } from "../lib/useToast.js";
+import { isDailyScavengerActive } from "../data/dailyScavenger.js";
 import { C } from "../data/colors.js";
 import { RADIUS, HEADING, BODY, MICRO_LABEL } from "../data/design.js";
 import BottomSheet from "./primitives/BottomSheet.jsx";
 
 const DIFFICULTY_COLOR = { easy: C.green, medium: C.gold, wild: C.coralDeep };
-const MEDAL = { 1: "🥇", 2: "🥈" };
+const MEDAL = { 1: "🥇" };
 
 export default function ScavengerClaimSheet({ item, onClose }) {
   const session = useSession();
   const token = session?.token;
+  const { currentDailyKey } = useGameState();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -27,9 +30,13 @@ export default function ScavengerClaimSheet({ item, onClose }) {
 
   const finders = useQuery(api.scavenger.getItemFinders, item ? { scavengerItemId: item.id } : "skip") ?? [];
   const activeCount = finders.length;
-  const nextRank = Math.min(activeCount + 1, 3);
-  const bonus = { 1: 5, 2: 3, 3: 0 }[nextRank];
-  const willEarn = item ? item.points + bonus : 0;
+  const nextRank = activeCount + 1;
+  const dailyMode = isDailyScavengerActive(currentDailyKey);
+  const willEarn = item
+    ? (dailyMode
+        ? 5 + (nextRank === 1 ? 5 : 0)
+        : item.points + ({ 1: 5, 2: 3, 3: 0 }[Math.min(nextRank, 3)]))
+    : 0;
 
   const generateUploadUrl = useMutation(api.scavenger.generateUploadUrl);
   const claim = useMutation(api.entries.claimScavenger);
@@ -56,7 +63,7 @@ export default function ScavengerClaimSheet({ item, onClose }) {
       if (!res.ok) throw new Error("upload failed");
       const { storageId } = await res.json();
       await claim({ token, scavengerItemId: item.id, photoStorageId: storageId });
-      const medal = MEDAL[nextRank] ? ` · ${MEDAL[nextRank]} ${nextRank === 1 ? "1st" : "2nd"}!` : "";
+      const medal = MEDAL[nextRank] ? " · 🥇 1st!" : "";
       showToast({
         message: `+${willEarn} · ${item.name}${medal}`,
         icon: item.icon,
@@ -76,16 +83,15 @@ export default function ScavengerClaimSheet({ item, onClose }) {
     <BottomSheet open onClose={submitting ? () => {} : onClose}>
       <div style={{ padding: 20 }}>
         <div style={{ ...MICRO_LABEL, color: stripe, marginBottom: 4 }}>
-          {item.difficulty} · {item.points}pt base
+          {item.difficulty} · {dailyMode ? "Today's hunt" : `${item.points}pt base`}
         </div>
         <h3 style={{ ...HEADING.h3, color: C.dark, margin: 0 }}>
           {item.icon} {item.name}
         </h3>
         <div style={{ ...BODY, marginTop: 8 }}>
-          Rank available right now:{" "}
-          <strong>
-            {MEDAL[nextRank] ?? "#3+"} · +{willEarn} total
-          </strong>
+          {nextRank === 1
+            ? <>First find — <strong>🥇 +{willEarn} bonus</strong></>
+            : <>Already found by others — <strong>+{willEarn}</strong></>}
         </div>
 
         <input
