@@ -14,7 +14,9 @@ import Avatar from "../components/primitives/Avatar.jsx";
 import Reveal from "../components/Reveal.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
+import GamesTabBar, { useGamesTab } from "../components/GamesTabBar.jsx";
 import ChallengesSection from "../components/ChallengesSection.jsx";
+import ScavengerSection from "../components/ScavengerSection.jsx";
 import SuggestCallout from "../components/SuggestCallout.jsx";
 
 const ACCENT = SECTION_ACCENTS.game;
@@ -182,6 +184,7 @@ export default function PlayerGamesPage() {
   const session = loadSession();
   const player = playerBySlug(slug ?? "");
   const { currentDailyKey } = useGameState();
+  const tab = useGamesTab();
   const daily = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey }) ?? [];
   const holiday = useQuery(api.leaderboard.getHoliday, {}) ?? [];
   const isKnownSlug = V1_LOGIN_SLUGS.includes(slug ?? "");
@@ -214,9 +217,12 @@ export default function PlayerGamesPage() {
         </Reveal>
       </SectionBand>
 
-      <SectionBand bg="white" pad="40px 0 80px" innerMaxWidth={520}>
+      <SectionBand bg="white" pad="32px 0 80px" innerMaxWidth={520}>
         <Reveal>
-          <ChallengesSection />
+          <GamesTabBar />
+        </Reveal>
+        <Reveal>
+          {tab === "scavenger" ? <ScavengerSection /> : <ChallengesSection />}
         </Reveal>
         <Reveal delay={0.05}>
           <SuggestCallout />
