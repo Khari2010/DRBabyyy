@@ -179,3 +179,51 @@ describe("welcome.getProgress", () => {
     expect(result.doneCount).toBe(0);
   });
 });
+
+describe("welcome.markLockscreenSeen", () => {
+  it("creates the progress row and sets lockscreenSeen", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    await seedSession(t, "kai", "tok");
+
+    await t.mutation(api.welcome.markLockscreenSeen, { token: "tok", slug: "kai" });
+
+    const result = await t.query(api.welcome.getProgress, { slug: "kai" });
+    expect(result.items.find((i) => i.id === "lockscreen")?.done).toBe(true);
+  });
+
+  it("is idempotent (second call is a no-op)", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    await seedSession(t, "kai", "tok");
+
+    await t.mutation(api.welcome.markLockscreenSeen, { token: "tok", slug: "kai" });
+    await t.mutation(api.welcome.markLockscreenSeen, { token: "tok", slug: "kai" });
+
+    await t.run(async (ctx) => {
+      const rows = await ctx.db.query("playerProgress").collect();
+      expect(rows).toHaveLength(1);
+      expect(rows[0].lockscreenSeen).toBe(true);
+    });
+  });
+
+  it("rejects when token doesn't match slug", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+    await seedPlayer(t, "candice");
+    await seedSession(t, "candice", "candice-tok");
+
+    await expect(
+      t.mutation(api.welcome.markLockscreenSeen, { token: "candice-tok", slug: "kai" }),
+    ).rejects.toThrow(/not your progress/);
+  });
+
+  it("rejects when token is invalid", async () => {
+    const t = convexTest(schema);
+    await seedPlayer(t, "kai");
+
+    await expect(
+      t.mutation(api.welcome.markLockscreenSeen, { token: "nope", slug: "kai" }),
+    ).rejects.toThrow(/invalid session/);
+  });
+});

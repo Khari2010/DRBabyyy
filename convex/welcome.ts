@@ -86,3 +86,13 @@ export const getProgress = query({
     return { items, doneCount, totalCount: items.length, hidden };
   },
 });
+
+export const markLockscreenSeen = mutation({
+  args: { token: v.string(), slug: v.string() },
+  handler: async (ctx, { token, slug }) => {
+    await requireSelf(ctx, token, slug);
+    const row = await ensureProgressRow(ctx, slug);
+    if (row.lockscreenSeen) return;
+    await ctx.db.patch(row._id, { lockscreenSeen: true });
+  },
+});
