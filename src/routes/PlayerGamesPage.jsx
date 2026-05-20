@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { loadSession } from "../lib/session.js";
 import { V1_LOGIN_SLUGS, playerBySlug } from "../data/players.js";
@@ -185,6 +185,12 @@ export default function PlayerGamesPage() {
   const player = playerBySlug(slug ?? "");
   const { currentDailyKey } = useGameState();
   const tab = useGamesTab();
+  const markScavengerVisited = useMutation(api.welcome.markScavengerVisited);
+  useEffect(() => {
+    if (tab !== "scavenger") return;
+    if (!session?.token || !slug) return;
+    markScavengerVisited({ token: session.token, slug }).catch(() => {});
+  }, [tab, session?.token, slug, markScavengerVisited]);
   const daily = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey }) ?? [];
   const holiday = useQuery(api.leaderboard.getHoliday, {}) ?? [];
   const isKnownSlug = V1_LOGIN_SLUGS.includes(slug ?? "");
