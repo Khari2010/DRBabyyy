@@ -51,7 +51,11 @@ export default defineSchema({
     .index("by_status", ["status"]),
 
   entries: defineTable({
-    type: v.union(v.literal("challenge"), v.literal("negative")),
+    type: v.union(
+      v.literal("challenge"),
+      v.literal("negative"),
+      v.literal("scavenger"),
+    ),
     subjectSlug: v.string(),
     appliedBySlug: v.optional(v.string()),
     challengeId: v.optional(v.string()),
@@ -64,11 +68,15 @@ export default defineSchema({
     dailyKey: v.string(),
     createdAt: v.number(),
     resolvedAt: v.optional(v.number()),
+    scavengerItemId: v.optional(v.string()),
+    photoStorageId: v.optional(v.id("_storage")),
+    scavengerRank: v.optional(v.number()),
   })
     .index("by_subject", ["subjectSlug"])
     .index("by_daily_key", ["dailyKey"])
     .index("by_status", ["status"])
-    .index("by_subject_and_daily_key", ["subjectSlug", "dailyKey"]),
+    .index("by_subject_and_daily_key", ["subjectSlug", "dailyKey"])
+    .index("by_scavenger_item", ["scavengerItemId"]),
 
   entryReactions: defineTable({
     entryId: v.id("entries"),
