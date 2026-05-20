@@ -272,7 +272,10 @@ export default function RevealFlow({ rollover }) {
               </button>
             </div>
           ) : (
-            <WheelOfFortune onResult={onSpinResult} />
+            <WheelOfFortune
+              target={rollover.forfeitId}
+              onResult={rollover.forfeitId ? () => {} : onSpinResult}
+            />
           )}
         </div>
       )}
