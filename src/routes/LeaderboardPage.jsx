@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useGameState } from "../lib/useGameState.js";
@@ -107,7 +107,10 @@ export default function LeaderboardPage() {
   );
   const allRollovers = useQuery(api.rollovers.listAll, {}) ?? [];
   const pendingReveal = lastClosed && lastClosed.loserSlug && !lastClosed.forfeitId;
-  const history = allRollovers.filter((r) => r.loserSlug && r.forfeitId).sort((a, b) => b.dayNumber - a.dayNumber);
+  const history = useMemo(
+    () => allRollovers.filter((r) => r.loserSlug && r.forfeitId).sort((a, b) => b.dayNumber - a.dayNumber),
+    [allRollovers],
+  );
 
   const isAdmin = useQuery(
     api.admin.isAdmin,
