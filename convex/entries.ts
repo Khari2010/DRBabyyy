@@ -52,6 +52,11 @@ export const vouch = mutation({
     if (!entry) throw new Error("unknown entry");
     if (entry.subjectSlug === playerSlug) throw new Error("cannot react to own entry");
 
+    const state = await getGameState(ctx);
+    if (state && entry.dailyKey !== state.currentDailyKey) {
+      throw new Error("day is locked");
+    }
+
     const existing = await ctx.db
       .query("entryReactions")
       .withIndex("by_entry_and_player", (q) => q.eq("entryId", entryId).eq("playerSlug", playerSlug))
