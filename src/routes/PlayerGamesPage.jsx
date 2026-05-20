@@ -15,8 +15,7 @@ import Reveal from "../components/Reveal.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ChallengesSection from "../components/ChallengesSection.jsx";
-import ProposeForm from "../components/ProposeForm.jsx";
-import VotingRow from "../components/VotingRow.jsx";
+import SuggestCallout from "../components/SuggestCallout.jsx";
 
 const ACCENT = SECTION_ACCENTS.game;
 
@@ -185,8 +184,6 @@ export default function PlayerGamesPage() {
   const { currentDailyKey } = useGameState();
   const daily = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey }) ?? [];
   const holiday = useQuery(api.leaderboard.getHoliday, {}) ?? [];
-  const allSuggestions = useQuery(api.suggestions.list, {}) ?? [];
-
   const isKnownSlug = V1_LOGIN_SLUGS.includes(slug ?? "");
   const slugMatches = session && session.slug === slug;
 
@@ -201,10 +198,6 @@ export default function PlayerGamesPage() {
   const dailyRow = daily.find((r) => r.slug === slug);
   const holidayRow = holiday.find((r) => r.slug === slug);
   const rank = holiday.findIndex((r) => r.slug === slug);
-
-  const myVoting = allSuggestions.filter((s) => s.status === "voting" && s.proposerSlug !== slug);
-  const myProposed = allSuggestions.filter((s) => s.status === "proposed" && s.proposerSlug === slug);
-  const recentApproved = allSuggestions.filter((s) => s.status === "approved").slice(-3);
 
   return (
     <div style={{ minHeight: "100vh", background: C.sand }}>
@@ -221,56 +214,13 @@ export default function PlayerGamesPage() {
         </Reveal>
       </SectionBand>
 
-      <SectionBand bg="white" pad="40px 0" innerMaxWidth={520}>
+      <SectionBand bg="white" pad="40px 0 80px" innerMaxWidth={520}>
         <Reveal>
           <ChallengesSection />
         </Reveal>
-      </SectionBand>
-
-      <SectionBand bg="sand" pad="40px 0 80px" innerMaxWidth={520}>
-        <Reveal>
-          <SectionHeader
-            label="Crowdsource"
-            title="Suggest a challenge"
-            accent={C.coralDeep}
-            tagline="Pitch an idea; the admin sets points and the crew votes."
-            compact
-          />
-        </Reveal>
         <Reveal delay={0.05}>
-          <Card>
-            <ProposeForm />
-            {myProposed.length > 0 && (
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.sandDark}` }}>
-                <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 6 }}>Your pending</div>
-                {myProposed.map((s) => (
-                  <div key={s._id} style={{ fontFamily: "Nunito, sans-serif", fontSize: 13, padding: "2px 0" }}>
-                    ⏳ {s.title} — awaiting admin
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+          <SuggestCallout />
         </Reveal>
-
-        {myVoting.length > 0 && (
-          <Reveal delay={0.1}>
-            <div style={{ marginTop: 20 }}>
-              <div style={{ ...MICRO_LABEL, color: C.coralDeep, marginBottom: 8 }}>Vote now</div>
-              <Card padding={0} style={{ overflow: "hidden" }}>
-                {myVoting.map((s) => <VotingRow key={s._id} suggestion={s} />)}
-              </Card>
-            </div>
-          </Reveal>
-        )}
-
-        {recentApproved.length > 0 && (
-          <div style={{
-            marginTop: 16, fontSize: 12, color: C.textBody, fontFamily: "Nunito, sans-serif",
-          }}>
-            Recently approved: {recentApproved.map((s) => s.title).join(" · ")}
-          </div>
-        )}
       </SectionBand>
 
       <BottomNav />
