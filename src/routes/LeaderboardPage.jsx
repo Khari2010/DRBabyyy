@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useGameState } from "../lib/useGameState.js";
 import { useSession } from "../lib/useSession.js";
+import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 import { PLAYERS } from "../data/players.js";
 import { C } from "../data/colors.js";
 import { RADIUS, BODY } from "../data/design.js";
@@ -26,7 +27,7 @@ function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
 }
 
-function BoardRow({ row, rank, onFoul, isMe, isLast }) {
+function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap }) {
   const p = playerBySlug(row.slug);
   const isTop3 = rank <= 3;
   const medal = ["🥇", "🥈", "🥉"][rank - 1];
@@ -50,7 +51,7 @@ function BoardRow({ row, rank, onFoul, isMe, isLast }) {
         <div style={{
           fontFamily: "Nunito, sans-serif", fontWeight: 800,
           fontSize: 14, color: C.dark,
-        }}>{p?.name ?? row.slug}</div>
+        }}>{displayName(row.slug, holidayMap, p?.name)}</div>
         <div style={{
           fontSize: 11, color: C.textBody, fontFamily: "Nunito, sans-serif",
         }}>
@@ -67,7 +68,7 @@ function BoardRow({ row, rank, onFoul, isMe, isLast }) {
       {onFoul && (
         <button
           type="button"
-          onClick={() => onFoul({ slug: row.slug, name: p?.name ?? row.slug })}
+          onClick={() => onFoul({ slug: row.slug, name: displayName(row.slug, holidayMap, p?.name) })}
           title="Log a foul"
           style={{
             padding: "0 14px", marginLeft: 4, minHeight: 44,
@@ -117,6 +118,7 @@ export default function LeaderboardPage() {
   const { currentDailyKey, currentDayNumber, gamesLive } = useGameState();
   const session = useSession();
   const loggedIn = !!session;
+  const holidayMap = useHolidayNameMap();
   const [foulTarget, setFoulTarget] = useState(null);
   const handleFoul = loggedIn ? setFoulTarget : null;
 
@@ -280,6 +282,7 @@ export default function LeaderboardPage() {
                   rank={i + 1}
                   isMe={session?.slug === row.slug}
                   isLast={i === rows.length - 1}
+                  holidayMap={holidayMap}
                   onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
                 />
               ))
@@ -338,7 +341,7 @@ export default function LeaderboardPage() {
                     {player && <Avatar player={player} size="sm" />}
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, color: C.dark }}>
-                        Day {r.dayNumber} · {player?.name ?? r.loserSlug}
+                        Day {r.dayNumber} · {displayName(r.loserSlug, holidayMap, player?.name)}
                       </div>
                       <div style={{ fontSize: 12, color: C.textBody, fontFamily: "Nunito, sans-serif" }}>
                         {r.forfeitLabel}
