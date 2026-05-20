@@ -243,10 +243,13 @@ export const myCatchphrase = query({
 export const getBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, { slug }) => {
-    return await ctx.db
+    const player = await ctx.db
       .query("players")
       .withIndex("by_slug", (q) => q.eq("slug", slug))
       .unique();
+    if (!player) return null;
+    const { passcodeHash, ...safe } = player;
+    return safe;
   },
 });
 
