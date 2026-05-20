@@ -52,7 +52,26 @@ function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero }) {
         <div style={{
           fontFamily: "Nunito, sans-serif", fontWeight: 800,
           fontSize: 14, color: C.dark,
-        }}>{displayName(row.slug, holidayMap, p?.name)}</div>
+          display: "flex", alignItems: "center", gap: 6,
+        }}>
+          <span>{displayName(row.slug, holidayMap, p?.name)}</span>
+          {isMe && (
+            <span style={{
+              padding: "1px 6px",
+              borderRadius: 999,
+              background: C.sand,
+              border: `1px solid ${C.sandDark}`,
+              color: C.textBody,
+              fontFamily: "Nunito, sans-serif",
+              fontWeight: 800,
+              fontSize: 9,
+              letterSpacing: 0.5,
+              textTransform: "uppercase",
+            }}>
+              you
+            </span>
+          )}
+        </div>
         {isZero ? (
           <div style={{
             fontSize: 11, color: C.textBody, fontFamily: "Nunito, sans-serif",
