@@ -1,15 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { C } from "../data/colors.js";
 import { RADIUS } from "../data/design.js";
 import RevealFlow from "./RevealFlow.jsx";
+import { isDailyScavengerActive } from "../data/dailyScavenger.js";
 
 export default function EndDayTakeover({ open, dayNumber, onClose }) {
   const rollover = useQuery(
     api.rollovers.get,
     open && dayNumber ? { dayNumber } : "skip",
   );
+
+  const [slotDone, setSlotDone] = useState(false);
+
+  useEffect(() => { setSlotDone(false); }, [rollover?._id]);
 
   useEffect(() => {
     if (!open) return;
@@ -22,7 +27,9 @@ export default function EndDayTakeover({ open, dayNumber, onClose }) {
 
   if (!open) return null;
 
-  const canClose = !!rollover?.forfeitId;
+  const newDailyKey = rollover ? `day-${rollover.dayNumber + 1}` : null;
+  const slotActive = newDailyKey ? isDailyScavengerActive(newDailyKey) : false;
+  const canClose = !!rollover?.forfeitId && (!slotActive || slotDone);
 
   return (
     <div
@@ -51,7 +58,7 @@ export default function EndDayTakeover({ open, dayNumber, onClose }) {
       >
         <div style={{ width: "100%", maxWidth: 520 }}>
           {rollover ? (
-            <RevealFlow rollover={rollover} />
+            <RevealFlow rollover={rollover} onSlotDone={() => setSlotDone(true)} />
           ) : (
             <div style={{
               color: C.white,

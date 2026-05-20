@@ -5,6 +5,8 @@ import { useSession } from "../lib/useSession.js";
 import { FORFEITS } from "../data/forfeits.js";
 import { PLAYERS } from "../data/players.js";
 import WheelOfFortune from "./games/WheelOfFortune.jsx";
+import DailyScavengerReveal from "./DailyScavengerReveal.jsx";
+import { isDailyScavengerActive } from "../data/dailyScavenger.js";
 import { C } from "../data/colors.js";
 import { RADIUS, HEADING, BODY, MICRO_LABEL } from "../data/design.js";
 import { useHolidayNameMap, displayName } from "../lib/displayName.js";
@@ -75,7 +77,7 @@ function DeductPicker({ loserSlug, rolloverId }) {
   );
 }
 
-export default function RevealFlow({ rollover }) {
+export default function RevealFlow({ rollover, onSlotDone }) {
   const session = useSession();
   const token = session?.token;
   const board = useQuery(api.leaderboard.getDaily, { dailyKey: rollover.dailyKey }) ?? [];
@@ -87,6 +89,10 @@ export default function RevealFlow({ rollover }) {
   const holidayMap = useHolidayNameMap();
   const nameOf = (slug) => displayName(slug, holidayMap);
   const [stage, setStage] = useState(1);
+
+  const newDailyKey = `day-${rollover.dayNumber + 1}`;
+  const slotActive = isDailyScavengerActive(newDailyKey);
+  const isFirstReveal = newDailyKey === "day-2";
 
   const onSpinResult = async (f) => {
     if (!token) return;
@@ -316,6 +322,26 @@ export default function RevealFlow({ rollover }) {
                 Max Flow State · +10
               </div>
               <style>{`@keyframes flowCrownIn { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }`}</style>
+              {slotActive && (
+                <button
+                  type="button"
+                  onClick={() => setStage(5)}
+                  style={{
+                    marginTop: 20,
+                    padding: "12px 20px",
+                    borderRadius: RADIUS.md,
+                    background: C.dark,
+                    color: C.white,
+                    border: 0,
+                    fontFamily: "Nunito, sans-serif",
+                    fontWeight: 800,
+                    fontSize: 14,
+                    cursor: "pointer",
+                  }}
+                >
+                  Continue to today's hunt 🔍 ▶
+                </button>
+              )}
             </>
           ) : flowState?.phase === "tied" ? (
             <div>
@@ -337,6 +363,16 @@ export default function RevealFlow({ rollover }) {
             </div>
           )}
         </div>
+      )}
+
+      {slotActive && stage === 5 && (
+        <DailyScavengerReveal
+          dailyKey={newDailyKey}
+          isFirstReveal={isFirstReveal}
+          onDone={() => {
+            if (onSlotDone) onSlotDone();
+          }}
+        />
       )}
     </Card>
   );
