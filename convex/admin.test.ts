@@ -119,3 +119,51 @@ describe("admin.resetGame", () => {
       .rejects.toThrow(/admin only/);
   });
 });
+
+describe("admin.adminBreakFlowTie", () => {
+  async function seedWithTie(t: ReturnType<typeof convexTest>) {
+    await t.run(async (ctx) => {
+      for (const slug of ["khari", "kai", "camara"]) {
+        await ctx.db.insert("players", { slug, passcodeHash: null });
+        await ctx.db.insert("sessions", { playerSlug: slug, token: `tok-${slug}`, createdAt: Date.now() });
+      }
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
+      await ctx.db.insert("gameState", {
+        gamesLive: true, currentDayNumber: 1, currentDailyKey: "day-1", updatedAt: Date.now(),
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 1, dailyKey: "day-1", triggeredBySlug: "khari", triggeredAt: Date.now(),
+        loserSlug: "camara",
+        flowTieCandidates: ["khari", "kai"],
+      });
+    });
+  }
+
+  it("admin picks a winner from the tied set", async () => {
+    const t = convexTest(schema);
+    await seedWithTie(t);
+    await t.mutation(api.admin.adminBreakFlowTie, { token: "tok-khari", voteeSlug: "kai" });
+    const row = await t.run((ctx) => ctx.db.query("rollovers").first());
+    expect(row?.flowWinnerSlug).toBe("kai");
+    expect(row?.flowTieCandidates).toBeUndefined();
+    const award = await t.run((ctx) =>
+      ctx.db.query("entries").filter((q) => q.eq(q.field("type"), "flowWin")).first(),
+    );
+    expect(award?.subjectSlug).toBe("kai");
+    expect(award?.points).toBe(10);
+  });
+
+  it("rejects non-admin", async () => {
+    const t = convexTest(schema);
+    await seedWithTie(t);
+    await expect(t.mutation(api.admin.adminBreakFlowTie, { token: "tok-kai", voteeSlug: "khari" }))
+      .rejects.toThrow(/admin only/);
+  });
+
+  it("rejects voteeSlug not in candidates", async () => {
+    const t = convexTest(schema);
+    await seedWithTie(t);
+    await expect(t.mutation(api.admin.adminBreakFlowTie, { token: "tok-khari", voteeSlug: "camara" }))
+      .rejects.toThrow(/not a tied candidate/);
+  });
+});
