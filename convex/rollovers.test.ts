@@ -64,6 +64,26 @@ describe("rollovers.trigger", () => {
     await expect(t.mutation(api.rollovers.trigger, { token: "bogus" }))
       .rejects.toThrow(/invalid session/);
   });
+
+  it("rejects a second trigger for the same closing day", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" }); // kickoff → Day 1
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" }); // close Day 1 → Day 2
+
+    // Manually rewind gameState back to Day 1 to simulate a stale client retrying
+    await t.run(async (ctx) => {
+      const state = await ctx.db.query("gameState").first();
+      await ctx.db.patch(state!._id, {
+        currentDayNumber: 1,
+        currentDailyKey: "day-1",
+        updatedAt: Date.now(),
+      });
+    });
+
+    await expect(t.mutation(api.rollovers.trigger, { token: "tok-khari" }))
+      .rejects.toThrow(/day already closed/);
+  });
 });
 
 describe("rollovers.recordForfeit", () => {

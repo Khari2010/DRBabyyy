@@ -35,6 +35,12 @@ export const trigger = mutation({
     const closingKey = state.currentDailyKey;
     const closingDay = state.currentDayNumber;
 
+    const nextDayRollover = await ctx.db
+      .query("rollovers")
+      .withIndex("by_day_number", (q) => q.eq("dayNumber", closingDay + 1))
+      .first();
+    if (nextDayRollover) throw new Error("day already closed");
+
     const entries = await ctx.db
       .query("entries")
       .withIndex("by_daily_key", (q) => q.eq("dailyKey", closingKey))
