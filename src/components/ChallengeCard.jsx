@@ -85,6 +85,23 @@ export default function ChallengeCard({ challenge, onClaim, done = false }) {
               >
                 {DIFFICULTY_LABEL[challenge.difficulty] ?? "—"}
               </span>
+              {challenge.category && (
+                <span
+                  style={{
+                    fontFamily: "Nunito, sans-serif",
+                    fontWeight: 700,
+                    fontSize: 10,
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    color: C.textBody,
+                    background: "rgba(0,0,0,0.04)",
+                    borderRadius: 999,
+                    padding: "2px 8px",
+                  }}
+                >
+                  {challenge.category}
+                </span>
+              )}
               {challenge.bonus && (
                 <span style={{
                   fontFamily: "Nunito, sans-serif",
