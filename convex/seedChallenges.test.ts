@@ -65,3 +65,38 @@ describe("seedChallenges.retireChallengeIds", () => {
     expect(row?.status).toBe("retired");
   });
 });
+
+describe("seedChallenges.repriceChallenges", () => {
+  it("repriceChallenges sets spanish-convo to 30 and rederives difficulty", async () => {
+    const t = convexTest(schema);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("challenges", {
+        challengeId: "spanish-convo",
+        title: "2-Minute Spanish Conversation",
+        icon: "🗣️",
+        points: 50,
+        category: "local",
+        difficulty: "medium",
+        status: "active",
+      });
+    });
+
+    await t.mutation(internal.seedChallenges.repriceChallenges, {});
+
+    const row = await t.run((ctx) =>
+      ctx.db
+        .query("challenges")
+        .withIndex("by_challenge_id", (q) => q.eq("challengeId", "spanish-convo"))
+        .unique()
+    );
+    expect(row?.points).toBe(30);
+    expect(row?.difficulty).toBe("medium"); // 30 → medium per deriveDifficulty
+  });
+
+  it("repriceChallenges is a no-op when target id is absent", async () => {
+    const t = convexTest(schema);
+    await expect(
+      t.mutation(internal.seedChallenges.repriceChallenges, {}),
+    ).resolves.not.toThrow();
+  });
+});
