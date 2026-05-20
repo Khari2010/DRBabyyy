@@ -8,14 +8,16 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "convex": "^1.39.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.14.1"
+    "react-router-dom": "^7.14.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
