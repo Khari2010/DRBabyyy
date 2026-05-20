@@ -20,6 +20,7 @@ import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import EndDayTakeover from "../components/EndDayTakeover.jsx";
 import PlayerDayDrawer from "../components/PlayerDayDrawer.jsx";
+import FlowStateVoteCard from "../components/FlowStateVoteCard.jsx";
 import { showToast } from "../lib/useToast.js";
 
 const ACCENT = C.gold;
@@ -28,7 +29,7 @@ function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
 }
 
-function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero, onTap }) {
+function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero, onTap, isFlowWinner }) {
   const p = playerBySlug(row.slug);
   const isTop3 = rank <= 3;
   const medal = ["🥇", "🥈", "🥉"][rank - 1];
@@ -59,7 +60,7 @@ function BoardRow({ row, rank, onFoul, isMe, isLast, holidayMap, isZero, onTap }
           fontSize: 14, color: C.dark,
           display: "flex", alignItems: "center", gap: 6,
         }}>
-          <span>{displayName(row.slug, holidayMap, p?.name)}</span>
+          <span>{isFlowWinner ? `👑 ${displayName(row.slug, holidayMap, p?.name)}` : displayName(row.slug, holidayMap, p?.name)}</span>
           {isMe && (
             <span style={{
               padding: "1px 6px",
@@ -174,6 +175,11 @@ export default function LeaderboardPage() {
 
   const dailyRaw = useQuery(api.leaderboard.getDaily, { dailyKey: currentDailyKey });
   const holidayRaw = useQuery(api.leaderboard.getHoliday, {});
+  const flowState = useQuery(
+    api.flowVotes.getFlowVoteState,
+    session?.token ? { token: session.token } : {},
+  );
+  const flowHistory = useQuery(api.flowVotes.getFlowHistory, {});
   const activityRaw = useQuery(
     api.leaderboard.getRecentActivity,
     session?.token ? { limit: 12, token: session.token } : "skip",
@@ -337,6 +343,8 @@ export default function LeaderboardPage() {
           </div>
         </Reveal>
 
+        {tab === "daily" && <FlowStateVoteCard />}
+
         <Reveal>
           <Card padding={0} style={{ overflow: "hidden" }}>
             {rowsLoading ? (
@@ -359,6 +367,7 @@ export default function LeaderboardPage() {
                   isZero={!!row.isZero}
                   onTap={setDrawerSlug}
                   onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
+                  isFlowWinner={row.slug === flowState?.winnerSlug && tab === "daily"}
                 />
               ))
             )}
@@ -407,6 +416,7 @@ export default function LeaderboardPage() {
               {history.map((r, i) => {
                 const player = playerBySlug(r.loserSlug);
                 const isLast = i === history.length - 1;
+                const flowWinner = flowHistory?.byDay?.find((d) => d.dayNumber === r.dayNumber)?.winnerSlug;
                 return (
                   <div key={r._id} style={{
                     padding: "12px 14px",
@@ -421,6 +431,11 @@ export default function LeaderboardPage() {
                       <div style={{ fontSize: 12, color: C.textBody, fontFamily: "Nunito, sans-serif" }}>
                         {r.forfeitLabel}
                       </div>
+                      {flowWinner && (
+                        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, marginTop: 2 }}>
+                          👑 {displayName(flowWinner, holidayMap, playerBySlug(flowWinner)?.name)}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

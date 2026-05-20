@@ -102,6 +102,8 @@ export default function PlayerDayDrawer({ open, slug, dailyKey, dayLabel, onClos
     open && slug ? { slug, dailyKey } : "skip",
   );
   const holidayMap = useHolidayNameMap();
+  const flowHistory = useQuery(api.flowVotes.getFlowHistory, {});
+  const flowWins = flowHistory?.lifetime?.[slug] ?? 0;
 
   if (!open || !slug) {
     return <BottomSheet open={false} onClose={onClose}>{null}</BottomSheet>;
@@ -140,6 +142,15 @@ export default function PlayerDayDrawer({ open, slug, dailyKey, dayLabel, onClos
               {dayLabel}
             </div>
           )}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 20, marginTop: 14, marginBottom: 4 }}>
+        <div>
+          <div style={{ ...MICRO_LABEL, color: C.textBody }}>Flow State wins</div>
+          <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 18, color: C.gold }}>
+            👑 {flowWins}
+          </div>
         </div>
       </div>
 
