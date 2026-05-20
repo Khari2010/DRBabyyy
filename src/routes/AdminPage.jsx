@@ -15,72 +15,12 @@ import Reveal from "../components/Reveal.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
 import ProposedRow from "../components/ProposedRow.jsx";
+import ActivityProposedRow from "../components/ActivityProposedRow.jsx";
 import AdminScavengerQueue from "../components/AdminScavengerQueue.jsx";
+import AdminToast from "../components/AdminToast.jsx";
+import ResetConfirmDialog from "../components/ResetConfirmDialog.jsx";
 
 const ACCENT = C.coralDeep;
-
-function ActivityDraftForm({ suggestion, onDone }) {
-  const session = useSession();
-  const token = session?.token;
-  const draft = useMutation(api.activitySuggestions.draft);
-  const [category, setCategory] = useState("");
-  const [cost, setCost] = useState("");
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!category) { alert("Need category"); return; }
-    try {
-      await draft({ token, suggestionId: suggestion._id, category, cost: cost || undefined });
-      onDone();
-    } catch (err) { alert(err.message); }
-  };
-  return (
-    <form onSubmit={submit} style={{ marginTop: 8, padding: 8, background: C.sand, borderRadius: 8 }}>
-      <input value={category} onChange={(e) => setCategory(e.target.value)}
-        placeholder="Category (excursion / dining / nightlife)"
-        style={{ padding: 6, marginRight: 6, fontFamily: "Nunito, sans-serif" }} />
-      <input value={cost} onChange={(e) => setCost(e.target.value)}
-        placeholder="Cost (optional)"
-        style={{ padding: 6, fontFamily: "Nunito, sans-serif" }} />
-      <button type="submit"
-        style={{ marginLeft: 6, padding: 6, background: C.green, color: C.white, border: 0, borderRadius: 4 }}>
-        Send to vote
-      </button>
-    </form>
-  );
-}
-
-function ActivityProposedRow({ suggestion }) {
-  const session = useSession();
-  const token = session?.token;
-  const reject = useMutation(api.activitySuggestions.reject);
-  const [drafting, setDrafting] = useState(false);
-  return (
-    <div style={{ padding: "8px 0", borderBottom: `1px solid ${C.sandDark}` }}>
-      <div style={{ fontFamily: "'Dela Gothic One', sans-serif", color: C.dark }}>{suggestion.title}</div>
-      {suggestion.notes && (
-        <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody }}>
-          {suggestion.notes}
-        </div>
-      )}
-      {!drafting && (
-        <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-          <button type="button" onClick={() => setDrafting(true)}
-            style={{ padding: "4px 10px", borderRadius: 6, background: C.sand, border: `1px solid ${C.sandDark}` }}>
-            Draft
-          </button>
-          <button type="button"
-            onClick={() => reject({ token, suggestionId: suggestion._id }).catch((e) => alert(e.message))}
-            style={{ padding: "4px 10px", borderRadius: 6, background: C.coralDeep, color: C.white, border: 0 }}>
-            Reject
-          </button>
-        </div>
-      )}
-      {drafting && (
-        <ActivityDraftForm suggestion={suggestion} onDone={() => setDrafting(false)} />
-      )}
-    </div>
-  );
-}
 
 function ActionButton({ onClick, variant = "primary", children, disabled }) {
   const base = {
@@ -119,6 +59,27 @@ export default function AdminPage() {
     token ? { token } : {},
   );
   const holidayMap = useHolidayNameMap();
+
+  const [toast, setToast] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [tieConfirmSlug, setTieConfirmSlug] = useState(null);
+
+  const showError = (msg) => setToast({ kind: "error", message: msg });
+  const showSuccess = (msg) => setToast({ kind: "success", message: msg });
+  const dismissToast = () => setToast(null);
+
+  const runAction = async (fn) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await fn();
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const allSuggestions = useQuery(api.suggestions.list, {}) ?? [];
   const proposed = allSuggestions.filter((s) => s.status === "proposed");
@@ -159,47 +120,70 @@ export default function AdminPage() {
     );
   }
 
-  const handleLockDay = async () => {
+  const flowPhase = flowState?.phase;
+  const canLock = state.gamesLive && flowPhase === "closed";
+  const canAdvance = state.gamesLive && flowPhase === "resolved";
+
+  const handleLockDay = () => {
     if (!window.confirm(`Lock Day ${state.currentDayNumber}? This computes the loser, picks the forfeit, and opens the Reveal flow on the Board.`)) return;
-    try {
-      await lockDay({ token });
-    } catch (err) {
-      alert(err.message);
-    }
+    runAction(() => lockDay({ token }));
   };
 
-  const handleAdvance = async () => {
+  const handleAdvance = () => {
     const label = state.gamesLive
       ? `Start Day ${state.currentDayNumber + 1}? This advances past today.`
       : "Start the games (Day 1)?";
     if (!window.confirm(label)) return;
     const wasLive = state.gamesLive;
-    try {
+    runAction(async () => {
       await advance({ token });
       if (wasLive) navigate("/leaderboard");
-    } catch (err) {
-      alert(err.message);
-    }
+    });
   };
 
-  const handleUndo = async () => {
+  const handleUndo = () => {
     if (!window.confirm("Undo the last rollover? This deletes the most recent rollover row.")) return;
-    try { await undoLast({ token }); } catch (err) { alert(err.message); }
+    runAction(() => undoLast({ token }));
   };
 
   const handleReset = async () => {
-    if (!window.confirm("⚠️ WIPE all entries, vouches, rollovers, suggestions, and reset to pre-trip. Continue?")) return;
-    try {
+    await runAction(async () => {
       await resetGame({ token });
-      alert("Practice data wiped. Game state is now pre-trip.");
-    } catch (err) {
-      alert(err.message);
-    }
+      setResetOpen(false);
+      showSuccess("Practice data wiped. Game state is now pre-trip.");
+    });
   };
+
+  const handleBreakTie = (slug) => {
+    runAction(async () => {
+      await breakTie({ token, voteeSlug: slug });
+      setTieConfirmSlug(null);
+    });
+  };
+
+  const handleForceClose = () => {
+    if (!window.confirm("Force close Flow State vote with the votes cast so far?")) return;
+    runAction(() => forceClose({ token }));
+  };
+
+  const liveStatusText = (() => {
+    if (!state.gamesLive) return "Tap to kick off Day 1 and unlock claiming.";
+    if (flowPhase === "closed") return `Day ${state.currentDayNumber} is open. Lock it to compute the loser and start the Flow State vote.`;
+    if (flowPhase === "voting") return `Day ${state.currentDayNumber} is locked. Flow State vote in progress — force-close it below if needed.`;
+    if (flowPhase === "tied") return `Day ${state.currentDayNumber} is locked. Flow State vote tied — pick a winner below.`;
+    if (flowPhase === "resolved") return `Day ${state.currentDayNumber} is closed. Advance to start Day ${state.currentDayNumber + 1}.`;
+    return "";
+  })();
 
   return (
     <div style={{ minHeight: "100vh", background: C.sand }}>
       <LogoutChip />
+      <AdminToast toast={toast} onDismiss={dismissToast} />
+      <ResetConfirmDialog
+        open={resetOpen}
+        onConfirm={handleReset}
+        onCancel={() => setResetOpen(false)}
+      />
       <SectionBand bg="sand" pad="40px 0 24px" innerMaxWidth={520}>
         <Reveal>
           <SectionHeader
@@ -217,28 +201,27 @@ export default function AdminPage() {
               {state.gamesLive ? `● LIVE · Day ${state.currentDayNumber}` : "○ Pre-trip"}
             </div>
             <div style={{ ...BODY, fontSize: 13, marginBottom: 14 }}>
-              {state.gamesLive
-                ? "Two-step close: Lock today's scores (picks the loser and forfeit), then advance after Flow State is resolved."
-                : "Tap to kick off Day 1 and unlock claiming."}
+              {liveStatusText}
             </div>
-            {state.gamesLive ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <ActionButton onClick={handleLockDay} variant="primary">
-                  🔒 Lock Day {state.currentDayNumber}
-                </ActionButton>
-                <ActionButton onClick={handleAdvance} variant="primary">
-                  ▶ Start Day {state.currentDayNumber + 1}
-                </ActionButton>
-              </div>
-            ) : (
-              <ActionButton onClick={handleAdvance} variant="primary">
+            {!state.gamesLive && (
+              <ActionButton onClick={handleAdvance} variant="primary" disabled={busy}>
                 Start the games
+              </ActionButton>
+            )}
+            {state.gamesLive && canLock && (
+              <ActionButton onClick={handleLockDay} variant="primary" disabled={busy}>
+                🔒 Lock Day {state.currentDayNumber}
+              </ActionButton>
+            )}
+            {state.gamesLive && canAdvance && (
+              <ActionButton onClick={handleAdvance} variant="primary" disabled={busy}>
+                ▶ Start Day {state.currentDayNumber + 1}
               </ActionButton>
             )}
           </Card>
         </Reveal>
 
-        {flowState?.phase === "tied" && (
+        {flowPhase === "tied" && (
           <Reveal>
             <Card style={{ padding: 16, marginBottom: 12, border: `2px solid ${C.gold}` }}>
               <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 14, color: C.dark }}>
@@ -247,17 +230,71 @@ export default function AdminPage() {
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
                 {flowState.candidates?.map((slug) => {
                   const p = PLAYERS.find((x) => x.slug === slug);
+                  const isConfirming = tieConfirmSlug === slug;
+                  if (isConfirming) {
+                    return (
+                      <span
+                        key={slug}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "6px 10px",
+                          borderRadius: 999,
+                          background: C.sand,
+                          border: `1px solid ${C.gold}`,
+                          fontFamily: "Nunito, sans-serif",
+                          fontSize: 12,
+                          color: C.dark,
+                        }}
+                      >
+                        Pick {displayName(slug, holidayMap, p?.name)}?
+                        <button
+                          type="button"
+                          onClick={() => handleBreakTie(slug)}
+                          disabled={busy}
+                          style={{
+                            padding: "4px 10px",
+                            borderRadius: RADIUS.sm,
+                            background: C.gold,
+                            color: C.dark,
+                            border: 0,
+                            fontFamily: "Nunito, sans-serif",
+                            fontWeight: 800,
+                            fontSize: 12,
+                            cursor: busy ? "default" : "pointer",
+                            opacity: busy ? 0.6 : 1,
+                          }}
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTieConfirmSlug(null)}
+                          disabled={busy}
+                          style={{
+                            padding: "4px 10px",
+                            borderRadius: RADIUS.sm,
+                            background: C.white,
+                            color: C.textBody,
+                            border: `1px solid ${C.sandDark}`,
+                            fontFamily: "Nunito, sans-serif",
+                            fontWeight: 800,
+                            fontSize: 12,
+                            cursor: busy ? "default" : "pointer",
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </span>
+                    );
+                  }
                   return (
                     <button
                       key={slug}
-                      onClick={async () => {
-                        if (!token) return;
-                        try {
-                          await breakTie({ token, voteeSlug: slug });
-                        } catch (err) {
-                          alert(err.message);
-                        }
-                      }}
+                      type="button"
+                      onClick={() => setTieConfirmSlug(slug)}
+                      disabled={busy || tieConfirmSlug !== null}
                       style={{
                         border: `1px solid ${C.sandDark}`,
                         borderRadius: 999,
@@ -267,7 +304,8 @@ export default function AdminPage() {
                         fontSize: 13,
                         background: C.white,
                         color: C.dark,
-                        cursor: "pointer",
+                        cursor: busy || tieConfirmSlug !== null ? "default" : "pointer",
+                        opacity: busy || (tieConfirmSlug !== null && tieConfirmSlug !== slug) ? 0.5 : 1,
                       }}
                     >
                       {displayName(slug, holidayMap, p?.name)}
@@ -279,19 +317,12 @@ export default function AdminPage() {
           </Reveal>
         )}
 
-        {flowState?.phase === "voting" && (
+        {flowPhase === "voting" && (
           <Reveal>
             <button
               type="button"
-              onClick={async () => {
-                if (!token) return;
-                if (!confirm("Force close Flow State vote with the votes cast so far?")) return;
-                try {
-                  await forceClose({ token });
-                } catch (err) {
-                  alert(err.message);
-                }
-              }}
+              onClick={handleForceClose}
+              disabled={busy}
               style={{
                 marginBottom: 12,
                 padding: "10px 14px",
@@ -302,7 +333,8 @@ export default function AdminPage() {
                 fontFamily: "Nunito, sans-serif",
                 fontWeight: 800,
                 fontSize: 13,
-                cursor: "pointer",
+                cursor: busy ? "default" : "pointer",
+                opacity: busy ? 0.6 : 1,
               }}
             >
               Force close Flow State vote
@@ -360,7 +392,7 @@ export default function AdminPage() {
             {actProposed.length === 0
               ? <div style={{ ...BODY, fontSize: 13 }}>No new ideas.</div>
               : actProposed.map((s) => (
-                <ActivityProposedRow key={s._id} suggestion={s} />
+                <ActivityProposedRow key={s._id} suggestion={s} onError={showError} />
               ))}
             {actVoting.length > 0 && (
               <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.sandDark}` }}>
@@ -408,10 +440,10 @@ export default function AdminPage() {
         <Reveal>
           <Card>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <ActionButton onClick={handleUndo} variant="secondary">
+              <ActionButton onClick={handleUndo} variant="secondary" disabled={busy}>
                 Undo last rollover
               </ActionButton>
-              <ActionButton onClick={handleReset} variant="danger">
+              <ActionButton onClick={() => setResetOpen(true)} variant="danger" disabled={busy}>
                 ⚠️ Reset practice data
               </ActionButton>
             </div>
