@@ -1,4 +1,3 @@
-// src/components/ChallengeCard.jsx
 import Card from "./primitives/Card.jsx";
 import { C } from "../data/colors.js";
 
@@ -8,7 +7,14 @@ const DIFFICULTY_COLOR = {
   wild: C.coralDeep,
 };
 
+const DIFFICULTY_LABEL = {
+  easy: "Easy",
+  medium: "Medium",
+  wild: "Wild",
+};
+
 export default function ChallengeCard({ challenge, onClaim }) {
+  const dColor = DIFFICULTY_COLOR[challenge.difficulty] ?? C.dark;
   return (
     <button
       type="button"
@@ -27,21 +33,37 @@ export default function ChallengeCard({ challenge, onClaim }) {
             }}>
               {challenge.title}
             </div>
-            {challenge.bonus && (
-              <div style={{
-                fontFamily: "Nunito, sans-serif",
-                fontSize: 12,
-                color: C.textBody,
-                marginTop: 4,
-              }}>
-                Bonus: {challenge.bonus}
-              </div>
-            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+              <span
+                style={{
+                  fontFamily: "Nunito, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 10,
+                  letterSpacing: 0.8,
+                  textTransform: "uppercase",
+                  color: dColor,
+                  background: `${dColor}18`,
+                  borderRadius: 999,
+                  padding: "2px 8px",
+                }}
+              >
+                {DIFFICULTY_LABEL[challenge.difficulty] ?? "—"}
+              </span>
+              {challenge.bonus && (
+                <span style={{
+                  fontFamily: "Nunito, sans-serif",
+                  fontSize: 11,
+                  color: C.textBody,
+                }}>
+                  Bonus: {challenge.bonus}
+                </span>
+              )}
+            </div>
           </div>
           <div style={{
             fontFamily: "'Dela Gothic One', sans-serif",
             fontSize: 22,
-            color: DIFFICULTY_COLOR[challenge.difficulty] ?? C.dark,
+            color: dColor,
             flexShrink: 0,
           }}>
             +{challenge.points}
