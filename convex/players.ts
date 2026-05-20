@@ -156,6 +156,16 @@ export const myRoomNumber = query({
   },
 });
 
+export const getBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    return await ctx.db
+      .query("players")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .unique();
+  },
+});
+
 export const getPlayerDay = query({
   args: {
     slug: v.string(),

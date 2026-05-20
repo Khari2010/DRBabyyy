@@ -1,4 +1,5 @@
 import BottomNav from "../components/BottomNav.jsx";
+import PostComposer from "../components/wall/PostComposer.jsx";
 import { C } from "../data/colors.js";
 
 export default function WallPage() {
@@ -10,7 +11,7 @@ export default function WallPage() {
         </h1>
       </header>
       <main style={{ padding: "0 20px" }}>
-        {/* PostComposer goes here in Task 14 */}
+        <PostComposer />
         {/* Feed of PostCards goes here in Tasks 17 + 19 */}
       </main>
       <BottomNav />
