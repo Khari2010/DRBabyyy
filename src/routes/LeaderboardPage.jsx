@@ -96,7 +96,7 @@ export default function LeaderboardPage() {
   const holiday = useQuery(api.leaderboard.getHoliday, {}) ?? [];
   const activity = useQuery(
     api.leaderboard.getRecentActivity,
-    session?.token ? { limit: 12, token: session.token } : { limit: 12 },
+    session?.token ? { limit: 12, token: session.token } : "skip",
   ) ?? [];
   const rows = tab === "daily" ? daily : holiday;
 
