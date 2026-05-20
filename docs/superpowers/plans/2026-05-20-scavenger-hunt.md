@@ -394,7 +394,7 @@ describe("entries.rejectScavenger", () => {
     await seedGameLive(t);
     // Make Khari (the rejecter) an admin.
     await t.run(async (ctx) => {
-      await ctx.db.insert("adminRoles", { playerSlug: "khari", grantedAt: Date.now() });
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
     });
 
     const sid = () => t.run((ctx) => ctx.storage.store(new Blob(["x"])));
