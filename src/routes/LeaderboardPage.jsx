@@ -26,7 +26,7 @@ function playerBySlug(slug) {
   return PLAYERS.find((p) => p.slug === slug);
 }
 
-function BoardRow({ row, rank, onFoul, isMe }) {
+function BoardRow({ row, rank, onFoul, isMe, isLast }) {
   const p = playerBySlug(row.slug);
   const isTop3 = rank <= 3;
   const medal = ["🥇", "🥈", "🥉"][rank - 1];
@@ -35,7 +35,7 @@ function BoardRow({ row, rank, onFoul, isMe }) {
     <div style={{
       display: "flex", alignItems: "center", gap: 12,
       padding: "12px 14px",
-      borderBottom: `1px solid ${C.sandDark}`,
+      borderBottom: isLast ? undefined : `1px solid ${C.sandDark}`,
       background: isMe ? `${p?.color ?? C.coral}08` : "transparent",
     }}>
       <div style={{
@@ -243,6 +243,7 @@ export default function LeaderboardPage() {
                   row={row}
                   rank={i + 1}
                   isMe={session?.slug === row.slug}
+                  isLast={i === rows.length - 1}
                   onFoul={handleFoul && row.slug !== session?.slug ? handleFoul : null}
                 />
               ))
@@ -283,12 +284,13 @@ export default function LeaderboardPage() {
           </Reveal>
           <Reveal>
             <Card padding={0} style={{ overflow: "hidden" }}>
-              {history.map((r) => {
+              {history.map((r, i) => {
                 const player = playerBySlug(r.loserSlug);
+                const isLast = i === history.length - 1;
                 return (
                   <div key={r._id} style={{
                     padding: "12px 14px",
-                    borderBottom: `1px solid ${C.sandDark}`,
+                    borderBottom: isLast ? undefined : `1px solid ${C.sandDark}`,
                     display: "flex", alignItems: "center", gap: 12,
                   }}>
                     {player && <Avatar player={player} size="sm" />}
