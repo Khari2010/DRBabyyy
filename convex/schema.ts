@@ -8,6 +8,7 @@ export default defineSchema({
     passcodeHash: v.union(v.string(), v.null()),
     holidayName: v.optional(v.string()),
     roomNumber: v.optional(v.string()),
+    catchphrase: v.optional(v.string()),
   }).index("by_slug", ["slug"]),
 
   answers: defineTable({

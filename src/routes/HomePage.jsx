@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { C } from "../data/colors.js";
 import { MEMBERS, FULL_GROUP, PLAYERS } from "../data/players.js";
 import { FLIGHTS } from "../data/flights.js";
@@ -321,11 +323,12 @@ const ProfileCard = ({ player, index, onOpen, holidayMap }) => (
   </Reveal>
 );
 
-const ProfileModal = ({ player, onClose, holidayMap }) => {
+const ProfileModal = ({ player, onClose, holidayMap, catchphraseMap }) => {
   if (!player) return null;
   const presence = PRESENCE.find((p) => p.name === player.name);
   const playerFlights = FLIGHTS.filter((f) => f.who.includes(player.name));
   const shownName = player.mystery ? player.name : displayName(player.slug, holidayMap, player.name);
+  const catchphrase = !player.mystery && catchphraseMap ? catchphraseMap[player.slug] : null;
 
   return (
     <div
@@ -429,6 +432,14 @@ const ProfileModal = ({ player, onClose, holidayMap }) => {
             <div style={{ textAlign: "center", marginBottom: 16 }}>
               <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 10, color: player.color, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Role</div>
               <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 700, fontSize: 14, color: C.dark }}>{player.role}</div>
+            </div>
+          )}
+          {/* Catchphrase */}
+          {catchphrase && (
+            <div style={{ textAlign: "center", marginBottom: 20, padding: "12px 16px", background: `${player.color}10`, borderLeft: `3px solid ${player.color}`, borderRadius: 8 }}>
+              <div style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 15, color: C.dark, lineHeight: 1.4, fontStyle: "italic" }}>
+                “{catchphrase}”
+              </div>
             </div>
           )}
           {/* Bio */}
@@ -747,6 +758,7 @@ export default function HomePage() {
   const [expandedPlayer, setExpandedPlayer] = useState(null);
   const scrollRef = useRef(null);
   const holidayMap = useHolidayNameMap();
+  const catchphraseMap = useQuery(api.players.catchphraseMap) ?? {};
   const reactiveSession = useSession();
 
   // Auto-redirect logged-in users to their player page
@@ -1005,6 +1017,7 @@ export default function HomePage() {
         player={PLAYERS.find((p) => p.id === expandedPlayer) || null}
         onClose={() => setExpandedPlayer(null)}
         holidayMap={holidayMap}
+        catchphraseMap={catchphraseMap}
       />
 
       <LoginModal

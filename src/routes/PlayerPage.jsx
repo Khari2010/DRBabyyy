@@ -10,6 +10,7 @@ import AdventuresPanel from "../components/AdventuresPanel.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
 import AboutYourHoliday from "../components/AboutYourHoliday.jsx";
 import HolidayNameEditor from "../components/HolidayNameEditor.jsx";
+import CatchphraseEditor from "../components/CatchphraseEditor.jsx";
 import LockscreenGenerator from "../components/LockscreenGenerator.jsx";
 import { useHolidayNameMap } from "../lib/displayName.js";
 import YourItineraryHome from "../components/YourItineraryHome.jsx";
@@ -296,6 +297,15 @@ export default function PlayerPage() {
             accent={player.color}
             defaultCollapsed
           />
+        </Reveal>
+        <Reveal delay={0.03}>
+          <div style={{ marginTop: 12 }}>
+            <CatchphraseEditor
+              token={session.token}
+              accent={player.color}
+              defaultCollapsed
+            />
+          </div>
         </Reveal>
         <Reveal delay={0.05}>
           <LockscreenGenerator
