@@ -1,6 +1,7 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { NEGATIVE_POINTS_CONST } from "./_seedData/challenges";
+import { SCAVENGER_ITEMS } from "../src/data/scavenger.js";
 
 type Row = { slug: string; total: number; claimCount: number; verifiedCount: number; earliestAt: number };
 
@@ -70,17 +71,23 @@ export const getRecentActivity = query({
       }
       let label = "";
       let labelIcon = "";
+      let photoUrl: string | null = null;
       if (e.type === "challenge" && e.challengeId) {
         const challenge = challengeMap.get(e.challengeId);
-        label = challenge?.title ?? e.challengeId;
+        label = challenge?.title ?? e.challengeId ?? "";
         labelIcon = challenge?.icon ?? "";
+      } else if (e.type === "scavenger") {
+        const item = SCAVENGER_ITEMS.find((i) => i.id === e.scavengerItemId);
+        label = item?.name ?? e.scavengerItemId ?? "";
+        labelIcon = item?.icon ?? "";
+        if (e.photoStorageId) photoUrl = await ctx.storage.getUrl(e.photoStorageId);
       } else if (e.type === "negative" && e.negativeId) {
         const neg = NEGATIVE_POINTS_CONST.find((n) => n.negativeId === e.negativeId);
-        label = neg?.action ?? e.negativeId;
+        label = neg?.action ?? e.negativeId ?? "";
         labelIcon = neg?.icon ?? "";
       }
 
-      return { ...e, myReaction, label, labelIcon };
+      return { ...e, myReaction, label, labelIcon, photoUrl };
     }));
   },
 });
