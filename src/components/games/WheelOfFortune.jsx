@@ -33,7 +33,7 @@ function buildSlice(i) {
 
 const SLICES = FORFEITS.map((_, i) => buildSlice(i));
 
-export default function WheelOfFortune({ onResult } = {}) {
+export default function WheelOfFortune({ onResult, target } = {}) {
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState(null);
@@ -42,7 +42,14 @@ export default function WheelOfFortune({ onResult } = {}) {
   const spin = () => {
     if (spinning) return;
     setResult(null);
-    const targetIndex = Math.floor(Math.random() * FORFEITS.length);
+    // Deterministic landing when `target` is provided; otherwise random.
+    let targetIndex;
+    if (target) {
+      targetIndex = FORFEITS.findIndex((f) => f.id === target);
+      if (targetIndex < 0) targetIndex = 0;
+    } else {
+      targetIndex = Math.floor(Math.random() * FORFEITS.length);
+    }
     pendingIndex.current = targetIndex;
     setRotation((prev) => {
       const targetMod = ((-targetIndex * SLICE_DEG) % 360 + 360) % 360;
