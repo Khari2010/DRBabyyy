@@ -158,14 +158,19 @@ function ActionButtons({ claim, mySlug, token }) {
 }
 
 function ClaimRow({ claim, mySlug, token }) {
+  const dimmed = claim.status === "disputed" || claim.status === "pendingReview";
   const statusLabel = claim.status === "verified"
     ? "verified"
     : claim.status === "disputed"
     ? "rejected"
+    : claim.status === "pendingReview"
+    ? "awaiting review"
     : "pending";
   const statusColor = claim.status === "verified"
     ? C.green
     : claim.status === "disputed"
+    ? C.coralDeep
+    : claim.status === "pendingReview"
     ? C.coralDeep
     : C.textBody;
   return (
@@ -175,7 +180,7 @@ function ClaimRow({ claim, mySlug, token }) {
       gap: 10,
       padding: "10px 0",
       borderBottom: `1px solid ${C.sandDark}`,
-      opacity: claim.status === "disputed" ? 0.55 : 1,
+      opacity: dimmed ? 0.55 : 1,
     }}>
       <div style={{
         fontFamily: "'Dela Gothic One', sans-serif",
@@ -200,7 +205,7 @@ function ClaimRow({ claim, mySlug, token }) {
         fontFamily: "Nunito, sans-serif",
         fontSize: 13,
         color: C.dark,
-        textDecoration: claim.status === "disputed" ? "line-through" : "none",
+        textDecoration: dimmed ? "line-through" : "none",
         overflow: "hidden",
         textOverflow: "ellipsis",
       }}>

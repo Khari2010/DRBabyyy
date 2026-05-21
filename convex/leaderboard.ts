@@ -10,7 +10,7 @@ type Row = { slug: string; total: number; claimCount: number; verifiedCount: num
 function aggregate(entries: Array<{ subjectSlug: string; points: number; status: string; createdAt: number }>): Row[] {
   const map = new Map<string, Row>();
   for (const e of entries) {
-    if (e.status === "disputed") continue;
+    if (e.status === "disputed" || e.status === "pendingReview") continue;
     const row = map.get(e.subjectSlug) ?? { slug: e.subjectSlug, total: 0, claimCount: 0, verifiedCount: 0, earliestAt: Infinity };
     row.total += e.points;
     row.claimCount += 1;

@@ -72,7 +72,12 @@ export default defineSchema({
     negativeId: v.optional(v.string()),
     points: v.number(),
     bonusKey: v.optional(v.string()),
-    status: v.union(v.literal("active"), v.literal("verified"), v.literal("disputed")),
+    status: v.union(
+      v.literal("active"),
+      v.literal("verified"),
+      v.literal("pendingReview"),
+      v.literal("disputed"),
+    ),
     vouchCount: v.number(),
     disputeCount: v.number(),
     dailyKey: v.string(),

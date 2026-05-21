@@ -51,7 +51,7 @@ export const trigger = mutation({
       .collect();
     const totals = new Map<string, number>();
     for (const e of entries) {
-      if (e.status === "disputed") continue;
+      if (e.status === "disputed" || e.status === "pendingReview") continue;
       totals.set(e.subjectSlug, (totals.get(e.subjectSlug) ?? 0) + e.points);
     }
     let loserSlug: string | undefined;
@@ -130,7 +130,7 @@ export const lockDay = mutation({
       .collect();
     const totals = new Map<string, number>();
     for (const e of entries) {
-      if (e.status === "disputed") continue;
+      if (e.status === "disputed" || e.status === "pendingReview") continue;
       totals.set(e.subjectSlug, (totals.get(e.subjectSlug) ?? 0) + e.points);
     }
     let loserSlug: string | undefined;

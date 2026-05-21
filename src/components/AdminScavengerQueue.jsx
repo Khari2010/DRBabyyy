@@ -129,8 +129,9 @@ export default function AdminScavengerQueue() {
 
   const { currentDailyKey } = useGameState();
   const scavengerRows = activity.filter((e) => e.type === "scavenger");
-  const todays = scavengerRows.filter((e) => e.status !== "disputed" && e.dailyKey === currentDailyKey);
-  const all = scavengerRows.filter((e) => e.status !== "disputed");
+  const counted = (e) => e.status !== "disputed" && e.status !== "pendingReview";
+  const todays = scavengerRows.filter((e) => counted(e) && e.dailyKey === currentDailyKey);
+  const all = scavengerRows.filter(counted);
   const rejected = scavengerRows.filter((e) => e.status === "disputed");
   const rows = filter === "today" ? todays : filter === "rejected" ? rejected : all;
 

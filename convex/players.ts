@@ -333,9 +333,9 @@ export const getPlayerDay = query({
     const claims = items.filter((i) => i.type !== "negative");
     const fouls = items.filter((i) => i.type === "negative");
 
-    // Vouches received — only count vouches on non-disputed entries.
+    // Vouches received — only count vouches on entries that still count.
     const activeEntryIds = entries
-      .filter((e) => e.status !== "disputed")
+      .filter((e) => e.status !== "disputed" && e.status !== "pendingReview")
       .map((e) => e._id);
 
     const vouchedBy: Record<string, number> = {};

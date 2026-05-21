@@ -49,7 +49,7 @@ function Reel({ category, finalItem, locked, find, interactive, onClick }) {
   }, [locked, poolItems.length]);
 
   const display = locked ? finalItem : poolItems[tickIdx % poolItems.length];
-  const claimed = locked && !!find && find.status !== "disputed";
+  const claimed = locked && !!find && find.status !== "disputed" && find.status !== "pendingReview";
   const verified = claimed && find.status === "verified";
   const tappable = interactive && locked && !claimed;
 

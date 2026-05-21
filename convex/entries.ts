@@ -1,5 +1,5 @@
 // convex/entries.ts
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, getGameState, requireAdmin } from "./helpers";
 import { internal } from "./_generated/api";
@@ -135,7 +135,9 @@ export const dispute = mutation({
     const newCount = entry.disputeCount + 1;
     const patch: Record<string, any> = { disputeCount: newCount };
     if (entry.status === "active" && newCount >= 2) {
-      patch.status = "disputed";
+      // Two crowd disputes pause the entry pending admin verification.
+      // An admin (Khari/Adan) then either confirms removal or restores it.
+      patch.status = "pendingReview";
       patch.resolvedAt = Date.now();
     }
     await ctx.db.patch(entryId, patch);
@@ -261,6 +263,37 @@ export const removeNegative = mutation({
 
 const SCAVENGER_BONUS = { 1: 5, 2: 3, 3: 0 } as const;
 
+async function renumberScavengerRanks(ctx: any, scavengerItemId: string) {
+  const item = scavengerItemById(scavengerItemId);
+  if (!item) return;
+
+  const allForItem = await ctx.db
+    .query("entries")
+    .withIndex("by_scavenger_item", (q: any) => q.eq("scavengerItemId", scavengerItemId))
+    .collect();
+
+  // Survivors = anything not finalised against (still counts toward leaderboard).
+  // pendingReview entries are paused so they don't hold a rank slot.
+  const survivors = allForItem
+    .filter((e: any) => e.status !== "disputed" && e.status !== "pendingReview")
+    .sort((a: any, b: any) => a.createdAt - b.createdAt);
+
+  for (let i = 0; i < survivors.length; i++) {
+    const e = survivors[i];
+    const dailyMode = isDailyScavengerActive(e.dailyKey);
+    const newRank = dailyMode ? i + 1 : Math.min(i + 1, 3);
+    if (e.scavengerRank !== newRank) {
+      const newPoints = dailyMode
+        ? 5 + (newRank === 1 ? 5 : 0)
+        : item.points + SCAVENGER_BONUS[newRank as 1 | 2 | 3];
+      await ctx.db.patch(e._id, {
+        scavengerRank: newRank,
+        points: newPoints,
+      });
+    }
+  }
+}
+
 export const rejectScavenger = mutation({
   args: { token: v.string(), entryId: v.id("entries") },
   handler: async (ctx, { token, entryId }) => {
@@ -274,41 +307,102 @@ export const rejectScavenger = mutation({
     if (!entry.scavengerItemId) throw new Error("entry missing scavengerItemId");
 
     await ctx.db.patch(entryId, { status: "disputed", resolvedAt: Date.now() });
+    await renumberScavengerRanks(ctx, entry.scavengerItemId);
+  },
+});
 
-    const item = scavengerItemById(entry.scavengerItemId);
-    if (!item) return;
+// Admin verification step for entries that hit 2 crowd dispute votes.
+// "remove" finalises the dispute (entry stays out). "restore" returns
+// the entry to active status so its points count again.
+export const adminResolveDispute = mutation({
+  args: {
+    token: v.string(),
+    entryId: v.id("entries"),
+    decision: v.union(v.literal("remove"), v.literal("restore")),
+  },
+  handler: async (ctx, { token, entryId, decision }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
 
-    // Renumber all surviving active claims by chronological order.
-    // The Nth oldest active claim gets rank min(N, 3). This correctly
-    // handles the case where multiple late entries share rank 3 — only
-    // one of them slides up to rank 2 when a higher rank opens.
-    const allForItem = await ctx.db
-      .query("entries")
-      .withIndex("by_scavenger_item", (q) => q.eq("scavengerItemId", entry.scavengerItemId))
-      .collect();
+    const entry = await ctx.db.get(entryId);
+    if (!entry) throw new Error("unknown entry");
+    if (entry.status !== "pendingReview") {
+      throw new Error("entry is not awaiting review");
+    }
 
-    const survivors = allForItem
-      .filter((e) => e.status !== "disputed")
-      .sort((a, b) => a.createdAt - b.createdAt);
-
-    for (let i = 0; i < survivors.length; i++) {
-      const e = survivors[i];
-      const dailyMode = isDailyScavengerActive(e.dailyKey);
-      const newRank = dailyMode ? i + 1 : Math.min(i + 1, 3);
-      if (e.scavengerRank !== newRank) {
-        const newPoints = dailyMode
-          ? 5 + (newRank === 1 ? 5 : 0)
-          : item.points + SCAVENGER_BONUS[newRank as 1 | 2 | 3];
-        await ctx.db.patch(e._id, {
-          scavengerRank: newRank,
-          points: newPoints,
-        });
+    if (decision === "remove") {
+      await ctx.db.patch(entryId, { status: "disputed", resolvedAt: Date.now() });
+      if (entry.type === "scavenger" && entry.scavengerItemId) {
+        await renumberScavengerRanks(ctx, entry.scavengerItemId);
+      }
+    } else {
+      await ctx.db.patch(entryId, { status: "active", resolvedAt: undefined });
+      if (entry.type === "scavenger" && entry.scavengerItemId) {
+        // Restoring puts this entry back into the rank queue; renumber so
+        // the rank/points reflect chronological order including this one.
+        await renumberScavengerRanks(ctx, entry.scavengerItemId);
       }
     }
 
     await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
       dailyKey: entry.dailyKey,
     });
+  },
+});
+
+export const adminListPendingReview = query({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const { playerSlug } = await requireSession(ctx, token);
+    await requireAdmin(ctx, playerSlug);
+
+    const pending = await ctx.db
+      .query("entries")
+      .withIndex("by_status", (q) => q.eq("status", "pendingReview"))
+      .collect();
+    pending.sort((a, b) => (a.resolvedAt ?? a.createdAt) - (b.resolvedAt ?? b.createdAt));
+
+    const challenges = await ctx.db.query("challenges").collect();
+    const challengeMap = new Map(challenges.map((c) => [c.challengeId, c]));
+
+    return await Promise.all(
+      pending.map(async (e) => {
+        let label = "";
+        let labelIcon = "";
+        let photoUrl: string | null = null;
+        if (e.type === "challenge" && e.challengeId) {
+          const c = challengeMap.get(e.challengeId);
+          label = c?.title ?? e.challengeId;
+          labelIcon = c?.icon ?? "";
+        } else if (e.type === "scavenger" && e.scavengerItemId) {
+          const item = scavengerItemById(e.scavengerItemId);
+          label = item?.name ?? e.scavengerItemId;
+          labelIcon = item?.icon ?? "";
+          if (e.photoStorageId) {
+            photoUrl = await ctx.storage.getUrl(e.photoStorageId);
+          }
+        } else if (e.type === "negative" && e.negativeId) {
+          const def = NEGATIVE_POINTS_CONST.find((n) => n.negativeId === e.negativeId);
+          label = def?.action ?? e.negativeId;
+          labelIcon = def?.icon ?? "";
+        }
+        return {
+          _id: e._id,
+          type: e.type,
+          subjectSlug: e.subjectSlug,
+          appliedBySlug: e.appliedBySlug ?? null,
+          label,
+          labelIcon,
+          photoUrl,
+          points: e.points,
+          dailyKey: e.dailyKey,
+          vouchCount: e.vouchCount,
+          disputeCount: e.disputeCount,
+          createdAt: e.createdAt,
+          resolvedAt: e.resolvedAt ?? null,
+        };
+      }),
+    );
   },
 });
 
@@ -332,24 +426,28 @@ export const claimScavenger = mutation({
       .collect();
 
     const mineActive = existingActive.find(
-      (e) => e.subjectSlug === playerSlug && e.status !== "disputed",
+      (e) => e.subjectSlug === playerSlug
+        && e.status !== "disputed"
+        && e.status !== "pendingReview",
     );
     if (mineActive) throw new Error("already claimed");
 
     let points: number;
     let rank: number;
+    const countsAsClaim = (e: { status: string }) =>
+      e.status !== "disputed" && e.status !== "pendingReview";
 
     if (isDailyScavengerActive(state.currentDailyKey)) {
       const todaysItems = dailyItemsFor(state.currentDailyKey)!;
       if (!todaysItems.includes(scavengerItemId)) {
         throw new Error("not today's item");
       }
-      const validCount = existingActive.filter((e) => e.status !== "disputed").length;
+      const validCount = existingActive.filter(countsAsClaim).length;
       rank = validCount + 1;
       points = 5 + (rank === 1 ? 5 : 0);
     } else {
       // Practice mode / fallback: legacy open mechanic.
-      const validCount = existingActive.filter((e) => e.status !== "disputed").length;
+      const validCount = existingActive.filter(countsAsClaim).length;
       rank = Math.min(validCount + 1, 3);
       const bonus = SCAVENGER_BONUS[rank as 1 | 2 | 3];
       points = (item as { points: number }).points + bonus;
