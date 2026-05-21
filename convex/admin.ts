@@ -2,6 +2,7 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession, requireAdmin, getGameState } from "./helpers";
 import { finaliseFlowResolution } from "./flowVotes";
+import { internal } from "./_generated/api";
 
 export const resetPasscode = internalMutation({
   args: { slug: v.string() },
@@ -61,6 +62,7 @@ const VOLATILE_TABLES = [
   "posts",
   "postComments",
   "postReactions",
+  "leaderboardTopState",
 ] as const;
 
 export const resetGame = mutation({
@@ -150,6 +152,9 @@ export const adminBreakFlowTie = mutation({
       disputeCount: 0,
       dailyKey: rollover.dailyKey,
       createdAt: Date.now(),
+    });
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: rollover.dailyKey,
     });
   },
 });

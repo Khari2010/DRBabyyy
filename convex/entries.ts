@@ -42,6 +42,9 @@ export const claim = mutation({
       dailyKey: state.currentDailyKey,
       createdAt: Date.now(),
     });
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: state.currentDailyKey,
+    });
     return entryId;
   },
 });
@@ -88,6 +91,9 @@ export const vouch = mutation({
       entryId,
       event: "vouch",
       actorSlug: playerSlug,
+    });
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: entry.dailyKey,
     });
   },
 });
@@ -139,6 +145,9 @@ export const dispute = mutation({
       event: "dispute",
       actorSlug: playerSlug,
     });
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: entry.dailyKey,
+    });
   },
 });
 
@@ -164,6 +173,9 @@ export const logNegative = mutation({
       disputeCount: 0,
       dailyKey: state.currentDailyKey,
       createdAt: Date.now(),
+    });
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: state.currentDailyKey,
     });
   },
 });
@@ -193,6 +205,9 @@ export const applyForfeitDeduct = mutation({
       event: "forfeit-applied",
       actorSlug: playerSlug,
     });
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: state.currentDailyKey,
+    });
   },
 });
 
@@ -213,6 +228,9 @@ export const unclaim = mutation({
     for (const r of reactions) await ctx.db.delete(r._id);
 
     await ctx.db.delete(entryId);
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: entry.dailyKey,
+    });
   },
 });
 
@@ -235,6 +253,9 @@ export const removeNegative = mutation({
     for (const r of reactions) await ctx.db.delete(r._id);
 
     await ctx.db.delete(entryId);
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: entry.dailyKey,
+    });
   },
 });
 
@@ -284,6 +305,10 @@ export const rejectScavenger = mutation({
         });
       }
     }
+
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: entry.dailyKey,
+    });
   },
 });
 
@@ -330,7 +355,7 @@ export const claimScavenger = mutation({
       points = (item as { points: number }).points + bonus;
     }
 
-    return await ctx.db.insert("entries", {
+    const entryId = await ctx.db.insert("entries", {
       type: "scavenger",
       subjectSlug: playerSlug,
       points,
@@ -343,5 +368,9 @@ export const claimScavenger = mutation({
       photoStorageId,
       scavengerRank: rank,
     });
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: state.currentDailyKey,
+    });
+    return entryId;
   },
 });

@@ -247,4 +247,13 @@ export default defineSchema({
   })
     .index("by_player", ["playerSlug"])
     .index("by_endpoint", ["endpoint"]),
+
+  // Tracks the current #1 on each day's leaderboard so we only notify when
+  // the lead actually changes hands.
+  leaderboardTopState: defineTable({
+    dailyKey: v.string(),
+    topSlug: v.string(),
+    topTotal: v.number(),
+    updatedAt: v.number(),
+  }).index("by_daily_key", ["dailyKey"]),
 });

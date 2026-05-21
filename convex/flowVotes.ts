@@ -2,9 +2,10 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { Doc } from "./_generated/dataModel";
 import { requireSession, getGameState } from "./helpers";
+import { internal } from "./_generated/api";
 
 async function maybeResolveFlowWinner(
-  ctx: { db: any },
+  ctx: { db: any; scheduler: any },
   rollover: Doc<"rollovers">,
 ) {
   const dailyKey = rollover.dailyKey;
@@ -18,7 +19,7 @@ async function maybeResolveFlowWinner(
 }
 
 export async function finaliseFlowResolution(
-  ctx: { db: any },
+  ctx: { db: any; scheduler: any },
   rollover: Doc<"rollovers">,
   votes: Array<Doc<"flowVotes">>,
   forced: boolean,
@@ -59,6 +60,9 @@ export async function finaliseFlowResolution(
       disputeCount: 0,
       dailyKey: rollover.dailyKey,
       createdAt: Date.now(),
+    });
+    await ctx.scheduler.runAfter(0, internal.leaderboardNotifications._checkDailyLeaderChange, {
+      dailyKey: rollover.dailyKey,
     });
   } else {
     await ctx.db.patch(rollover._id, {

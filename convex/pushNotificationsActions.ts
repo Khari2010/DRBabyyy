@@ -76,6 +76,30 @@ export const sendForComment = internalAction({
   },
 });
 
+export const sendForLeaderChange = internalAction({
+  args: {
+    dailyKey: v.string(),
+    newTopSlug: v.string(),
+    newTopTotal: v.number(),
+    previousTopSlug: v.union(v.string(), v.null()),
+  },
+  handler: async (ctx, { dailyKey, newTopSlug, newTopTotal, previousTopSlug }) => {
+    const info = await ctx.runQuery(internal.leaderboardNotifications._getLeaderPushInfo, {
+      newTopSlug,
+    });
+    const body = previousTopSlug
+      ? `🏆 ${info.holidayName} just took the lead with ${newTopTotal} pts!`
+      : `🏆 ${info.holidayName} is first on the board with ${newTopTotal} pts!`;
+    const payload = {
+      title: "DR Baby",
+      body,
+      url: "/leaderboard",
+      tag: `leader-${dailyKey}`,
+    };
+    await fanout(ctx, info.subscriptions, payload);
+  },
+});
+
 export const sendForEntryEvent = internalAction({
   args: {
     entryId: v.id("entries"),
