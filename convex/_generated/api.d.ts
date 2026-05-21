@@ -23,6 +23,7 @@ import type * as gameState from "../gameState.js";
 import type * as helpers from "../helpers.js";
 import type * as itemRsvps from "../itemRsvps.js";
 import type * as leaderboard from "../leaderboard.js";
+import type * as leaderboardNotifications from "../leaderboardNotifications.js";
 import type * as players from "../players.js";
 import type * as postComments from "../postComments.js";
 import type * as postReactions from "../postReactions.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   helpers: typeof helpers;
   itemRsvps: typeof itemRsvps;
   leaderboard: typeof leaderboard;
+  leaderboardNotifications: typeof leaderboardNotifications;
   players: typeof players;
   postComments: typeof postComments;
   postReactions: typeof postReactions;
