@@ -39,14 +39,37 @@ export const isAdmin = query({
   },
 });
 
+// Tables to wipe on resetGame. Keep this list in sync with the schema:
+// every table that holds game-play activity belongs here. Tables that hold
+// player profile data (players, answers, playerProgress), auth (sessions,
+// adminRoles, pushSubscriptions), seeded config (challenges — handled
+// selectively below), or singletons (gameState — patched below) are
+// deliberately excluded.
+const VOLATILE_TABLES = [
+  "entries",
+  "entryReactions",
+  "rollovers",
+  "suggestions",
+  "suggestionVotes",
+  "activitySuggestions",
+  "activitySuggestionVotes",
+  "activityVotes",
+  "activityComments",
+  "dayComments",
+  "flowVotes",
+  "itemRsvps",
+  "posts",
+  "postComments",
+  "postReactions",
+] as const;
+
 export const resetGame = mutation({
   args: { token: v.string() },
   handler: async (ctx, { token }) => {
     const { playerSlug } = await requireSession(ctx, token);
     await requireAdmin(ctx, playerSlug);
 
-    // Wipe all volatile tables
-    for (const table of ["entries", "entryReactions", "rollovers", "suggestions", "suggestionVotes"] as const) {
+    for (const table of VOLATILE_TABLES) {
       const rows = await ctx.db.query(table).collect();
       for (const r of rows) await ctx.db.delete(r._id);
     }

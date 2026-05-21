@@ -11,6 +11,7 @@ import Card from "./primitives/Card.jsx";
 import Pill from "./primitives/Pill.jsx";
 import Avatar from "./primitives/Avatar.jsx";
 import PhotoLightbox from "./PhotoLightbox.jsx";
+import AdminToast from "./AdminToast.jsx";
 
 const MEDAL = { 1: "🥇 1st", 2: "🥈 2nd" };
 
@@ -119,6 +120,7 @@ export default function AdminScavengerQueue() {
   const session = useSession();
   const token = session?.token;
   const [filter, setFilter] = useState("today");
+  const [toast, setToast] = useState(null);
   const reject = useMutation(api.entries.rejectScavenger);
   const activity = useQuery(
     api.leaderboard.getRecentActivity,
@@ -137,12 +139,13 @@ export default function AdminScavengerQueue() {
     try {
       await reject({ token, entryId: id });
     } catch (err) {
-      alert(err.message);
+      setToast({ kind: "error", message: err.message });
     }
   };
 
   return (
     <div>
+      <AdminToast toast={toast} onDismiss={() => setToast(null)} />
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <Pill active={filter === "today"} accent={C.coralDeep} onClick={() => setFilter("today")}>
           Today ({todays.length})

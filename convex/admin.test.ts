@@ -109,6 +109,84 @@ describe("admin.resetGame", () => {
     expect(state?.currentDailyKey).toBe("pre-trip");
   });
 
+  it("wipes every volatile game-play table", async () => {
+    const t = convexTest(schema);
+    const now = Date.now();
+    let postId: string | undefined;
+    let suggestionId: string | undefined;
+    let activitySuggestionId: string | undefined;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: null });
+      await ctx.db.insert("sessions", { playerSlug: "khari", token: "tok-khari", createdAt: now });
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
+      await ctx.db.insert("gameState", { gamesLive: true, currentDayNumber: 2, currentDailyKey: "day-2", updatedAt: now });
+
+      // Seed one row in every volatile table so the assertion below would
+      // fail if resetGame ever forgets one of them.
+      const entryId = await ctx.db.insert("entries", { type: "challenge", subjectSlug: "khari", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: now });
+      await ctx.db.insert("entryReactions", { entryId, playerSlug: "khari", reaction: "vouch", at: now });
+      await ctx.db.insert("rollovers", { dayNumber: 1, dailyKey: "day-1", triggeredBySlug: "khari", triggeredAt: now });
+      suggestionId = await ctx.db.insert("suggestions", { proposerSlug: "khari", title: "X", status: "proposed", yesCount: 0, noCount: 0, createdAt: now });
+      await ctx.db.insert("suggestionVotes", { suggestionId: suggestionId as any, voterSlug: "khari", vote: "yes", at: now });
+      activitySuggestionId = await ctx.db.insert("activitySuggestions", { proposerSlug: "khari", title: "A", status: "proposed", yesCount: 0, noCount: 0, createdAt: now });
+      await ctx.db.insert("activitySuggestionVotes", { suggestionId: activitySuggestionId as any, voterSlug: "khari", vote: "yes", at: now });
+      await ctx.db.insert("activityVotes", { playerSlug: "khari", activityId: "boat-trip", vote: "like", updatedAt: now });
+      await ctx.db.insert("activityComments", { activityId: "boat-trip", authorSlug: "khari", text: "hi", createdAt: now });
+      await ctx.db.insert("dayComments", { dayDate: "2026-05-20", authorSlug: "khari", text: "hi", createdAt: now });
+      await ctx.db.insert("flowVotes", { dailyKey: "day-1", voterSlug: "khari", voteeSlug: "khari", at: now });
+      await ctx.db.insert("itemRsvps", { dayDate: "2026-05-20", itemKey: "dinner", playerSlug: "khari", status: "in", updatedAt: now });
+      postId = await ctx.db.insert("posts", { authorSlug: "khari", text: "hello", createdAt: now });
+      await ctx.db.insert("postComments", { postId: postId as any, authorSlug: "khari", text: "yo", createdAt: now });
+      await ctx.db.insert("postReactions", { postId: postId as any, playerSlug: "khari", emoji: "🔥", at: now });
+    });
+
+    await t.mutation(api.admin.resetGame, { token: "tok-khari" });
+
+    const counts = await t.run(async (ctx) => ({
+      entries: (await ctx.db.query("entries").collect()).length,
+      entryReactions: (await ctx.db.query("entryReactions").collect()).length,
+      rollovers: (await ctx.db.query("rollovers").collect()).length,
+      suggestions: (await ctx.db.query("suggestions").collect()).length,
+      suggestionVotes: (await ctx.db.query("suggestionVotes").collect()).length,
+      activitySuggestions: (await ctx.db.query("activitySuggestions").collect()).length,
+      activitySuggestionVotes: (await ctx.db.query("activitySuggestionVotes").collect()).length,
+      activityVotes: (await ctx.db.query("activityVotes").collect()).length,
+      activityComments: (await ctx.db.query("activityComments").collect()).length,
+      dayComments: (await ctx.db.query("dayComments").collect()).length,
+      flowVotes: (await ctx.db.query("flowVotes").collect()).length,
+      itemRsvps: (await ctx.db.query("itemRsvps").collect()).length,
+      posts: (await ctx.db.query("posts").collect()).length,
+      postComments: (await ctx.db.query("postComments").collect()).length,
+      postReactions: (await ctx.db.query("postReactions").collect()).length,
+    }));
+
+    for (const [table, n] of Object.entries(counts)) {
+      expect(n, `${table} should be empty after resetGame`).toBe(0);
+    }
+  });
+
+  it("preserves player profile data (answers, playerProgress, sessions)", async () => {
+    const t = convexTest(schema);
+    const now = Date.now();
+    await t.run(async (ctx) => {
+      await ctx.db.insert("players", { slug: "khari", passcodeHash: "h" });
+      await ctx.db.insert("sessions", { playerSlug: "khari", token: "tok-khari", createdAt: now });
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
+      await ctx.db.insert("answers", { playerSlug: "khari", questionId: "q1", text: "my answer", updatedAt: now });
+      await ctx.db.insert("playerProgress", { slug: "khari", visitedLeaderboard: true, visitedScavenger: true, lockscreenSeen: true, welcomeHidden: true });
+      await ctx.db.insert("gameState", { gamesLive: true, currentDayNumber: 1, currentDailyKey: "day-1", updatedAt: now });
+    });
+
+    await t.mutation(api.admin.resetGame, { token: "tok-khari" });
+
+    const answers = await t.run((ctx) => ctx.db.query("answers").collect());
+    const progress = await t.run((ctx) => ctx.db.query("playerProgress").collect());
+    const sessions = await t.run((ctx) => ctx.db.query("sessions").collect());
+    expect(answers).toHaveLength(1);
+    expect(progress).toHaveLength(1);
+    expect(sessions).toHaveLength(1);
+  });
+
   it("rejects non-admin", async () => {
     const t = convexTest(schema);
     await t.run(async (ctx) => {
