@@ -197,7 +197,7 @@ describe("entries.vouch", () => {
 });
 
 describe("entries.dispute", () => {
-  it("flips to disputed after 2 disputes", async () => {
+  it("flips to pendingReview after 2 disputes", async () => {
     const t = convexTest(schema);
     await seedSession(t, "kai", "tok-kai");
     await seedSession(t, "kyanna", "tok-kyanna");
@@ -213,8 +213,63 @@ describe("entries.dispute", () => {
 
     await t.mutation(api.entries.dispute, { token: "tok-camara", entryId });
     after = await t.run((ctx) => ctx.db.get(entryId));
-    expect(after?.status).toBe("disputed");
+    expect(after?.status).toBe("pendingReview");
     expect(after?.disputeCount).toBe(2);
+  });
+
+  it("admin can restore a pendingReview entry back to active", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "khari", "tok-khari");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge", subjectSlug: "kai", challengeId: "x",
+        points: 10, status: "pendingReview", vouchCount: 0, disputeCount: 2,
+        dailyKey: "day-1", createdAt: Date.now(), resolvedAt: Date.now(),
+      });
+    });
+    await t.mutation(api.entries.adminResolveDispute, {
+      token: "tok-khari", entryId, decision: "restore",
+    });
+    const after = await t.run((ctx) => ctx.db.get(entryId));
+    expect(after?.status).toBe("active");
+    expect(after?.resolvedAt).toBeUndefined();
+  });
+
+  it("admin can confirm removal of a pendingReview entry", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "khari", "tok-khari");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge", subjectSlug: "kai", challengeId: "x",
+        points: 10, status: "pendingReview", vouchCount: 0, disputeCount: 2,
+        dailyKey: "day-1", createdAt: Date.now(), resolvedAt: Date.now(),
+      });
+    });
+    await t.mutation(api.entries.adminResolveDispute, {
+      token: "tok-khari", entryId, decision: "remove",
+    });
+    const after = await t.run((ctx) => ctx.db.get(entryId));
+    expect(after?.status).toBe("disputed");
+  });
+
+  it("non-admin cannot resolve a pendingReview entry", async () => {
+    const t = convexTest(schema);
+    await seedSession(t, "kai", "tok-kai");
+    let entryId: any;
+    await t.run(async (ctx) => {
+      entryId = await ctx.db.insert("entries", {
+        type: "challenge", subjectSlug: "kai", challengeId: "x",
+        points: 10, status: "pendingReview", vouchCount: 0, disputeCount: 2,
+        dailyKey: "day-1", createdAt: Date.now(), resolvedAt: Date.now(),
+      });
+    });
+    await expect(t.mutation(api.entries.adminResolveDispute, {
+      token: "tok-kai", entryId, decision: "remove",
+    })).rejects.toThrow(/admin only/);
   });
 
   it("does not change status on a verified entry (verified is final)", async () => {

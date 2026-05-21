@@ -43,7 +43,14 @@ export default function EntryRow({ entry }) {
     ? `found: ${entry.label ?? entry.scavengerItemId} (+${entry.points})`
     : `got fouled: ${entry.label ?? entry.negativeId} (${entry.points})`;
 
-  const badge = entry.status === "verified" ? "🛡" : entry.status === "disputed" ? "⚠️" : null;
+  const badge = entry.status === "verified"
+    ? "🛡"
+    : entry.status === "disputed"
+    ? "⚠️"
+    : entry.status === "pendingReview"
+    ? "⏳"
+    : null;
+  const dimmed = entry.status === "disputed" || entry.status === "pendingReview";
 
   return (
     <div style={{
@@ -52,7 +59,7 @@ export default function EntryRow({ entry }) {
       gap: 12,
       padding: "12px 14px",
       borderBottom: `1px solid ${C.sandDark}`,
-      opacity: entry.status === "disputed" ? 0.5 : 1,
+      opacity: dimmed ? 0.5 : 1,
     }}>
       {subject && <Avatar player={subject} size="sm" />}
       {entry.type === "scavenger" && entry.photoUrl && (
@@ -69,7 +76,7 @@ export default function EntryRow({ entry }) {
           fontFamily: "Nunito, sans-serif",
           fontSize: 13,
           color: C.dark,
-          textDecoration: entry.status === "disputed" ? "line-through" : "none",
+          textDecoration: dimmed ? "line-through" : "none",
         }}>
           <strong>{playerName(entry.subjectSlug)}</strong> {label} {badge}
         </div>

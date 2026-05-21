@@ -34,7 +34,7 @@ export const getItemFinders = query({
       .withIndex("by_scavenger_item", (q) => q.eq("scavengerItemId", scavengerItemId))
       .collect();
     const active = rows
-      .filter((r) => r.status !== "disputed")
+      .filter((r) => r.status !== "disputed" && r.status !== "pendingReview")
       .sort((a, b) => a.createdAt - b.createdAt);
     return await Promise.all(active.map(async (e) => ({
       _id: e._id,

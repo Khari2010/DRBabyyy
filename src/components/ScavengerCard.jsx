@@ -7,6 +7,7 @@ const MEDAL = { 1: "🥇", 2: "🥈" };
 export default function ScavengerCard({ item, mine, onTap }) {
   const status = !mine ? "unfound"
     : mine.status === "disputed" ? "rejected"
+    : mine.status === "pendingReview" ? "rejected"
     : "found";
   const stripe = DIFFICULTY_COLOR[item.difficulty];
   const points = mine?.points ?? item.points;

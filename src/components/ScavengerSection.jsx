@@ -27,19 +27,20 @@ export default function ScavengerSection() {
     [dailyMode, currentDailyKey],
   );
 
+  const isCountedFind = (e) => e.status !== "disputed" && e.status !== "pendingReview";
   const todayFindsByItem = useMemo(() => {
     const m = new Map();
     for (const e of mine) {
       if (e.dailyKey !== currentDailyKey) continue;
       const prev = m.get(e.scavengerItemId);
-      if (!prev || (prev.status === "disputed" && e.status !== "disputed")) {
+      if (!prev || (!isCountedFind(prev) && isCountedFind(e))) {
         m.set(e.scavengerItemId, e);
       }
     }
     return m;
   }, [mine, currentDailyKey]);
 
-  const todayFinds = Array.from(todayFindsByItem.values()).filter((e) => e.status !== "disputed");
+  const todayFinds = Array.from(todayFindsByItem.values()).filter(isCountedFind);
   const todayPoints = todayFinds.reduce((s, e) => s + e.points, 0);
 
   useEffect(() => {

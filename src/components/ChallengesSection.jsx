@@ -77,7 +77,7 @@ export default function ChallengesSection() {
     for (const e of activity) {
       if (e.type !== "challenge" || !e.challengeId) continue;
       if (e.createdAt < oneDayAgo) continue;
-      if (e.status === "disputed") continue;
+      if (e.status === "disputed" || e.status === "pendingReview") continue;
       map.set(e.challengeId, (map.get(e.challengeId) ?? 0) + 1);
     }
     return map;
@@ -127,7 +127,7 @@ export default function ChallengesSection() {
     mineToday.map((e) => e.challengeId).filter(Boolean)
   );
   const totalToday = mineToday.reduce(
-    (sum, e) => (e.status === "disputed" ? sum : sum + e.points),
+    (sum, e) => (e.status === "disputed" || e.status === "pendingReview" ? sum : sum + e.points),
     0,
   );
 
@@ -207,8 +207,8 @@ export default function ChallengesSection() {
               borderBottom: `1px solid ${C.sandDark}`,
               display: "flex", alignItems: "center", gap: 8,
               fontFamily: "Nunito, sans-serif", fontSize: 13,
-              opacity: e.status === "disputed" ? 0.5 : 1,
-              textDecoration: e.status === "disputed" ? "line-through" : "none",
+              opacity: e.status === "disputed" || e.status === "pendingReview" ? 0.5 : 1,
+              textDecoration: e.status === "disputed" || e.status === "pendingReview" ? "line-through" : "none",
             }}>
               <span style={{ fontSize: 16 }}>{e.labelIcon}</span>
               <span style={{ flex: 1 }}>{e.label}</span>
@@ -217,6 +217,7 @@ export default function ChallengesSection() {
                 {e.points >= 0 ? "+" : ""}{e.points}
               </strong>
               {e.status === "verified" && <span>🛡</span>}
+              {e.status === "pendingReview" && <span title="Awaiting admin review">⏳</span>}
             </div>
           ))}
         </Card>
@@ -364,8 +365,8 @@ export default function ChallengesSection() {
                 padding: "10px 14px",
                 borderBottom: `1px solid ${C.sandDark}`,
                 display: "flex", justifyContent: "space-between", alignItems: "center",
-                opacity: e.status === "disputed" ? 0.5 : 1,
-                textDecoration: e.status === "disputed" ? "line-through" : "none",
+                opacity: e.status === "disputed" || e.status === "pendingReview" ? 0.5 : 1,
+                textDecoration: e.status === "disputed" || e.status === "pendingReview" ? "line-through" : "none",
                 fontFamily: "Nunito, sans-serif", fontSize: 13,
               }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -375,6 +376,7 @@ export default function ChallengesSection() {
                 <span style={{ fontWeight: 700 }}>
                   {e.points >= 0 ? "+" : ""}{e.points}
                   {e.status === "verified" ? " 🛡" : ""}
+                  {e.status === "pendingReview" ? " ⏳" : ""}
                 </span>
               </div>
             ))}

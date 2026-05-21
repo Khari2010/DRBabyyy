@@ -17,6 +17,7 @@ import BottomNav from "../components/BottomNav.jsx";
 import ProposedRow from "../components/ProposedRow.jsx";
 import ActivityProposedRow from "../components/ActivityProposedRow.jsx";
 import AdminScavengerQueue from "../components/AdminScavengerQueue.jsx";
+import AdminDisputeReviewQueue from "../components/AdminDisputeReviewQueue.jsx";
 import AdminToast from "../components/AdminToast.jsx";
 import ResetConfirmDialog from "../components/ResetConfirmDialog.jsx";
 
@@ -409,6 +410,21 @@ export default function AdminPage() {
               </div>
             )}
           </Card>
+        </Reveal>
+      </SectionBand>
+
+      <SectionBand bg="sand" pad="40px 0" innerMaxWidth={520}>
+        <Reveal>
+          <SectionHeader
+            label="Admin · Verification"
+            title="Disputed entries"
+            tagline="Two dispute votes pause the entry. Restore it or confirm removal."
+            accent={ACCENT}
+            compact
+          />
+        </Reveal>
+        <Reveal>
+          <AdminDisputeReviewQueue />
         </Reveal>
       </SectionBand>
 
