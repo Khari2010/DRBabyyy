@@ -6,20 +6,20 @@ import { useSession } from "../lib/useSession.js";
 import { useGameState } from "../lib/useGameState.js";
 import { C } from "../data/colors.js";
 import { RADIUS, MICRO_LABEL, BODY } from "../data/design.js";
-import { PLAYERS } from "../data/players.js";
-import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 import SectionBand from "../components/primitives/SectionBand.jsx";
 import Card from "../components/primitives/Card.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
 import Reveal from "../components/Reveal.jsx";
 import LogoutChip from "../components/LogoutChip.jsx";
 import BottomNav from "../components/BottomNav.jsx";
-import ProposedRow from "../components/ProposedRow.jsx";
-import ActivityProposedRow from "../components/ActivityProposedRow.jsx";
 import AdminScavengerQueue from "../components/AdminScavengerQueue.jsx";
 import AdminDisputeReviewQueue from "../components/AdminDisputeReviewQueue.jsx";
 import AdminToast from "../components/AdminToast.jsx";
 import ResetConfirmDialog from "../components/ResetConfirmDialog.jsx";
+import SectionErrorBoundary from "../components/SectionErrorBoundary.jsx";
+import SuggestionsAdminCard from "../components/admin/SuggestionsAdminCard.jsx";
+import ActivityIdeasAdminCard from "../components/admin/ActivityIdeasAdminCard.jsx";
+import FlowStateAdminControls from "../components/admin/FlowStateAdminControls.jsx";
 
 const ACCENT = C.coralDeep;
 
@@ -53,18 +53,10 @@ export default function AdminPage() {
   const advance = useMutation(api.rollovers.advance);
   const undoLast = useMutation(api.rollovers.undoLast);
   const resetGame = useMutation(api.admin.resetGame);
-  const breakTie = useMutation(api.admin.adminBreakFlowTie);
-  const forceClose = useMutation(api.admin.adminForceCloseFlowVote);
-  const flowState = useQuery(
-    api.flowVotes.getFlowVoteState,
-    token ? { token } : {},
-  );
-  const holidayMap = useHolidayNameMap();
 
   const [toast, setToast] = useState(null);
   const [busy, setBusy] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
-  const [tieConfirmSlug, setTieConfirmSlug] = useState(null);
 
   const showError = (msg) => setToast({ kind: "error", message: msg });
   const showSuccess = (msg) => setToast({ kind: "success", message: msg });
@@ -81,14 +73,6 @@ export default function AdminPage() {
       setBusy(false);
     }
   };
-
-  const allSuggestions = useQuery(api.suggestions.list, {}) ?? [];
-  const proposed = allSuggestions.filter((s) => s.status === "proposed");
-  const voting = allSuggestions.filter((s) => s.status === "voting");
-
-  const allActSugg = useQuery(api.activitySuggestions.list, {}) ?? [];
-  const actProposed = allActSugg.filter((s) => s.status === "proposed");
-  const actVoting = allActSugg.filter((s) => s.status === "voting");
 
   if (!token) {
     return (
@@ -121,10 +105,6 @@ export default function AdminPage() {
     );
   }
 
-  const flowPhase = flowState?.phase;
-  const canLock = state.gamesLive && flowPhase === "closed";
-  const canAdvance = state.gamesLive && flowPhase === "resolved";
-
   const handleLockDay = () => {
     if (!window.confirm(`Lock Day ${state.currentDayNumber}? This computes the loser, picks the forfeit, and opens the Reveal flow on the Board.`)) return;
     runAction(() => lockDay({ token }));
@@ -155,27 +135,6 @@ export default function AdminPage() {
     });
   };
 
-  const handleBreakTie = (slug) => {
-    runAction(async () => {
-      await breakTie({ token, voteeSlug: slug });
-      setTieConfirmSlug(null);
-    });
-  };
-
-  const handleForceClose = () => {
-    if (!window.confirm("Force close Flow State vote with the votes cast so far?")) return;
-    runAction(() => forceClose({ token }));
-  };
-
-  const liveStatusText = (() => {
-    if (!state.gamesLive) return "Tap to kick off Day 1 and unlock claiming.";
-    if (flowPhase === "closed") return `Day ${state.currentDayNumber} is open. Lock it to compute the loser and start the Flow State vote.`;
-    if (flowPhase === "voting") return `Day ${state.currentDayNumber} is locked. Flow State vote in progress — force-close it below if needed.`;
-    if (flowPhase === "tied") return `Day ${state.currentDayNumber} is locked. Flow State vote tied — pick a winner below.`;
-    if (flowPhase === "resolved") return `Day ${state.currentDayNumber} is closed. Advance to start Day ${state.currentDayNumber + 1}.`;
-    return "";
-  })();
-
   return (
     <div style={{ minHeight: "100vh", background: C.sand }}>
       <LogoutChip />
@@ -202,146 +161,33 @@ export default function AdminPage() {
               {state.gamesLive ? `● LIVE · Day ${state.currentDayNumber}` : "○ Pre-trip"}
             </div>
             <div style={{ ...BODY, fontSize: 13, marginBottom: 14 }}>
-              {liveStatusText}
+              {state.gamesLive
+                ? "Lock today's scores first (this picks the loser and opens the Flow vote). Then advance once Flow State is resolved."
+                : "Tap to kick off Day 1 and unlock claiming."}
             </div>
             {!state.gamesLive && (
               <ActionButton onClick={handleAdvance} variant="primary" disabled={busy}>
                 Start the games
               </ActionButton>
             )}
-            {state.gamesLive && canLock && (
-              <ActionButton onClick={handleLockDay} variant="primary" disabled={busy}>
-                🔒 Lock Day {state.currentDayNumber}
-              </ActionButton>
-            )}
-            {state.gamesLive && canAdvance && (
-              <ActionButton onClick={handleAdvance} variant="primary" disabled={busy}>
-                ▶ Start Day {state.currentDayNumber + 1}
-              </ActionButton>
+            {state.gamesLive && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <ActionButton onClick={handleLockDay} variant="primary" disabled={busy}>
+                  🔒 Lock Day {state.currentDayNumber}
+                </ActionButton>
+                <ActionButton onClick={handleAdvance} variant="primary" disabled={busy}>
+                  ▶ Start Day {state.currentDayNumber + 1}
+                </ActionButton>
+              </div>
             )}
           </Card>
         </Reveal>
 
-        {flowPhase === "tied" && (
-          <Reveal>
-            <Card style={{ padding: 16, marginBottom: 12, border: `2px solid ${C.gold}` }}>
-              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 14, color: C.dark }}>
-                Tie: pick the Max Flow State winner
-              </div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
-                {flowState.candidates?.map((slug) => {
-                  const p = PLAYERS.find((x) => x.slug === slug);
-                  const isConfirming = tieConfirmSlug === slug;
-                  if (isConfirming) {
-                    return (
-                      <span
-                        key={slug}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 6,
-                          padding: "6px 10px",
-                          borderRadius: 999,
-                          background: C.sand,
-                          border: `1px solid ${C.gold}`,
-                          fontFamily: "Nunito, sans-serif",
-                          fontSize: 12,
-                          color: C.dark,
-                        }}
-                      >
-                        Pick {displayName(slug, holidayMap, p?.name)}?
-                        <button
-                          type="button"
-                          onClick={() => handleBreakTie(slug)}
-                          disabled={busy}
-                          style={{
-                            padding: "4px 10px",
-                            borderRadius: RADIUS.sm,
-                            background: C.gold,
-                            color: C.dark,
-                            border: 0,
-                            fontFamily: "Nunito, sans-serif",
-                            fontWeight: 800,
-                            fontSize: 12,
-                            cursor: busy ? "default" : "pointer",
-                            opacity: busy ? 0.6 : 1,
-                          }}
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setTieConfirmSlug(null)}
-                          disabled={busy}
-                          style={{
-                            padding: "4px 10px",
-                            borderRadius: RADIUS.sm,
-                            background: C.white,
-                            color: C.textBody,
-                            border: `1px solid ${C.sandDark}`,
-                            fontFamily: "Nunito, sans-serif",
-                            fontWeight: 800,
-                            fontSize: 12,
-                            cursor: busy ? "default" : "pointer",
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </span>
-                    );
-                  }
-                  return (
-                    <button
-                      key={slug}
-                      type="button"
-                      onClick={() => setTieConfirmSlug(slug)}
-                      disabled={busy || tieConfirmSlug !== null}
-                      style={{
-                        border: `1px solid ${C.sandDark}`,
-                        borderRadius: 999,
-                        padding: "8px 14px",
-                        fontFamily: "Nunito, sans-serif",
-                        fontWeight: 700,
-                        fontSize: 13,
-                        background: C.white,
-                        color: C.dark,
-                        cursor: busy || tieConfirmSlug !== null ? "default" : "pointer",
-                        opacity: busy || (tieConfirmSlug !== null && tieConfirmSlug !== slug) ? 0.5 : 1,
-                      }}
-                    >
-                      {displayName(slug, holidayMap, p?.name)}
-                    </button>
-                  );
-                })}
-              </div>
-            </Card>
-          </Reveal>
-        )}
-
-        {flowPhase === "voting" && (
-          <Reveal>
-            <button
-              type="button"
-              onClick={handleForceClose}
-              disabled={busy}
-              style={{
-                marginBottom: 12,
-                padding: "10px 14px",
-                borderRadius: RADIUS.md,
-                background: C.gold,
-                color: C.dark,
-                border: 0,
-                fontFamily: "Nunito, sans-serif",
-                fontWeight: 800,
-                fontSize: 13,
-                cursor: busy ? "default" : "pointer",
-                opacity: busy ? 0.6 : 1,
-              }}
-            >
-              Force close Flow State vote
-            </button>
-          </Reveal>
-        )}
+        <Reveal>
+          <SectionErrorBoundary label="Flow State controls">
+            <FlowStateAdminControls busy={busy} runAction={runAction} />
+          </SectionErrorBoundary>
+        </Reveal>
       </SectionBand>
 
       <SectionBand bg="white" pad="32px 0" innerMaxWidth={520}>
@@ -354,30 +200,9 @@ export default function AdminPage() {
           />
         </Reveal>
         <Reveal>
-          <Card style={{ marginBottom: 16 }}>
-            <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 8 }}>
-              Awaiting draft ({proposed.length})
-            </div>
-            {proposed.length === 0 ? (
-              <div style={{ ...BODY, fontSize: 13 }}>No new suggestions.</div>
-            ) : (
-              proposed.map((s) => <ProposedRow key={s._id} suggestion={s} isAdmin={true} />)
-            )}
-            {voting.length > 0 && (
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.sandDark}` }}>
-                <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 8 }}>
-                  Currently voting ({voting.length})
-                </div>
-                {voting.map((s) => (
-                  <div key={s._id} style={{
-                    padding: "6px 0", fontFamily: "Nunito, sans-serif", fontSize: 13,
-                  }}>
-                    {s.title} — {s.points} pts · 👍 {s.yesCount} 👎 {s.noCount}
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+          <SectionErrorBoundary label="Suggestions">
+            <SuggestionsAdminCard />
+          </SectionErrorBoundary>
         </Reveal>
       </SectionBand>
 
@@ -386,30 +211,9 @@ export default function AdminPage() {
           <SectionHeader label="Crowdsource" title="Activity ideas" accent={C.turquoise} compact />
         </Reveal>
         <Reveal>
-          <Card>
-            <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 8 }}>
-              Awaiting draft ({actProposed.length})
-            </div>
-            {actProposed.length === 0
-              ? <div style={{ ...BODY, fontSize: 13 }}>No new ideas.</div>
-              : actProposed.map((s) => (
-                <ActivityProposedRow key={s._id} suggestion={s} onError={showError} />
-              ))}
-            {actVoting.length > 0 && (
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.sandDark}` }}>
-                <div style={{ ...MICRO_LABEL, color: C.textBody, marginBottom: 8 }}>
-                  Currently voting ({actVoting.length})
-                </div>
-                {actVoting.map((s) => (
-                  <div key={s._id} style={{
-                    padding: "6px 0", fontFamily: "Nunito, sans-serif", fontSize: 13,
-                  }}>
-                    {s.title} — {s.category} · 👍 {s.yesCount} 👎 {s.noCount}
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+          <SectionErrorBoundary label="Activity ideas">
+            <ActivityIdeasAdminCard onError={showError} />
+          </SectionErrorBoundary>
         </Reveal>
       </SectionBand>
 
@@ -424,7 +228,9 @@ export default function AdminPage() {
           />
         </Reveal>
         <Reveal>
-          <AdminDisputeReviewQueue />
+          <SectionErrorBoundary label="Disputed entries">
+            <AdminDisputeReviewQueue />
+          </SectionErrorBoundary>
         </Reveal>
       </SectionBand>
 
@@ -439,7 +245,9 @@ export default function AdminPage() {
           />
         </Reveal>
         <Reveal>
-          <AdminScavengerQueue />
+          <SectionErrorBoundary label="Scavenger photos">
+            <AdminScavengerQueue />
+          </SectionErrorBoundary>
         </Reveal>
       </SectionBand>
 
