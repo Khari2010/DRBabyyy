@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
@@ -100,6 +100,8 @@ export default function RevealFlow({ rollover, onSlotDone }) {
   const session = useSession();
   const token = session?.token;
   const board = useQuery(api.leaderboard.getDaily, { dailyKey: rollover.dailyKey }) ?? [];
+  const isAdmin = useQuery(api.admin.isAdmin, token ? { token } : "skip");
+  const relock = useMutation(api.rollovers.relock);
   const flowState = useQuery(
     api.flowVotes.getFlowVoteState,
     session?.token
@@ -109,6 +111,25 @@ export default function RevealFlow({ rollover, onSlotDone }) {
   const holidayMap = useHolidayNameMap();
   const nameOf = (slug) => displayName(slug, holidayMap);
   const [stage, setStage] = useState(1);
+
+  // The leaderboard from getDaily is sorted by total descending, so the last
+  // row is the live lowest scorer. If that doesn't match the loserSlug that
+  // was frozen at lockDay (e.g. a late entry came in after the day was
+  // locked), have an admin re-lock the day so every phone agrees.
+  const liveLoserSlug = board.length > 0 ? board[board.length - 1].slug : null;
+  const loserIsStale =
+    !!rollover.loserSlug &&
+    !!liveLoserSlug &&
+    liveLoserSlug !== rollover.loserSlug &&
+    !rollover.flowWinnerSlug;
+  const relockAttemptedRef = useRef(false);
+  useEffect(() => { relockAttemptedRef.current = false; }, [rollover._id]);
+  useEffect(() => {
+    if (!loserIsStale || !isAdmin || !token) return;
+    if (relockAttemptedRef.current) return;
+    relockAttemptedRef.current = true;
+    relock({ token }).catch(() => {});
+  }, [loserIsStale, isAdmin, token, relock, rollover._id]);
 
   const newDailyKey = `day-${rollover.dayNumber + 1}`;
   const slotActive = isDailyScavengerActive(newDailyKey);

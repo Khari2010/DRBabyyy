@@ -236,6 +236,137 @@ describe("rollovers.lockDay", () => {
     expect(row?.loserSlug).toBeUndefined();
     expect(row?.forfeitId).toBeUndefined();
   });
+
+  it("does not re-pick the previous day's forfeit", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    // Seed a day-1 rollover that already has a forfeit assigned.
+    await t.run(async (ctx) => {
+      const state = await ctx.db.query("gameState").first();
+      await ctx.db.patch(state!._id, {
+        gamesLive: true,
+        currentDayNumber: 2,
+        currentDailyKey: "day-2",
+        updatedAt: Date.now(),
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 1,
+        dailyKey: "day-1",
+        triggeredBySlug: "khari",
+        triggeredAt: Date.now(),
+        loserSlug: "camara",
+        closedAt: Date.now(),
+        forfeitId: "wax",
+        forfeitLabel: "Wax",
+        spunAt: Date.now(),
+        flowWinnerSlug: "khari",
+        flowResolvedAt: Date.now(),
+      });
+      await ctx.db.insert("rollovers", {
+        dayNumber: 2,
+        dailyKey: "day-2",
+        triggeredBySlug: "khari",
+        triggeredAt: Date.now(),
+      });
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "khari", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-2", createdAt: Date.now() });
+    });
+    // Run lockDay many times — each fresh setup picks from the pool with
+    // "wax" excluded, so we should never see it on day 2.
+    for (let i = 0; i < 20; i++) {
+      // Reset day-2 rollover to unlocked between attempts.
+      await t.run(async (ctx) => {
+        const row = await ctx.db.query("rollovers")
+          .withIndex("by_day_number", (q) => q.eq("dayNumber", 2)).first();
+        await ctx.db.patch(row!._id, { closedAt: undefined, forfeitId: undefined, forfeitLabel: undefined, spunAt: undefined, loserSlug: undefined });
+      });
+      await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+      const row = await t.run((ctx) => ctx.db.query("rollovers")
+        .withIndex("by_day_number", (q) => q.eq("dayNumber", 2)).first());
+      expect(row?.forfeitId).not.toBe("wax");
+    }
+  });
+});
+
+describe("rollovers.relock", () => {
+  it("updates loserSlug + re-picks forfeit when the leaderboard's lowest has changed", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    // Seed initial entries: camara is lowest.
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "khari", challengeId: "x", points: 100, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "kai", challengeId: "x", points: 50, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "camara", challengeId: "x", points: 20, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    const lockedRow = await t.run((ctx) =>
+      ctx.db.query("rollovers").withIndex("by_day_number", (q) => q.eq("dayNumber", 1)).first());
+    expect(lockedRow?.loserSlug).toBe("camara");
+    const lockedForfeit = lockedRow?.forfeitId;
+
+    // Late entry slams kai's total below camara's.
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", { type: "negative", subjectSlug: "kai", negativeId: "throw-up", appliedBySlug: "khari", points: -100, status: "verified", vouchCount: 1, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.rollovers.relock, { token: "tok-khari" });
+    const relocked = await t.run((ctx) =>
+      ctx.db.query("rollovers").withIndex("by_day_number", (q) => q.eq("dayNumber", 1)).first());
+    expect(relocked?.loserSlug).toBe("kai");
+    expect(relocked?.forfeitId).not.toBe(lockedForfeit);
+    expect(typeof relocked?.forfeitId).toBe("string");
+  });
+
+  it("is a no-op when the loser is already correct", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "khari", challengeId: "x", points: 100, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "camara", challengeId: "x", points: 20, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    const before = await t.run((ctx) =>
+      ctx.db.query("rollovers").withIndex("by_day_number", (q) => q.eq("dayNumber", 1)).first());
+    await t.mutation(api.rollovers.relock, { token: "tok-khari" });
+    const after = await t.run((ctx) =>
+      ctx.db.query("rollovers").withIndex("by_day_number", (q) => q.eq("dayNumber", 1)).first());
+    expect(after?.loserSlug).toBe(before?.loserSlug);
+    expect(after?.forfeitId).toBe(before?.forfeitId);
+  });
+
+  it("refuses when the day is not yet locked", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await expect(t.mutation(api.rollovers.relock, { token: "tok-khari" }))
+      .rejects.toThrow(/day not locked/);
+  });
+
+  it("refuses once Flow State has resolved", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await t.run(async (ctx) => {
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "khari", challengeId: "x", points: 100, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+      await ctx.db.insert("entries", { type: "challenge", subjectSlug: "camara", challengeId: "x", points: 10, status: "active", vouchCount: 0, disputeCount: 0, dailyKey: "day-1", createdAt: Date.now() });
+    });
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    await t.run(async (ctx) => {
+      const row = await ctx.db.query("rollovers").withIndex("by_day_number", (q) => q.eq("dayNumber", 1)).first();
+      await ctx.db.patch(row!._id, { flowWinnerSlug: "khari", flowResolvedAt: Date.now() });
+    });
+    await expect(t.mutation(api.rollovers.relock, { token: "tok-khari" }))
+      .rejects.toThrow(/already resolved/);
+  });
+
+  it("refuses non-admin", async () => {
+    const t = convexTest(schema);
+    await setupAdmins(t);
+    await t.mutation(api.rollovers.trigger, { token: "tok-khari" });
+    await t.mutation(api.rollovers.lockDay, { token: "tok-khari" });
+    await expect(t.mutation(api.rollovers.relock, { token: "tok-camara" }))
+      .rejects.toThrow(/admin only/);
+  });
 });
 
 describe("rollovers.advance", () => {
