@@ -535,7 +535,7 @@ def slide_one() -> Image.Image:
     # subline
     sub = nunito(26, 700)
     d.text((x, line3_y + h3h + 30),
-           "5 friends. 7 days. punta cana.",
+           "8 friends. 7 days. punta cana.",
            font=sub, fill=(255, 255, 255, 240))
 
     # chips row
@@ -684,38 +684,8 @@ def slide_three() -> Image.Image:
     sw, sh = text_size(d, sub_line, sub_f)
     draw_emoji(img, (x + sw + 16, y), "🚀", 56)
 
-    # CTA card bottom — sized to fit cleanly inside the slide
-    cta_w = W - 128
-    cta_h = 200
-    cta_x = 64
-    cta_y = H - 250
-    cta_card = Image.new("RGBA", (cta_w, cta_h), (0, 0, 0, 0))
-    ImageDraw.Draw(cta_card).rounded_rectangle(
-        (0, 0, cta_w, cta_h), 30, fill=(26, 26, 46, 248),
-    )
-    cta_shadowed = with_shadow(cta_card, blur=40, offset=(0, 20), opacity=140)
-    img.alpha_composite(cta_shadowed,
-                        (cta_x - (cta_shadowed.width - cta_w) // 2,
-                         cta_y - (cta_shadowed.height - cta_h) // 2))
-
-    cd2 = ImageDraw.Draw(img)
-    drop_f = dela(54)
-    line = "drop a"
-    cd2.text((cta_x + 32, cta_y + 32), line, font=drop_f, fill=YELLOW)
-    lw, lh = text_size(cd2, line, drop_f)
-    # robot emoji baseline-aligned with the text
-    draw_emoji(img, (cta_x + 32 + lw + 16, cta_y + 28), "🤖", 60)
-    cd2.text((cta_x + 32, cta_y + 110),
-             "if you want me to share how", font=nunito(26, 800),
-             fill=(255, 255, 255, 235))
-
-    chip = small_chip("ai · nights · weekends", CORAL, WHITE, scale=0.85)
-    img.alpha_composite(chip,
-                        (cta_x + cta_w - chip.width - 28,
-                         cta_y + cta_h - chip.height - 26))
-
     pm = nunito(22, 900)
-    d.text((64, H - 40), "3 / 3", font=pm, fill=(255, 255, 255, 235))
+    d.text((64, H - 60), "3 / 3", font=pm, fill=(255, 255, 255, 235))
 
     return img.convert("RGB")
 
