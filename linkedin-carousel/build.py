@@ -19,6 +19,8 @@ FONTS = os.path.join(HERE, "fonts")
 EMOJI_FONT_PATH = os.path.join(FONTS, "NotoColorEmoji.ttf")
 EMOJI_NATIVE = 109  # Noto Color Emoji bitmaps are 109px
 
+AVATARS_DIR = os.path.abspath(os.path.join(HERE, "..", "public", "images", "avatars"))
+
 W, H = 1080, 1350  # LinkedIn 4:5
 
 # Palette (from src/data/colors.js)
@@ -41,6 +43,32 @@ TEXT_BODY = (74, 74, 106)
 PINK = (249, 168, 212)
 BLUE = (59, 130, 246)
 PURPLE = (168, 85, 247)
+CYAN = (6, 182, 212)
+
+# Player roster — matches src/data/players.js (color used for ring/accent).
+PLAYERS = {
+    "kai":     {"name": "kai",     "color": BLUE,      "title": "the director"},
+    "khari":   {"name": "khari",   "color": GOLD,      "title": "the gaffer"},
+    "candice": {"name": "candice", "color": CORAL,     "title": "the sunshine"},
+    "kyanna":  {"name": "kyanna",  "color": PURPLE,    "title": "the ex-wildcard"},
+    "camara":  {"name": "camara",  "color": GREEN,     "title": "the messy one"},
+    "miles":   {"name": "miles",   "color": CYAN,      "title": "the joker"},
+    "ebony":   {"name": "ebony",   "color": PINK,      "title": "the uv babe"},
+    "justin":  {"name": "justin",  "color": TURQUOISE, "title": "the flow state"},
+}
+
+# Face-crop centre + size as fractions of the source image. Tuned per portrait so
+# the head sits in the centre of the resulting circle.
+FACE_CROP = {
+    "kai":     (0.42, 0.30, 0.46),
+    "khari":   (0.50, 0.30, 0.50),
+    "candice": (0.50, 0.34, 0.52),
+    "kyanna":  (0.50, 0.30, 0.40),
+    "camara":  (0.55, 0.30, 0.48),
+    "miles":   (0.50, 0.30, 0.44),
+    "ebony":   (0.55, 0.28, 0.45),
+    "justin":  (0.55, 0.30, 0.48),
+}
 
 
 def font(name: str, size: int, weight: int | None = None) -> ImageFont.FreeTypeFont:
@@ -173,6 +201,76 @@ def paste_rotated(base: Image.Image, layer: Image.Image, center_xy, angle_deg: f
 def text_size(draw, text, fnt):
     b = draw.textbbox((0, 0), text, font=fnt)
     return b[2] - b[0], b[3] - b[1]
+
+
+# --- Character / avatar helpers ---------------------------------------------
+
+@functools.lru_cache(maxsize=16)
+def _load_avatar(slug: str) -> Image.Image:
+    path = os.path.join(AVATARS_DIR, f"{slug}.webp")
+    return Image.open(path).convert("RGBA")
+
+
+def avatar_circle(slug: str, size: int, ring_color=None, ring_px: int = 0,
+                  outer_ring_color=WHITE, outer_ring_px: int = 0) -> Image.Image:
+    """Return a circular face crop of slug at size px, with optional ring(s)."""
+    src = _load_avatar(slug)
+    cx_n, cy_n, sz_n = FACE_CROP.get(slug, (0.5, 0.3, 0.5))
+    w, h = src.size
+    sz = sz_n * min(w, h)
+    cx, cy = cx_n * w, cy_n * h
+    left = int(cx - sz / 2)
+    top = int(cy - sz / 2)
+    right = int(cx + sz / 2)
+    bottom = int(cy + sz / 2)
+    # clamp
+    left = max(0, left); top = max(0, top)
+    right = min(w, right); bottom = min(h, bottom)
+    crop = src.crop((left, top, right, bottom))
+    # square it
+    side = min(crop.size)
+    cl = (crop.width - side) // 2
+    ct = (crop.height - side) // 2
+    crop = crop.crop((cl, ct, cl + side, ct + side))
+    crop = crop.resize((size, size), Image.LANCZOS)
+
+    # build mask
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, size, size), fill=255)
+
+    pad = ring_px + outer_ring_px
+    final = Image.new("RGBA", (size + pad * 2, size + pad * 2), (0, 0, 0, 0))
+    d = ImageDraw.Draw(final)
+    # outer ring
+    if outer_ring_px:
+        d.ellipse((0, 0, final.width, final.height),
+                  fill=outer_ring_color + (255,))
+    # inner ring
+    if ring_px and ring_color is not None:
+        inset = outer_ring_px
+        d.ellipse((inset, inset, final.width - inset, final.height - inset),
+                  fill=ring_color + (255,))
+    # paste face
+    face = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    face.paste(crop, (0, 0), mask)
+    final.alpha_composite(face, (pad, pad))
+    return final
+
+
+def character_full(slug: str, target_h: int) -> Image.Image:
+    """Return the full character illustration scaled to target_h with the
+    background mostly intact — used as a hero/peek illustration. Adds a soft
+    rounded mask edge for the dribbble keynote feel."""
+    src = _load_avatar(slug).copy()
+    ratio = target_h / src.height
+    new_w = max(1, int(src.width * ratio))
+    src = src.resize((new_w, target_h), Image.LANCZOS)
+    # round the corners
+    radius = int(target_h * 0.10)
+    mask = rounded_rect_mask(src.size, radius)
+    out = Image.new("RGBA", src.size, (0, 0, 0, 0))
+    out.paste(src, (0, 0), mask)
+    return out
 
 
 # --- Mockup pieces -----------------------------------------------------------
@@ -313,6 +411,7 @@ def post_card(
     scale=1.0,
     width: int | None = None,
     body_inline_emoji: list[tuple[int, str]] = None,
+    avatar_slug: str | None = None,
 ) -> Image.Image:
     """Captions-wall post card. Avatar + name + text + reaction pills.
 
@@ -367,13 +466,19 @@ def post_card(
 
     d = ImageDraw.Draw(card)
 
-    # avatar circle with initial
+    # avatar (real face if slug given, otherwise initial circle)
     ax, ay = pad, pad
-    d.ellipse((ax, ay, ax + avatar, ay + avatar), fill=color)
-    inf = nunito(int(20 * scale), 900)
-    iw, ih = text_size(d, initials, inf)
-    d.text((ax + (avatar - iw) / 2, ay + (avatar - ih) / 2 - int(2 * scale)),
-           initials, font=inf, fill=WHITE)
+    if avatar_slug:
+        face = avatar_circle(avatar_slug, avatar,
+                             ring_color=color, ring_px=int(2 * scale))
+        # face has ring pad
+        card.alpha_composite(face, (ax - int(2 * scale), ay - int(2 * scale)))
+    else:
+        d.ellipse((ax, ay, ax + avatar, ay + avatar), fill=color)
+        inf = nunito(int(20 * scale), 900)
+        iw, ih = text_size(d, initials, inf)
+        d.text((ax + (avatar - iw) / 2, ay + (avatar - ih) / 2 - int(2 * scale)),
+               initials, font=inf, fill=WHITE)
 
     nf = nunito(int(18 * scale), 900)
     d.text((ax + avatar + int(12 * scale), ay + int(2 * scale)),
@@ -429,28 +534,31 @@ def captions_wall_stack(scale=1.0) -> Image.Image:
 
     posts = [
         post_card(
-            "kai", TURQUOISE, "K",
+            "kai", BLUE, "K",
             "imagine a wall where we could all post stuff this week 💭",
             "sat · 9:42am",
             [("💭", 4), ("🔥", 6)],
-            "the chairman",
+            "the director",
             scale=scale, width=width - pad * 2,
+            avatar_slug="kai",
         ),
         post_card(
-            "khari", CORAL, "K",
+            "khari", GOLD, "K",
             "say no more — going to my room to cook. brb",
             "sat · 9:48am",
             [("🤖", 7), ("😂", 3)],
-            "the architect",
+            "the gaffer",
             scale=scale, width=width - pad * 2,
+            avatar_slug="khari",
         ),
         post_card(
-            "candice", GOLD, "C",
+            "candice", CORAL, "C",
             "3 hours later he comes back with a whole wall app 🙌",
             "sat · 1:11pm",
             [("🙌", 9), ("🥹", 4), ("🔥", 5)],
-            "captain vibes",
+            "the sunshine",
             scale=scale, width=width - pad * 2,
+            avatar_slug="candice",
         ),
     ]
 
@@ -482,6 +590,43 @@ def captions_wall_stack(scale=1.0) -> Image.Image:
         y += p.height + int(14 * scale)
 
     return wall
+
+
+def crew_row(slugs: list[str], avatar_size: int = 88, gap: int = -18,
+             with_labels: bool = True, label_color=WHITE) -> Image.Image:
+    """A row of overlapping circular avatars (rings in each player's colour)
+    with optional name labels — like a movie cast credit."""
+    n = len(slugs)
+    step = avatar_size + gap
+    ring_px = max(3, avatar_size // 18)
+    row_w = avatar_size + step * (n - 1) + ring_px * 2
+    label_h = 60 if with_labels else 0
+    h = avatar_size + ring_px * 2 + label_h
+    img = Image.new("RGBA", (row_w, h), (0, 0, 0, 0))
+    for i, slug in enumerate(slugs):
+        color = PLAYERS[slug]["color"]
+        face = avatar_circle(slug, avatar_size,
+                             ring_color=color, ring_px=ring_px,
+                             outer_ring_color=WHITE, outer_ring_px=ring_px)
+        x = step * i
+        # add slight shadow for depth
+        shadow = Image.new("RGBA", face.size, (0, 0, 0, 0))
+        ImageDraw.Draw(shadow).ellipse(
+            (0, 0, face.width, face.height), fill=(0, 0, 0, 90))
+        shadow = shadow.filter(ImageFilter.GaussianBlur(8))
+        img.alpha_composite(shadow, (x + 2, 6))
+        img.alpha_composite(face, (x, 0))
+    if with_labels:
+        d = ImageDraw.Draw(img)
+        lf = nunito(20, 900)
+        for i, slug in enumerate(slugs):
+            x = step * i + ring_px
+            name = PLAYERS[slug]["name"]
+            tw, th = text_size(d, name, lf)
+            d.text((x + (avatar_size - tw) / 2,
+                    avatar_size + ring_px * 2 + 14),
+                   name, font=lf, fill=label_color)
+    return img
 
 
 def small_chip(text: str, bg, fg=WHITE, scale=1.0) -> Image.Image:
@@ -552,26 +697,30 @@ def slide_one() -> Image.Image:
         img.alpha_composite(chip, (cx, cy))
         cx += chip.width + 10
 
-    # Floating mockups bottom area — they intentionally float partially off
-    # the bottom for a keynote/dribbble feel.
-    it = itinerary_card(scale=0.88)
-    it_s = with_shadow(it, blur=44, offset=(0, 24), opacity=140)
-    paste_rotated(img, it_s, (230, 1080), -8)
-
+    # Floating mockup — featured countdown card, tilted right
     cd = countdown_card(scale=0.7)
     cd_s = with_shadow(cd, blur=44, offset=(0, 24), opacity=140)
-    paste_rotated(img, cd_s, (820, 950), 6)
+    paste_rotated(img, cd_s, (W - 280, 870), 5)
 
-    pc = post_card(
-        "kai", TURQUOISE, "K",
-        "we land in 6 days 🔥",
-        "today · 9:01am",
-        [("🔥", 8), ("🌴", 5)],
-        "the chairman",
-        scale=0.78, width=440,
+    # Itinerary mockup peek, tilted left, lower
+    it = itinerary_card(scale=0.65)
+    it_s = with_shadow(it, blur=44, offset=(0, 24), opacity=140)
+    paste_rotated(img, it_s, (210, 940), -8)
+
+    # CREW ROW — anchors the headline visually with real characters
+    crew = crew_row(
+        ["kai", "khari", "candice", "kyanna", "camara", "miles", "ebony", "justin"],
+        avatar_size=96, gap=-22, with_labels=False,
     )
-    pc_s = with_shadow(pc, blur=36, offset=(0, 18), opacity=120)
-    paste_rotated(img, pc_s, (820, 1190), -4)
+    crew_s = with_shadow(crew, blur=28, offset=(0, 14), opacity=130)
+    img.alpha_composite(crew_s,
+                        ((W - crew_s.width) // 2,
+                         H - 200 - crew_s.height // 2))
+    # caption under crew row
+    eb = nunito(20, 900)
+    cap = "THE CREW · 8 STRONG"
+    tw, _ = text_size(d, cap, eb)
+    d.text(((W - tw) // 2, H - 115), cap, font=eb, fill=DARK)
 
     # swipe indicator + page marker
     sw_f = nunito(28, 900)
@@ -605,8 +754,13 @@ def slide_two() -> Image.Image:
     d.text((x, y), "breakfast.", font=f_big, fill=CORAL_DEEP)
     y += 110
 
-    d.text((x, y), "someone said:", font=f_body, fill=(40, 40, 60, 230))
-    y += 40
+    # tiny attribution avatar — Kai said it (the director, blue accent)
+    kai_face = avatar_circle("kai", 44, ring_color=BLUE, ring_px=3,
+                             outer_ring_color=WHITE, outer_ring_px=2)
+    img.alpha_composite(kai_face, (x, y - 2))
+    d.text((x + kai_face.width + 12, y + 6),
+           "kai said:", font=f_body, fill=(40, 40, 60, 240))
+    y += 56
     d.text((x, y), "“imagine a wall where we could",
            font=f_quote, fill=WHITE)
     y += 40
@@ -627,10 +781,9 @@ def slide_two() -> Image.Image:
     draw_emoji(img, (x + pw + 12, y - 2), "👇", 36)
 
     # The captions wall mockup — big, slightly tilted, anchored to fit
-    wall = captions_wall_stack(scale=0.72)
+    wall = captions_wall_stack(scale=0.78)
     wall_s = with_shadow(wall, blur=50, offset=(0, 28), opacity=150)
-    # right-centered so the tilted card still fits inside the canvas
-    paste_rotated(img, wall_s, (W // 2 + 170, 950), -3)
+    paste_rotated(img, wall_s, (W // 2 + 140, 970), -3)
 
     # page marker
     pm = nunito(22, 900)
@@ -651,16 +804,24 @@ def slide_three() -> Image.Image:
     lock = flow_state_inline(text_size_px=56, color=(26, 26, 46, 230))
     img.alpha_composite(lock, (64, 60))
 
-    # Subtle UI fragments
+    # Subtle UI fragments — small itinerary peek upper-right behind the type
     it = itinerary_card(scale=0.5)
     alpha = it.split()[-1].point(lambda v: int(v * 0.45))
     it.putalpha(alpha)
     paste_rotated(img, it, (W - 180, 320), 9)
 
-    cd = countdown_card(scale=0.42)
-    alpha = cd.split()[-1].point(lambda v: int(v * 0.5))
-    cd.putalpha(alpha)
-    paste_rotated(img, cd, (180, 1010), -8)
+    # Featured character — Justin "The Flow State" — circular portrait right side
+    j_y = 510
+    justin = avatar_circle("justin", 240, ring_color=TURQUOISE, ring_px=5,
+                           outer_ring_color=WHITE, outer_ring_px=5)
+    j_s = with_shadow(justin, blur=36, offset=(0, 18), opacity=140)
+    j_x = W - j_s.width - 36
+    img.alpha_composite(j_s, (j_x, j_y))
+    # name pill below Justin's portrait
+    name_pill = small_chip("justin · the flow state", TURQUOISE, WHITE, scale=0.78)
+    pill_x = j_x + (j_s.width - name_pill.width) // 2
+    pill_y = j_y + j_s.height - 30
+    img.alpha_composite(name_pill, (pill_x, pill_y))
 
     # Big main line block
     main_f = dela(90)
@@ -683,6 +844,20 @@ def slide_three() -> Image.Image:
     d.text((x, y), sub_line, font=sub_f, fill=DARK)
     sw, sh = text_size(d, sub_line, sub_f)
     draw_emoji(img, (x + sw + 16, y), "🚀", 56)
+
+    # SIGN-OFF — crew row as the cast credit at the bottom
+    crew = crew_row(
+        ["kai", "khari", "candice", "kyanna", "camara", "miles", "ebony", "justin"],
+        avatar_size=80, gap=-18, with_labels=False,
+    )
+    crew_s = with_shadow(crew, blur=22, offset=(0, 10), opacity=120)
+    img.alpha_composite(crew_s,
+                        ((W - crew_s.width) // 2,
+                         H - 280 - crew_s.height // 2))
+    eb = nunito(20, 900)
+    cap = "FOR THE CREW · MAY 2025"
+    tw, _ = text_size(d, cap, eb)
+    d.text(((W - tw) // 2, H - 130), cap, font=eb, fill=DARK)
 
     pm = nunito(22, 900)
     d.text((64, H - 60), "3 / 3", font=pm, fill=(255, 255, 255, 235))
