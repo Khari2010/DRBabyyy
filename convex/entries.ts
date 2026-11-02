@@ -168,34 +168,6 @@ export const logNegative = mutation({
   },
 });
 
-export const applyForfeitDeduct = mutation({
-  args: { token: v.string(), targetSlug: v.string(), amount: v.number() },
-  handler: async (ctx, { token, targetSlug, amount }) => {
-    const { playerSlug } = await requireSession(ctx, token);
-    await requireAdmin(ctx, playerSlug);
-    const state = await getGameState(ctx);
-    if (!state || !state.gamesLive) throw new Error("games not live");
-    const entryId = await ctx.db.insert("entries", {
-      type: "negative",
-      subjectSlug: targetSlug,
-      appliedBySlug: "system",
-      negativeId: "forfeit-deduct",
-      points: -Math.abs(amount),
-      status: "verified",
-      vouchCount: 1,
-      disputeCount: 0,
-      dailyKey: state.currentDailyKey,
-      createdAt: Date.now(),
-      resolvedAt: Date.now(),
-    });
-    await ctx.scheduler.runAfter(0, internal.pushNotificationsActions.sendForEntryEvent, {
-      entryId,
-      event: "forfeit-applied",
-      actorSlug: playerSlug,
-    });
-  },
-});
-
 export const unclaim = mutation({
   args: { token: v.string(), entryId: v.id("entries") },
   handler: async (ctx, { token, entryId }) => {

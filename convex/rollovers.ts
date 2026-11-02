@@ -8,6 +8,27 @@ function pickForfeit() {
   return FORFEITS[i];
 }
 
+// Rank every crew member by score for the closing day. Players with no entries
+// count as 0. Ties broken alphabetically by slug so the bottom rank is
+// deterministic even on sparse early days.
+async function rankCrewAscending(ctx: any, dailyKey: string) {
+  const players = await ctx.db.query("players").collect();
+  const entries = await ctx.db
+    .query("entries")
+    .withIndex("by_daily_key", (q: any) => q.eq("dailyKey", dailyKey))
+    .collect();
+  const totals = new Map<string, number>();
+  for (const p of players) totals.set(p.slug, 0);
+  for (const e of entries) {
+    if (e.status === "disputed") continue;
+    if (!totals.has(e.subjectSlug)) totals.set(e.subjectSlug, 0);
+    totals.set(e.subjectSlug, (totals.get(e.subjectSlug) ?? 0) + e.points);
+  }
+  return [...totals.entries()]
+    .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
+    .map(([slug, total]) => ({ slug, total }));
+}
+
 export const trigger = mutation({
   args: { token: v.string() },
   handler: async (ctx, { token }) => {
@@ -44,21 +65,11 @@ export const trigger = mutation({
       .first();
     if (nextDayRollover) throw new Error("day already closed");
 
-    // Compute loser (same logic as lockDay)
-    const entries = await ctx.db
-      .query("entries")
-      .withIndex("by_daily_key", (q) => q.eq("dailyKey", closingKey))
-      .collect();
-    const totals = new Map<string, number>();
-    for (const e of entries) {
-      if (e.status === "disputed") continue;
-      totals.set(e.subjectSlug, (totals.get(e.subjectSlug) ?? 0) + e.points);
-    }
-    let loserSlug: string | undefined;
-    let loserTotal = Infinity;
-    for (const [slug, total] of totals.entries()) {
-      if (total < loserTotal) { loserSlug = slug; loserTotal = total; }
-    }
+    // Same ranking logic as lockDay so legacy tests/back-compat path matches prod.
+    const ranked = await rankCrewAscending(ctx, closingKey);
+    const loserSlug = ranked[0]?.slug;
+    const secondLoserSlug = ranked[1]?.slug;
+    const shotsSlug = ranked[2]?.slug;
 
     // Patch existing rollover OR insert one — set closedAt + (synthetic) flowWinnerSlug.
     // Marked with flowForcedClose: true so the synthetic resolution is obvious in data.
@@ -69,6 +80,8 @@ export const trigger = mutation({
     if (existing) {
       await ctx.db.patch(existing._id, {
         loserSlug,
+        secondLoserSlug,
+        shotsSlug,
         closedAt: now,
         flowWinnerSlug: loserSlug ?? playerSlug,
         flowResolvedAt: now,
@@ -81,6 +94,8 @@ export const trigger = mutation({
         triggeredBySlug: playerSlug,
         triggeredAt: now,
         loserSlug,
+        secondLoserSlug,
+        shotsSlug,
         closedAt: now,
         flowWinnerSlug: loserSlug ?? playerSlug,
         flowResolvedAt: now,
@@ -123,34 +138,32 @@ export const lockDay = mutation({
       .first();
     if (existing?.closedAt) throw new Error("day already locked");
 
-    // Compute loser (lowest score among non-disputed entries)
-    const entries = await ctx.db
-      .query("entries")
-      .withIndex("by_daily_key", (q) => q.eq("dailyKey", closingKey))
-      .collect();
-    const totals = new Map<string, number>();
-    for (const e of entries) {
-      if (e.status === "disputed") continue;
-      totals.set(e.subjectSlug, (totals.get(e.subjectSlug) ?? 0) + e.points);
-    }
-    let loserSlug: string | undefined;
-    let loserTotal = Infinity;
-    for (const [slug, total] of totals.entries()) {
-      if (total < loserTotal) { loserSlug = slug; loserTotal = total; }
-    }
+    // Rank all crew (ties → alphabetical). Bottom = spins. 2nd-from-bottom =
+    // also spins (own forfeit). 3rd-from-bottom = 5 shots, no wheel.
+    const ranked = await rankCrewAscending(ctx, closingKey);
+    const loserSlug = ranked[0]?.slug;
+    const secondLoserSlug = ranked[1]?.slug;
+    const shotsSlug = ranked[2]?.slug;
 
     const now = Date.now();
-    // Empty day = no loser = no forfeit. Otherwise pick a forfeit server-side
-    // so every phone's wheel animates to the same answer.
+    // Server-pick both forfeits up front so every phone's wheels animate to
+    // the same answer.
     const forfeit = loserSlug ? pickForfeit() : undefined;
+    const secondForfeit = secondLoserSlug ? pickForfeit() : undefined;
     const lockPatch: Record<string, any> = {
       loserSlug,
+      secondLoserSlug,
+      shotsSlug,
       closedAt: now,
     };
     if (forfeit) {
       lockPatch.forfeitId = forfeit.id;
       lockPatch.forfeitLabel = forfeit.label;
       lockPatch.spunAt = now;
+    }
+    if (secondForfeit) {
+      lockPatch.secondForfeitId = secondForfeit.id;
+      lockPatch.secondForfeitLabel = secondForfeit.label;
     }
     if (existing) {
       await ctx.db.patch(existing._id, lockPatch);

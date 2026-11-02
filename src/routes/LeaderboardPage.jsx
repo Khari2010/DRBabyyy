@@ -446,23 +446,45 @@ export default function LeaderboardPage() {
           <Reveal>
             <Card padding={0} style={{ overflow: "hidden" }}>
               {history.map((r, i) => {
-                const player = playerBySlug(r.loserSlug);
                 const isLast = i === history.length - 1;
                 const flowWinner = flowHistory?.byDay?.find((d) => d.dayNumber === r.dayNumber)?.winnerSlug;
+                const lines = [];
+                if (r.loserSlug) lines.push({ slug: r.loserSlug, badge: "🎰", text: r.forfeitLabel });
+                if (r.secondLoserSlug) lines.push({ slug: r.secondLoserSlug, badge: "🎰", text: r.secondForfeitLabel });
+                if (r.shotsSlug) lines.push({ slug: r.shotsSlug, badge: "🥃", text: "5 shots" });
                 return (
                   <div key={r._id} style={{
                     padding: "12px 14px",
                     borderBottom: isLast ? undefined : `1px solid ${C.sandDark}`,
-                    display: "flex", alignItems: "center", gap: 12,
                   }}>
-                    {player && <Avatar player={player} size="sm" />}
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, color: C.dark }}>
-                        Day {r.dayNumber} · {displayName(r.loserSlug, holidayMap, player?.name)}
-                      </div>
-                      <div style={{ fontSize: 12, color: C.textBody, fontFamily: "Nunito, sans-serif" }}>
-                        {r.forfeitLabel}
-                      </div>
+                    <div style={{
+                      fontFamily: "Nunito, sans-serif",
+                      fontWeight: 900,
+                      fontSize: 11,
+                      letterSpacing: 2,
+                      textTransform: "uppercase",
+                      color: C.textBody,
+                      marginBottom: 8,
+                    }}>
+                      Day {r.dayNumber}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {lines.map((line, li) => {
+                        const player = playerBySlug(line.slug);
+                        return (
+                          <div key={li} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            {player && <Avatar player={player} size="sm" />}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, color: C.dark, fontSize: 14 }}>
+                                {line.badge} {displayName(line.slug, holidayMap, player?.name)}
+                              </div>
+                              <div style={{ fontSize: 12, color: C.textBody, fontFamily: "Nunito, sans-serif" }}>
+                                {line.text}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                       {flowWinner && (
                         <div style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: C.textBody, marginTop: 2 }}>
                           👑 {displayName(flowWinner, holidayMap, playerBySlug(flowWinner)?.name)}

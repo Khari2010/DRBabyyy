@@ -29,8 +29,8 @@ export default function DaySummaryCard({ dayNumber, hasLoser, onReveal }) {
         opacity: 0.9,
       }}>
         {hasLoser
-          ? "The crew is gathered. Tap to reveal the punishment."
-          : "No claims today — no loser, no wheel."}
+          ? "The crew is gathered. Bottom two spin. Third takes 5 shots."
+          : "Day still loading. Hang tight."}
       </div>
       {hasLoser && (
         <button

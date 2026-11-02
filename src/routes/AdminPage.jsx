@@ -160,7 +160,7 @@ export default function AdminPage() {
   }
 
   const handleLockDay = async () => {
-    if (!window.confirm(`Lock Day ${state.currentDayNumber}? This computes the loser, picks the forfeit, and opens the Reveal flow on the Board.`)) return;
+    if (!window.confirm(`Lock Day ${state.currentDayNumber}? This ranks the crew, picks forfeits for the bottom two, flags 3rd-from-bottom for 5 shots, and opens the Reveal flow on the Board.`)) return;
     try {
       await lockDay({ token });
     } catch (err) {
@@ -218,7 +218,7 @@ export default function AdminPage() {
             </div>
             <div style={{ ...BODY, fontSize: 13, marginBottom: 14 }}>
               {state.gamesLive
-                ? "Two-step close: Lock today's scores (picks the loser and forfeit), then advance after Flow State is resolved."
+                ? "Two-step close: Lock today's scores (picks both wheel forfeits + flags the 5-shots player), then advance after Flow State is resolved."
                 : "Tap to kick off Day 1 and unlock claiming."}
             </div>
             {state.gamesLive ? (

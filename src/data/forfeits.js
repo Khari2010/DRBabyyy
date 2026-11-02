@@ -13,7 +13,6 @@ export const FORFEITS = [
   { id: "spanked", label: "Spanked by everyone", icon: "🍑", color: C.coralDeep },
   { id: "waterboard", label: "Waterboarded (10 sec)", icon: "💧", color: C.blue },
   { id: "cold-shower", label: "Cold shower (1 min)", icon: "🚿", color: C.yellow },
-  { id: "deduct", label: "Deduct points from someone", icon: "📉", color: C.cyan },
   { id: "plank", label: "90 second plank", icon: "🪵", color: C.pink },
   { id: "opposite-undies", label: "Opposite sex underwear", icon: "🩲", color: C.purple },
   { id: "21-questions", label: "21 questions hot seat", icon: "🔥", color: C.coral },

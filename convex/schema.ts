@@ -130,9 +130,16 @@ export default defineSchema({
     dailyKey: v.string(),
     triggeredBySlug: v.string(),
     triggeredAt: v.number(),
+    // Bottom of the board — spins the wheel.
     loserSlug: v.optional(v.string()),
     forfeitId: v.optional(v.string()),
     forfeitLabel: v.optional(v.string()),
+    // Second-from-bottom — also spins, gets their own forfeit.
+    secondLoserSlug: v.optional(v.string()),
+    secondForfeitId: v.optional(v.string()),
+    secondForfeitLabel: v.optional(v.string()),
+    // Third-from-bottom — takes 5 shots (no wheel).
+    shotsSlug: v.optional(v.string()),
     spunAt: v.optional(v.number()),
     closedAt: v.optional(v.number()),
     flowWinnerSlug: v.optional(v.string()),

@@ -108,8 +108,8 @@ export default function WheelTabPane() {
         maxWidth: 320,
         lineHeight: 1.45,
       }}>
-        Lowest scorer takes one. The wheel spins at End&nbsp;Day —
-        you can't dodge it.
+        Bottom two each take one — the wheel spins twice at End&nbsp;Day.
+        Third-from-bottom skips the wheel and takes 5 shots.
       </div>
 
       <div style={{

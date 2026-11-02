@@ -351,59 +351,6 @@ describe("entries.vouch on a negative", () => {
   });
 });
 
-describe("entries.applyForfeitDeduct", () => {
-  it("inserts a system-applied negative on the chosen target (verified, not disputable)", async () => {
-    const t = convexTest(schema);
-    await seedSession(t, "khari", "tok-khari");
-    await t.run(async (ctx) => {
-      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
-      await ctx.db.insert("gameState", {
-        gamesLive: true, currentDayNumber: 2, currentDailyKey: "day-2", updatedAt: Date.now(),
-      });
-    });
-    await t.mutation(api.entries.applyForfeitDeduct, {
-      token: "tok-khari",
-      targetSlug: "miles",
-      amount: 50,
-    });
-    const rows = await t.run((ctx) => ctx.db.query("entries").collect());
-    expect(rows.length).toBe(1);
-    expect(rows[0].subjectSlug).toBe("miles");
-    expect(rows[0].points).toBe(-50);
-    expect(rows[0].status).toBe("verified");
-    expect(rows[0].appliedBySlug).toBe("system");
-  });
-
-  it("rejects non-admin", async () => {
-    const t = convexTest(schema);
-    await seedSession(t, "camara", "tok-camara");
-    await t.run(async (ctx) => {
-      await ctx.db.insert("gameState", {
-        gamesLive: true, currentDayNumber: 2, currentDailyKey: "day-2", updatedAt: Date.now(),
-      });
-    });
-    await expect(t.mutation(api.entries.applyForfeitDeduct, {
-      token: "tok-camara", targetSlug: "miles", amount: 50,
-    })).rejects.toThrow(/admin only/);
-  });
-
-  it("uses absolute value (cannot deduct negative)", async () => {
-    const t = convexTest(schema);
-    await seedSession(t, "khari", "tok-khari");
-    await t.run(async (ctx) => {
-      await ctx.db.insert("adminRoles", { playerSlug: "khari" });
-      await ctx.db.insert("gameState", {
-        gamesLive: true, currentDayNumber: 2, currentDailyKey: "day-2", updatedAt: Date.now(),
-      });
-    });
-    await t.mutation(api.entries.applyForfeitDeduct, {
-      token: "tok-khari", targetSlug: "miles", amount: -25,
-    });
-    const rows = await t.run((ctx) => ctx.db.query("entries").collect());
-    expect(rows[0].points).toBe(-25); // -|-25| = -25
-  });
-});
-
 describe("entries.claimScavenger", () => {
   it("inserts an entry with rank=1 and +5 bonus on first claim", async () => {
     const t = convexTest(schema);

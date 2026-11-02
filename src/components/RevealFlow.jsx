@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useSession } from "../lib/useSession.js";
 import { PLAYERS } from "../data/players.js";
@@ -12,93 +12,17 @@ import { useHolidayNameMap, displayName } from "../lib/displayName.js";
 import Card from "./primitives/Card.jsx";
 import Avatar from "./primitives/Avatar.jsx";
 
-function DeductPicker({ loserSlug, rolloverId, onComplete }) {
-  const session = useSession();
-  const token = session?.token;
-  const apply = useMutation(api.entries.applyForfeitDeduct);
-  const [picked, setPicked] = useState(null);
-  const [done, setDone] = useState(false);
-  const targets = PLAYERS.filter((p) => p.slug !== loserSlug);
-  const holidayMap = useHolidayNameMap();
-  const nameOf = (slug) => displayName(slug, holidayMap);
-
-  const submit = async (slug) => {
-    if (!token) { alert("Not logged in"); return; }
-    setPicked(slug);
-    try {
-      await apply({ token, targetSlug: slug, amount: 50 });
-      setDone(true);
-    } catch (err) {
-      alert(err.message);
-      setPicked(null);
-    }
-  };
-
-  if (done) {
-    return (
-      <div>
-        <div style={{ ...BODY, padding: 16 }}>
-          {nameOf(loserSlug)} deducted 50 from {nameOf(picked)}.
-        </div>
-        <button
-          type="button"
-          onClick={onComplete}
-          style={{
-            marginTop: 12,
-            padding: "10px 18px",
-            borderRadius: RADIUS.md,
-            background: C.gold,
-            color: C.dark,
-            border: 0,
-            fontFamily: "Nunito, sans-serif",
-            fontWeight: 800,
-            fontSize: 14,
-            cursor: "pointer",
-          }}
-        >
-          Continue 👑 ▶
-        </button>
-      </div>
-    );
-  }
-  return (
-    <div>
-      <h3 style={{ ...HEADING.h3, marginBottom: 12, color: C.dark }}>
-        📉 Pick someone to lose 50 points
-      </h3>
-      <div style={{ display: "grid", gap: 8 }}>
-        {targets.map((p) => (
-          <button
-            key={p.slug}
-            type="button"
-            disabled={picked !== null}
-            onClick={() => submit(p.slug)}
-            style={{
-              padding: "10px 14px",
-              borderRadius: RADIUS.md,
-              background: C.sand,
-              border: `1.5px solid ${C.sandDark}`,
-              cursor: picked !== null ? "default" : "pointer",
-              fontFamily: "Nunito, sans-serif",
-              fontSize: 14,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              color: C.dark,
-            }}
-          >
-            <Avatar player={p} size="sm" />
-            {p.emoji} {nameOf(p.slug)}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
+// Stages:
+// 1 Day Closed banner
+// 2 Scoreboard (highlight bottom three)
+// 3 Five-shots stage (3rd-from-bottom)
+// 4 Wheel for #last
+// 5 Wheel for #second-last
+// 6 Flow State crown
+// 7 Daily Scavenger reveal (only if slot active)
 
 export default function RevealFlow({ rollover, onSlotDone }) {
   const session = useSession();
-  const token = session?.token;
   const board = useQuery(api.leaderboard.getDaily, { dailyKey: rollover.dailyKey }) ?? [];
   const flowState = useQuery(
     api.flowVotes.getFlowVoteState,
@@ -114,7 +38,7 @@ export default function RevealFlow({ rollover, onSlotDone }) {
   const slotActive = isDailyScavengerActive(newDailyKey);
   const isFirstReveal = newDailyKey === "day-2";
 
-  const loserPlayer = PLAYERS.find((p) => p.slug === rollover.loserSlug);
+  const shotsPlayer = PLAYERS.find((p) => p.slug === rollover.shotsSlug);
 
   return (
     <Card
@@ -126,13 +50,7 @@ export default function RevealFlow({ rollover, onSlotDone }) {
     >
       {stage === 1 && (
         <div style={{ textAlign: "center" }}>
-          <h2
-            style={{
-              ...HEADING.h2,
-              marginTop: 0,
-              color: C.dark,
-            }}
-          >
+          <h2 style={{ ...HEADING.h2, marginTop: 0, color: C.dark }}>
             ✨ Day {rollover.dayNumber} — Closed
           </h2>
           <div style={{ ...BODY, margin: "12px 0" }}>
@@ -168,20 +86,30 @@ export default function RevealFlow({ rollover, onSlotDone }) {
 
       {stage === 2 && (
         <div>
-          <h3
-            style={{
-              ...HEADING.h3,
-              textAlign: "center",
-              marginTop: 0,
-              color: C.dark,
-            }}
-          >
+          <h3 style={{ ...HEADING.h3, textAlign: "center", marginTop: 0, color: C.dark }}>
             Daily Scoreboard
           </h3>
           <div style={{ background: C.sand, borderRadius: RADIUS.sm, overflow: "hidden" }}>
             {board.map((row, i) => {
               const rowPlayer = PLAYERS.find((p) => p.slug === row.slug);
               const isLoser = row.slug === rollover.loserSlug;
+              const isSecondLoser = row.slug === rollover.secondLoserSlug;
+              const isShots = row.slug === rollover.shotsSlug;
+              const bg = isLoser
+                ? C.coralDeep
+                : isSecondLoser
+                ? C.coral
+                : isShots
+                ? C.gold
+                : "transparent";
+              const fg = (isLoser || isSecondLoser || isShots) ? C.white : C.dark;
+              const badge = isLoser
+                ? "🎰 spins"
+                : isSecondLoser
+                ? "🎰 spins"
+                : isShots
+                ? "🥃 5 shots"
+                : null;
               return (
                 <div
                   key={row.slug}
@@ -192,20 +120,32 @@ export default function RevealFlow({ rollover, onSlotDone }) {
                     justifyContent: "space-between",
                     alignItems: "center",
                     animation: `revealRow 0.4s ${i * 0.4}s both`,
-                    background: isLoser ? C.coral : "transparent",
-                    color: isLoser ? C.white : C.dark,
+                    background: bg,
+                    color: fg,
                   }}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ ...MICRO_LABEL, color: isLoser ? C.white : C.textBody }}>
+                    <span style={{ ...MICRO_LABEL, color: fg === C.white ? C.white : C.textBody }}>
                       {i + 1}
                     </span>
-                    {rowPlayer && (
-                      <Avatar player={rowPlayer} size="sm" />
-                    )}
+                    {rowPlayer && <Avatar player={rowPlayer} size="sm" />}
                     <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 14 }}>
                       {nameOf(row.slug)}
                     </span>
+                    {badge && (
+                      <span style={{
+                        fontFamily: "Nunito, sans-serif",
+                        fontWeight: 800,
+                        fontSize: 11,
+                        letterSpacing: 1,
+                        textTransform: "uppercase",
+                        background: "rgba(255,255,255,0.25)",
+                        padding: "2px 8px",
+                        borderRadius: RADIUS.pill,
+                      }}>
+                        {badge}
+                      </span>
+                    )}
                   </span>
                   <span style={{ fontFamily: "Nunito, sans-serif", fontWeight: 800, fontSize: 14 }}>
                     {row.total >= 0 ? "+" : ""}{row.total}
@@ -216,12 +156,12 @@ export default function RevealFlow({ rollover, onSlotDone }) {
           </div>
           <style>{`@keyframes revealRow { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }`}</style>
           <p style={{ ...BODY, textAlign: "center", marginTop: 12 }}>
-            <strong>{nameOf(rollover.loserSlug)}</strong> — spin the wheel.
+            Bottom three — your reckoning.
           </p>
           <div style={{ textAlign: "center" }}>
             <button
               type="button"
-              onClick={() => setStage(3)}
+              onClick={() => setStage(rollover.shotsSlug ? 3 : 4)}
               style={{
                 padding: "12px 20px",
                 borderRadius: RADIUS.md,
@@ -234,7 +174,7 @@ export default function RevealFlow({ rollover, onSlotDone }) {
                 cursor: "pointer",
               }}
             >
-              Open the wheel ▶
+              {rollover.shotsSlug ? "Pour the shots 🥃 ▶" : "Open the wheel ▶"}
             </button>
           </div>
         </div>
@@ -242,31 +182,107 @@ export default function RevealFlow({ rollover, onSlotDone }) {
 
       {stage === 3 && (
         <div style={{ textAlign: "center" }}>
-          <h3
+          <div style={{ fontSize: 56, marginBottom: 8, animation: "shotsIn 600ms ease-out" }}>🥃</div>
+          <div style={{
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 900,
+            fontSize: 11,
+            color: C.gold,
+            letterSpacing: 3,
+            textTransform: "uppercase",
+            marginBottom: 8,
+          }}>
+            Third from bottom
+          </div>
+          {shotsPlayer && (
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+              <Avatar player={shotsPlayer} size="lg" />
+            </div>
+          )}
+          <h3 style={{ ...HEADING.h2, color: C.dark, margin: "8px 0" }}>
+            {nameOf(rollover.shotsSlug)}
+          </h3>
+          <div style={{
+            fontFamily: "'Dela Gothic One', sans-serif",
+            fontSize: 32,
+            color: C.coralDeep,
+            margin: "12px 0",
+          }}>
+            5 shots
+          </div>
+          <div style={{ ...BODY, color: C.textBody, marginBottom: 20 }}>
+            No wheel. No mercy. Line them up.
+          </div>
+          <style>{`@keyframes shotsIn { from { opacity: 0; transform: scale(0.4) rotate(-15deg); } to { opacity: 1; transform: scale(1) rotate(0); } }`}</style>
+          <button
+            type="button"
+            onClick={() => setStage(4)}
             style={{
-              ...HEADING.h3,
-              color: C.dark,
-              marginBottom: 16,
+              padding: "12px 20px",
+              borderRadius: RADIUS.md,
+              background: C.dark,
+              color: C.white,
+              border: 0,
+              fontFamily: "Nunito, sans-serif",
+              fontWeight: 800,
+              fontSize: 14,
+              cursor: "pointer",
             }}
           >
-            {nameOf(rollover.loserSlug)}, your fate:
-          </h3>
-          {rollover.forfeitId === "deduct" ? (
-            <DeductPicker
-              loserSlug={rollover.loserSlug}
-              rolloverId={rollover._id}
-              onComplete={() => setStage(4)}
-            />
-          ) : (
-            <WheelOfFortune
-              target={rollover.forfeitId}
-              onResult={() => setStage(4)}
-            />
-          )}
+            On to the wheel ▶
+          </button>
         </div>
       )}
 
       {stage === 4 && (
+        <div style={{ textAlign: "center" }}>
+          <div style={{
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 900,
+            fontSize: 11,
+            color: C.coralDeep,
+            letterSpacing: 3,
+            textTransform: "uppercase",
+            marginBottom: 4,
+          }}>
+            Spin 1 of 2 — Last place
+          </div>
+          <h3 style={{ ...HEADING.h3, color: C.dark, marginTop: 6, marginBottom: 16 }}>
+            {nameOf(rollover.loserSlug)}, your fate:
+          </h3>
+          <WheelOfFortune
+            key={`wheel-1-${rollover._id}`}
+            target={rollover.forfeitId}
+            onResult={() => setStage(rollover.secondLoserSlug ? 5 : 6)}
+          />
+        </div>
+      )}
+
+      {stage === 5 && (
+        <div style={{ textAlign: "center" }}>
+          <div style={{
+            fontFamily: "Nunito, sans-serif",
+            fontWeight: 900,
+            fontSize: 11,
+            color: C.coral,
+            letterSpacing: 3,
+            textTransform: "uppercase",
+            marginBottom: 4,
+          }}>
+            Spin 2 of 2 — Second-from-bottom
+          </div>
+          <h3 style={{ ...HEADING.h3, color: C.dark, marginTop: 6, marginBottom: 16 }}>
+            {nameOf(rollover.secondLoserSlug)}, your fate:
+          </h3>
+          <WheelOfFortune
+            key={`wheel-2-${rollover._id}`}
+            target={rollover.secondForfeitId}
+            onResult={() => setStage(6)}
+          />
+        </div>
+      )}
+
+      {stage === 6 && (
         <div style={{ textAlign: "center" }}>
           {flowState?.phase === "resolved" ? (
             <>
@@ -305,7 +321,7 @@ export default function RevealFlow({ rollover, onSlotDone }) {
               {slotActive && (
                 <button
                   type="button"
-                  onClick={() => setStage(5)}
+                  onClick={() => setStage(7)}
                   style={{
                     marginTop: 20,
                     padding: "12px 20px",
@@ -345,7 +361,7 @@ export default function RevealFlow({ rollover, onSlotDone }) {
         </div>
       )}
 
-      {slotActive && stage === 5 && (
+      {slotActive && stage === 7 && (
         <DailyScavengerReveal
           dailyKey={newDailyKey}
           isFirstReveal={isFirstReveal}

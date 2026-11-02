@@ -745,7 +745,7 @@ export default function HomePage() {
           <div style={{ textAlign: "center", marginBottom: 32, padding: "0 24px" }}>
             <div style={{ fontFamily: "Nunito, sans-serif", fontWeight: 900, fontSize: 11, color: C.coral, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Earn Your Bragging Rights</div>
             <h2 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: "clamp(28px, 7vw, 48px)", color: C.dark }}>Learn the Game</h2>
-            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, fontWeight: 600, maxWidth: 500, margin: "8px auto 0" }}>Earn points by completing challenges. Points tracked daily. Lowest score each day = forfeit. Overall loser at end of trip = final forfeit.</p>
+            <p style={{ fontFamily: "Nunito, sans-serif", fontSize: 14, color: C.textBody, fontWeight: 600, maxWidth: 500, margin: "8px auto 0" }}>Earn points by completing challenges. Points tracked daily. Bottom two each day spin the wheel; third-from-bottom takes 5 shots. Overall loser at end of trip = final forfeit.</p>
           </div>
         </Reveal>
 
